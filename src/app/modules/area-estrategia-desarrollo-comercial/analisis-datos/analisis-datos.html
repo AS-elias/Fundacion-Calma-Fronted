@@ -1,104 +1,1184 @@
+﻿<div
+  *ngIf="notificacion"
+  class="toast-notificacion"
+  [class.toast-notificacion--error]="notificacion.tipo === 'error'"
+  [class.toast-notificacion--success]="notificacion.tipo === 'success'"
+  role="status"
+  aria-live="polite"
+>
+  <div class="toast-notificacion__contenido">
+    <i class="pi" [ngClass]="notificacion.tipo === 'success' ? 'pi-check-circle' : 'pi-exclamation-circle'"></i>
+    <span>{{ notificacion.mensaje }}</span>
+  </div>
+  <button type="button" class="toast-notificacion__cerrar" (click)="cerrarNotificacion()">
+    <i class="pi pi-times"></i>
+  </button>
+</div>
+
 <div class="analisis-page">
-  <header class="hero">
-    <h1>An&aacute;lisis de Datos</h1>
-    <p>Gesti&oacute;n y seguimiento de datos</p>
+  <header class="analisis-hero">
+    <h1>Análisis de Datos</h1>
+    <p>Gestión y seguimiento de datos</p>
   </header>
 
-  <section class="cards-grid">
-    <article class="data-card">
-      <div class="card-head">
-        <span class="tag estrategico">ESTRAT&Eacute;GICO</span>
-        <button class="icon-btn" type="button" aria-label="Ver detalle de mapeo educativo">
-          <i class="pi pi-external-link"></i>
-        </button>
-      </div>
-      <div class="card-body">
-        <div class="icon-bubble estrategico"><i class="pi pi-map"></i></div>
-        <div>
-          <h3>MAPEO EDUCATIVO</h3>
-          <p>Identificaci&oacute;n de colegios con alta violencia escolar para alianzas</p>
+  <section class="paneles-grid">
+    <article
+      class="panel-card"
+      *ngFor="let panel of paneles"
+      [ngClass]="'panel-card--' + panel.categoria"
+    >
+      <div class="panel-card__top">
+        <div class="panel-card__icon" [ngClass]="'panel-card__icon--' + panel.categoria">
+          <i [class]="panel.icono"></i>
         </div>
+        <span class="panel-card__tag" [ngClass]="'panel-card__tag--' + panel.categoria">
+          {{ panel.etiqueta }}
+        </span>
       </div>
-    </article>
 
-    <article class="data-card">
-      <div class="card-head">
-        <span class="tag gestion">GESTI&Oacute;N</span>
-        <button class="icon-btn" type="button" aria-label="Ver detalle de m&eacute;tricas de impacto">
-          <i class="pi pi-external-link"></i>
-        </button>
+      <div class="panel-card__body">
+        <h3>{{ panel.titulo }}</h3>
+        <p>{{ panel.descripcion }}</p>
       </div>
-      <div class="card-body">
-        <div class="icon-bubble gestion"><i class="pi pi-chart-line"></i></div>
-        <div>
-          <h3>M&Eacute;TRICAS DE IMPACTO</h3>
-          <p>Organizaci&oacute;n de KPIs clave para medir efectividad</p>
-        </div>
-      </div>
-    </article>
 
-    <article class="data-card">
-      <div class="card-head">
-        <span class="tag comercial">COMERCIAL</span>
-        <button class="icon-btn" type="button" aria-label="Ver detalle de potencial empresarial">
-          <i class="pi pi-external-link"></i>
-        </button>
-      </div>
-      <div class="card-body">
-        <div class="icon-bubble comercial"><i class="pi pi-briefcase"></i></div>
-        <div>
-          <h3>POTENCIAL-EMP 2026</h3>
-          <p>Prospecci&oacute;n de empresas</p>
-        </div>
-      </div>
-    </article>
-
-    <article class="data-card">
-      <div class="card-head">
-        <span class="tag espacios">ESPACIOS</span>
-        <button class="icon-btn" type="button" aria-label="Ver detalle de gesti&oacute;n de aliados">
-          <i class="pi pi-external-link"></i>
-        </button>
-      </div>
-      <div class="card-body">
-        <div class="icon-bubble espacios"><i class="pi pi-users"></i></div>
-        <div>
-          <h3>GESTI&Oacute;N DE ALIADOS</h3>
-          <p>An&aacute;lisis de aliados para gesti&oacute;n de espacios</p>
-        </div>
-      </div>
+      <button
+        class="panel-card__link"
+        type="button"
+        [class.panel-card__link--active]="panelActivo === panel.clave"
+        [attr.aria-label]="'Abrir ' + panel.titulo"
+        (click)="abrirPanel(panel)"
+      >
+        <i class="pi pi-external-link"></i>
+      </button>
     </article>
   </section>
 
-  <section class="boards">
-    <article class="board in-progress">
-      <div class="board-head">
-        <h3>Tareas en proceso</h3>
+  <section class="boards-grid">
+    <article class="board board--proceso">
+      <header class="board__header">
+        <h2>Tareas en Proceso</h2>
+      </header>
+
+      <div class="board__content">
+        <article
+          class="task-card task-card--clickable"
+          *ngFor="let tarea of tareasEnProceso"
+          role="button"
+          tabindex="0"
+          (click)="abrirDetalleTarea(tarea)"
+          (keydown.enter)="abrirDetalleTarea(tarea)"
+        >
+          <div class="task-card__copy">
+            <h3>{{ tarea.titulo }}</h3>
+            <p>{{ tarea.descripcion }}</p>
+          </div>
+          <div class="task-card__actions">
+            <span class="task-card__status" [ngClass]="claseEstadoTarea(tarea.estado)">
+              {{ tarea.etiquetaEstado }}
+            </span>
+          </div>
+        </article>
       </div>
 
-      <div class="task-card">
-        <div class="task-number">01</div>
-        <div class="task-copy">
-          <h4>RECOPILACI&Oacute;N DE DATOS</h4>
-          <p>Colegios de UGEL 04</p>
-        </div>
-      </div>
-
-      <button class="btn-add" type="button">+ A&ntilde;adir nueva tarea</button>
+      <button class="board__add" type="button" (click)="abrirFormularioTarea()">
+        + Añadir nueva tarea
+      </button>
     </article>
 
-    <article class="board completed">
-      <div class="board-head">
-        <h3>Concluido</h3>
-      </div>
+    <article class="board board--concluido">
+      <header class="board__header">
+        <h2>Concluido</h2>
+      </header>
 
-      <div class="task-card done">
-        <span class="status-chip success">LOGRADO</span>
-        <div class="task-copy">
-          <h4>RECOPILACI&Oacute;N DE DATOS</h4>
-          <p>Colegios de UGEL 04</p>
-        </div>
+      <div class="board__content">
+        <article
+          class="task-card task-card--done task-card--clickable"
+          *ngFor="let tarea of tareasConcluidas"
+          role="button"
+          tabindex="0"
+          (click)="abrirDetalleTarea(tarea)"
+          (keydown.enter)="abrirDetalleTarea(tarea)"
+        >
+          <div class="task-card__copy">
+            <h3>{{ tarea.titulo }}</h3>
+            <p>{{ tarea.descripcion }}</p>
+          </div>
+          <div class="task-card__actions">
+            <span class="task-card__status" [ngClass]="claseEstadoTarea(tarea.estado)">
+              {{ tarea.etiquetaEstado }}
+            </span>
+          </div>
+        </article>
       </div>
     </article>
   </section>
+</div>
+
+<div class="task-detail-overlay" *ngIf="tareaSeleccionada">
+  <section class="task-detail-modal">
+    <header class="task-detail-modal__header">
+      <h2>Detalle de Tarea</h2>
+      <button
+        class="task-detail-modal__close"
+        type="button"
+        aria-label="Cerrar detalle de tarea"
+        (click)="cerrarDetalleTarea()"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </header>
+
+    <div class="task-detail">
+      <div class="task-detail__hero">
+        <div class="task-detail__hero-copy">
+          <h3>{{ tareaSeleccionada.titulo }}</h3>
+          <p>Creada el {{ tareaSeleccionada.fechaCreacion }}</p>
+        </div>
+        <span class="task-card__status" [ngClass]="claseEstadoTarea(tareaSeleccionada.estado)">
+          {{ tareaSeleccionada.etiquetaEstado }}
+        </span>
+      </div>
+
+      <div class="task-detail__block">
+        <span>Descripción</span>
+        <p>{{ tareaSeleccionada.descripcion || 'Sin descripción registrada' }}</p>
+      </div>
+
+      <div class="task-detail__meta">
+        <span>Fecha Límite</span>
+        <p class="task-detail__date">
+          {{ tareaSeleccionada.fechaLimite || 'Sin fecha límite registrada' }}
+          <i class="pi pi-calendar"></i>
+        </p>
+      </div>
+
+      <div class="task-detail__links">
+        <span>Enlaces de Trabajo</span>
+        <div class="task-detail__links-list" *ngIf="tareaSeleccionada.enlaces?.length; else sinEnlacesTarea">
+          <a
+            class="task-detail__link"
+            *ngFor="let enlace of tareaSeleccionada.enlaces"
+            [href]="enlace.url || '#'"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <i class="pi pi-file"></i>
+            {{ enlace.nombre || 'Abrir Documento' }}
+            <i class="pi pi-external-link"></i>
+          </a>
+        </div>
+        <ng-template #sinEnlacesTarea>
+          <p class="task-detail__empty">Sin enlaces registrados</p>
+        </ng-template>
+      </div>
+    </div>
+
+    <footer class="task-detail__actions">
+      <button type="button" class="task-detail__back" (click)="cerrarDetalleTarea()">Volver</button>
+      <button type="button" class="task-detail__edit" (click)="editarTareaSeleccionada()">
+        <i class="pi pi-pencil"></i>
+        Editar
+      </button>
+    </footer>
+  </section>
+</div>
+
+<div class="task-form-overlay" *ngIf="mostrandoFormularioTarea">
+  <section class="task-form-modal">
+    <header class="task-form-modal__header">
+      <h2>Nueva Tarea</h2>
+      <button
+        class="task-form-modal__close"
+        type="button"
+        aria-label="Cerrar formulario de tarea"
+        (click)="cerrarFormularioTarea()"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </header>
+
+    <div class="task-form">
+      <label class="task-form__field">
+        <span>Título</span>
+        <input type="text" [(ngModel)]="nuevaTarea.titulo" placeholder="Nombre de la tarea" />
+      </label>
+
+      <label class="task-form__field">
+        <span>Descripción</span>
+        <textarea
+          [(ngModel)]="nuevaTarea.descripcion"
+          rows="4"
+          placeholder="Descripción detallada de la tarea ...."
+        ></textarea>
+      </label>
+
+      <div class="task-form__field">
+        <span>Estado</span>
+        <div class="task-form__states">
+          <button
+            type="button"
+            class="task-form__state task-form__state--pendiente"
+            [class.is-active]="nuevaTarea.estado === 'pendiente'"
+            (click)="seleccionarEstadoTarea('pendiente')"
+          >
+            PENDIENTE
+          </button>
+          <button
+            type="button"
+            class="task-form__state task-form__state--proceso"
+            [class.is-active]="nuevaTarea.estado === 'en-proceso'"
+            (click)="seleccionarEstadoTarea('en-proceso')"
+          >
+            EN PROCESO
+          </button>
+          <button
+            type="button"
+            class="task-form__state task-form__state--completado"
+            [class.is-active]="nuevaTarea.estado === 'completado'"
+            (click)="seleccionarEstadoTarea('completado')"
+          >
+            COMPLETADO
+          </button>
+          <button
+            type="button"
+            class="task-form__state task-form__state--paralizado"
+            [class.is-active]="nuevaTarea.estado === 'paralizado'"
+            (click)="seleccionarEstadoTarea('paralizado')"
+          >
+            PARALIZADO
+          </button>
+        </div>
+      </div>
+
+      <label class="task-form__field task-form__field--date">
+        <span>Fecha Límite</span>
+        <input type="date" [(ngModel)]="nuevaTarea.fechaLimite" />
+      </label>
+
+      <div class="task-form__field">
+        <span>Enlaces</span>
+        <small>Agrega los links de trabajo</small>
+
+        <div class="task-form__links">
+          <div class="task-form__link-row" *ngFor="let enlace of nuevaTarea.enlaces; let i = index">
+            <input
+              type="text"
+              [(ngModel)]="enlace.nombre"
+              [name]="'enlace-nombre-' + i"
+              placeholder="Nombre del documento"
+            />
+            <input
+              type="text"
+              [(ngModel)]="enlace.url"
+              [name]="'enlace-url-' + i"
+              placeholder="https://docs.google.com/..."
+            />
+            <button
+              *ngIf="i === nuevaTarea.enlaces.length - 1"
+              type="button"
+              class="task-form__add-link"
+              aria-label="Agregar enlace"
+              (click)="agregarEnlaceTarea()"
+            >
+              <i class="pi pi-plus"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="task-form__actions">
+      <button type="button" class="task-form__cancel" (click)="cerrarFormularioTarea()">
+        Cancelar
+      </button>
+      <button type="button" class="task-form__submit" (click)="crearTarea()">
+        <i class="pi pi-save"></i>
+        {{ tareaEditando ? 'Guardar cambios' : 'Crear Tarea' }}
+      </button>
+    </footer>
+  </section>
+</div>
+
+<div class="registro-overlay" *ngIf="mostrandoRegistroColegios">
+  <section class="registro-modal registro-modal--colegios">
+    <header class="registro-modal__header">
+      <h2>Registro de Colegios</h2>
+      <button
+        class="registro-modal__close"
+        type="button"
+        aria-label="Cerrar registro de colegios"
+        (click)="cerrarRegistroColegios()"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </header>
+
+    <div class="registro-toolbar">
+      <label class="registro-search">
+        <i class="pi pi-search"></i>
+        <input
+          type="text"
+          [(ngModel)]="busquedaColegio"
+          placeholder="Buscar colegios........"
+        />
+      </label>
+
+      <select class="registro-filter" [(ngModel)]="tipoColegioFiltro">
+        <option value="todos">Todos</option>
+        <option value="particular">Particular</option>
+        <option value="publica">Pública</option>
+      </select>
+
+      <button class="registro-save" type="button" aria-label="Descargar colegios en Excel" (click)="exportarColegiosExcel()">
+        <i class="pi pi-save"></i>
+      </button>
+    </div>
+
+    <div class="registro-table-wrap registro-table-wrap--colegios">
+      <table class="registro-table registro-table--colegios">
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Código modular</th>
+            <th>Nombre colegio</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Nivel</th>
+            <th>Director</th>
+            <th>Tipo</th>
+            <th>UGEL</th>
+            <th>Departamento</th>
+            <th>Distrito</th>
+            <th>Zona</th>
+            <th>Cantidad alumnos</th>
+            <th>Dirección IE</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let colegio of colegiosFiltrados; let i = index">
+            <tr *ngIf="estaEditandoColegio(colegio); else colegioSoloLectura">
+              <td>{{ i + 1 }}</td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.codigoModular" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.nombre" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.correo" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.telefono" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.nivel" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.director" /></td>
+              <td>
+                <select class="registro-table__cell-select" [(ngModel)]="colegioBorrador!.tipo">
+                  <option value="Particular">Particular</option>
+                  <option value="Pública">Pública</option>
+                </select>
+              </td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.ugel" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.departamento" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.distrito" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.zona" /></td>
+              <td>
+                <input
+                  class="registro-table__cell-input registro-table__cell-input--number"
+                  type="number"
+                  min="0"
+                  [(ngModel)]="colegioBorrador!.cantidadAlumnos"
+                />
+              </td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.direccion" /></td>
+              <td>
+                <div class="registro-actions">
+                  <button
+                    type="button"
+                    class="registro-actions__save"
+                    aria-label="Guardar colegio"
+                    (click)="guardarColegio()"
+                  >
+                    <i class="pi pi-save"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="registro-actions__cancel"
+                    aria-label="Cancelar colegio"
+                    (click)="cancelarEdicionColegio()"
+                  >
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <ng-template #colegioSoloLectura>
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td>{{ colegio.codigoModular }}</td>
+                <td>{{ colegio.nombre }}</td>
+                <td>{{ colegio.correo }}</td>
+                <td>{{ colegio.telefono }}</td>
+                <td>{{ colegio.nivel }}</td>
+                <td>{{ colegio.director }}</td>
+                <td>{{ colegio.tipo }}</td>
+                <td>{{ colegio.ugel }}</td>
+                <td>{{ colegio.departamento }}</td>
+                <td>{{ colegio.distrito }}</td>
+                <td>{{ colegio.zona }}</td>
+                <td>{{ colegio.cantidadAlumnos }}</td>
+                <td>{{ colegio.direccion }}</td>
+                <td>
+                  <div class="registro-actions">
+                    <button
+                      type="button"
+                      class="registro-actions__edit"
+                      aria-label="Editar colegio"
+                      (click)="editarColegio(colegio)"
+                    >
+                      <i class="pi pi-pencil"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="registro-actions__delete"
+                      aria-label="Eliminar colegio"
+                      (click)="solicitarEliminarColegio(colegio)"
+                    >
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </ng-container>
+
+          <tr *ngIf="colegioBorradorEsNuevo && colegioBorrador">
+            <td class="registro-table__indicator">+</td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.codigoModular" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.nombre" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.correo" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.telefono" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.nivel" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.director" /></td>
+            <td>
+              <select class="registro-table__cell-select" [(ngModel)]="colegioBorrador!.tipo">
+                <option value="Particular">Particular</option>
+                <option value="Pública">Pública</option>
+              </select>
+            </td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.ugel" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.departamento" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.distrito" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.zona" /></td>
+            <td>
+              <input
+                class="registro-table__cell-input registro-table__cell-input--number"
+                type="number"
+                min="0"
+                [(ngModel)]="colegioBorrador!.cantidadAlumnos"
+              />
+            </td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.direccion" /></td>
+            <td>
+              <div class="registro-actions">
+                <button
+                  type="button"
+                  class="registro-actions__save"
+                  aria-label="Guardar colegio"
+                  (click)="guardarColegio()"
+                >
+                  <i class="pi pi-save"></i>
+                </button>
+                <button
+                  type="button"
+                  class="registro-actions__cancel"
+                  aria-label="Cancelar colegio"
+                  (click)="cancelarEdicionColegio()"
+                >
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="!colegiosFiltrados.length && !(colegioBorradorEsNuevo && colegioBorrador)">
+            <td colspan="15" class="registro-table__empty">No se encontraron colegios.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="registro-modal__footer">
+      <span>{{ colegiosFiltrados.length }} colegios registrados</span>
+      <button
+        class="registro-add"
+        type="button"
+        [disabled]="!!colegioBorrador"
+        (click)="agregarColegio()"
+      >
+        <i class="pi pi-plus"></i>
+        Agregar Colegio
+      </button>
+    </footer>
+  </section>
+</div>
+
+<div class="confirm-overlay" *ngIf="colegioPorEliminar">
+  <div class="confirm-card">
+    <h4>Eliminar colegio</h4>
+    <p>¿Estás seguro de que deseas eliminar este colegio?</p>
+    <p class="muted">{{ colegioPorEliminar.nombre || colegioPorEliminar.codigoModular }}</p>
+
+    <div class="confirm-actions">
+      <button class="cancel-btn" type="button" (click)="cancelarEliminacionColegio()">
+        Cancelar
+      </button>
+      <button class="delete-btn" type="button" (click)="confirmarEliminacionColegio()">
+        Eliminar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="registro-overlay" *ngIf="mostrandoRegistroEmpresas">
+  <section class="registro-modal registro-modal--empresas">
+    <header class="registro-modal__header">
+      <h2>Registro de Empresas Potenciales</h2>
+      <button
+        class="registro-modal__close"
+        type="button"
+        aria-label="Cerrar registro de empresas"
+        (click)="cerrarRegistroEmpresas()"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </header>
+
+    <div class="registro-toolbar registro-toolbar--empresas">
+      <label class="registro-search">
+        <i class="pi pi-search"></i>
+        <input
+          type="text"
+          [(ngModel)]="busquedaEmpresa"
+          placeholder="Buscar empresas........"
+        />
+      </label>
+
+      <select class="registro-filter" [(ngModel)]="estadoEmpresaFiltro">
+        <option value="todos">Todos</option>
+        <option value="convenio">Convenio</option>
+        <option value="alianza">Alianza</option>
+      </select>
+
+      <button class="registro-save" type="button" aria-label="Descargar empresas en Excel" (click)="exportarEmpresasExcel()">
+        <i class="pi pi-save"></i>
+      </button>
+    </div>
+
+    <div class="registro-table-wrap">
+      <table class="registro-table registro-table--empresas">
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>RUC</th>
+            <th>Nombre empresa</th>
+            <th>Correo</th>
+            <th>Teléfono fijo</th>
+            <th>Celular</th>
+            <th>Departamento</th>
+            <th>Distrito</th>
+            <th>Dirección</th>
+            <th>Sector</th>
+            <th>Estado</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let empresa of empresasFiltradas; let i = index">
+            <tr *ngIf="estaEditandoEmpresa(empresa); else empresaSoloLectura">
+              <td>{{ i + 1 }}</td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.ruc" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.nombre" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.correo" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.telefonoFijo" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.celular" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.departamento" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.distrito" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.direccion" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.sector" /></td>
+              <td>
+                <select class="registro-table__cell-select" [(ngModel)]="empresaBorrador!.estado">
+                  <option value="Convenio">Convenio</option>
+                  <option value="Alianza">Alianza</option>
+                </select>
+              </td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.descripcion" /></td>
+              <td>
+                <div class="registro-actions">
+                  <button
+                    type="button"
+                    class="registro-actions__save"
+                    aria-label="Guardar empresa"
+                    (click)="guardarEmpresa()"
+                  >
+                    <i class="pi pi-save"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="registro-actions__cancel"
+                    aria-label="Cancelar empresa"
+                    (click)="cancelarEdicionEmpresa()"
+                  >
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <ng-template #empresaSoloLectura>
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td>{{ empresa.ruc }}</td>
+                <td>{{ empresa.nombre }}</td>
+                <td>{{ empresa.correo }}</td>
+                <td>{{ empresa.telefonoFijo }}</td>
+                <td>{{ empresa.celular }}</td>
+                <td>{{ empresa.departamento }}</td>
+                <td>{{ empresa.distrito }}</td>
+                <td>{{ empresa.direccion }}</td>
+                <td>{{ empresa.sector }}</td>
+                <td>{{ empresa.estado }}</td>
+                <td class="registro-table__descripcion">{{ empresa.descripcion }}</td>
+                <td>
+                  <div class="registro-actions">
+                    <button
+                      type="button"
+                      class="registro-actions__edit"
+                      aria-label="Editar empresa"
+                      (click)="editarEmpresa(empresa)"
+                    >
+                      <i class="pi pi-pencil"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="registro-actions__delete"
+                      aria-label="Eliminar empresa"
+                      (click)="solicitarEliminarEmpresa(empresa)"
+                    >
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </ng-container>
+
+          <tr *ngIf="empresaBorradorEsNuevo && empresaBorrador">
+            <td class="registro-table__indicator">+</td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.ruc" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.nombre" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.correo" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.telefonoFijo" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.celular" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.departamento" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.distrito" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.direccion" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.sector" /></td>
+            <td>
+              <select class="registro-table__cell-select" [(ngModel)]="empresaBorrador!.estado">
+                <option value="Convenio">Convenio</option>
+                <option value="Alianza">Alianza</option>
+              </select>
+            </td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.descripcion" /></td>
+            <td>
+              <div class="registro-actions">
+                <button
+                  type="button"
+                  class="registro-actions__save"
+                  aria-label="Guardar empresa"
+                  (click)="guardarEmpresa()"
+                >
+                  <i class="pi pi-save"></i>
+                </button>
+                <button
+                  type="button"
+                  class="registro-actions__cancel"
+                  aria-label="Cancelar empresa"
+                  (click)="cancelarEdicionEmpresa()"
+                >
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="!empresasFiltradas.length && !(empresaBorradorEsNuevo && empresaBorrador)">
+            <td colspan="13" class="registro-table__empty">
+              No se encontraron empresas potenciales.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="registro-modal__footer">
+      <span>{{ empresasFiltradas.length }} empresas registradas</span>
+      <button
+        class="registro-add"
+        type="button"
+        [disabled]="!!empresaBorrador"
+        (click)="agregarEmpresa()"
+      >
+        <i class="pi pi-plus"></i>
+        Agregar Empresa
+      </button>
+    </footer>
+  </section>
+</div>
+
+<div class="confirm-overlay" *ngIf="empresaPorEliminar">
+  <div class="confirm-card">
+    <h4>Eliminar empresa</h4>
+    <p>¿Estás seguro de que deseas eliminar esta empresa?</p>
+    <p class="muted">{{ empresaPorEliminar.nombre || empresaPorEliminar.ruc }}</p>
+
+    <div class="confirm-actions">
+      <button class="cancel-btn" type="button" (click)="cancelarEliminacionEmpresa()">
+        Cancelar
+      </button>
+      <button class="delete-btn" type="button" (click)="confirmarEliminacionEmpresa()">
+        Eliminar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="registro-overlay" *ngIf="mostrandoRegistroVenues">
+  <section class="registro-modal registro-modal--venues">
+    <header class="registro-modal__header">
+      <h2>Registro de Venues</h2>
+      <button
+        class="registro-modal__close"
+        type="button"
+        aria-label="Cerrar registro de venues"
+        (click)="cerrarRegistroVenues()"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </header>
+
+    <div class="registro-toolbar registro-toolbar--venues">
+      <label class="registro-search">
+        <i class="pi pi-search"></i>
+        <input
+          type="text"
+          [(ngModel)]="busquedaVenue"
+          placeholder="Buscar venues ......"
+        />
+      </label>
+
+      <select class="registro-filter" [(ngModel)]="tipoVenueFiltro">
+        <option value="todos">Todos</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="contactado">Contactado</option>
+      </select>
+
+      <button class="registro-save" type="button" aria-label="Descargar venues en Excel" (click)="exportarVenuesExcel()">
+        <i class="pi pi-save"></i>
+      </button>
+    </div>
+
+    <div class="registro-table-wrap registro-table-wrap--venues">
+      <table class="registro-table registro-table--venues">
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Nombre</th>
+            <th>Departamento</th>
+            <th>Distrito</th>
+            <th>Dirección</th>
+            <th>Celular</th>
+            <th>Correo</th>
+            <th>Capacidad personas</th>
+            <th>Estado</th>
+            <th>Sitio web</th>
+            <th>Detalles</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let venue of venuesFiltrados; let i = index">
+            <tr *ngIf="estaEditandoVenue(venue); else venueSoloLectura">
+              <td>{{ i + 1 }}</td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.nombre" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.departamento" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.distrito" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.direccion" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.celular" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.correo" /></td>
+              <td>
+                <input
+                  class="registro-table__cell-input registro-table__cell-input--number"
+                  type="number"
+                  min="0"
+                  [(ngModel)]="venueBorrador!.capacidadPersonas"
+                />
+              </td>
+              <td>
+                <select class="registro-table__cell-select" [(ngModel)]="venueBorrador!.estado">
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="Contactado">Contactado</option>
+                </select>
+              </td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.sitioWeb" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.detalles" /></td>
+              <td>
+                <div class="registro-actions">
+                  <button
+                    type="button"
+                    class="registro-actions__save"
+                    aria-label="Guardar venue"
+                    (click)="guardarVenue()"
+                  >
+                    <i class="pi pi-save"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="registro-actions__cancel"
+                    aria-label="Cancelar venue"
+                    (click)="cancelarEdicionVenue()"
+                  >
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <ng-template #venueSoloLectura>
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td>{{ venue.nombre }}</td>
+                <td>{{ venue.departamento }}</td>
+                <td>{{ venue.distrito }}</td>
+                <td>{{ venue.direccion }}</td>
+                <td>{{ venue.celular }}</td>
+                <td>{{ venue.correo }}</td>
+                <td>{{ venue.capacidadPersonas }}</td>
+                <td>{{ venue.estado }}</td>
+                <td class="registro-table__link">{{ venue.sitioWeb }}</td>
+                <td class="registro-table__descripcion">{{ venue.detalles }}</td>
+                <td>
+                  <div class="registro-actions">
+                    <button
+                      type="button"
+                      class="registro-actions__edit"
+                      aria-label="Editar venue"
+                      (click)="editarVenue(venue)"
+                    >
+                      <i class="pi pi-pencil"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="registro-actions__delete"
+                      aria-label="Eliminar venue"
+                      (click)="solicitarEliminarVenue(venue)"
+                    >
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </ng-container>
+
+          <tr *ngIf="venueBorradorEsNuevo && venueBorrador">
+            <td class="registro-table__indicator">+</td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.nombre" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.departamento" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.distrito" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.direccion" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.celular" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.correo" /></td>
+            <td>
+              <input
+                class="registro-table__cell-input registro-table__cell-input--number"
+                type="number"
+                min="0"
+                [(ngModel)]="venueBorrador!.capacidadPersonas"
+              />
+            </td>
+            <td>
+              <select class="registro-table__cell-select" [(ngModel)]="venueBorrador!.estado">
+                <option value="Pendiente">Pendiente</option>
+                <option value="Contactado">Contactado</option>
+              </select>
+            </td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.sitioWeb" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.detalles" /></td>
+            <td>
+              <div class="registro-actions">
+                <button
+                  type="button"
+                  class="registro-actions__save"
+                  aria-label="Guardar venue"
+                  (click)="guardarVenue()"
+                >
+                  <i class="pi pi-save"></i>
+                </button>
+                <button
+                  type="button"
+                  class="registro-actions__cancel"
+                  aria-label="Cancelar venue"
+                  (click)="cancelarEdicionVenue()"
+                >
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="!venuesFiltrados.length && !(venueBorradorEsNuevo && venueBorrador)">
+            <td colspan="12" class="registro-table__empty">No se encontraron venues.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="registro-modal__footer">
+      <span>{{ venuesFiltrados.length }} venues registrados</span>
+      <button
+        class="registro-add"
+        type="button"
+        [disabled]="!!venueBorrador"
+        (click)="agregarVenue()"
+      >
+        <i class="pi pi-plus"></i>
+        Agregar Venue
+      </button>
+    </footer>
+  </section>
+</div>
+
+<div class="confirm-overlay" *ngIf="venuePorEliminar">
+  <div class="confirm-card">
+    <h4>Eliminar venue</h4>
+    <p>¿Estás seguro de que deseas eliminar este venue?</p>
+    <p class="muted">{{ venuePorEliminar.nombre || venuePorEliminar.correo }}</p>
+
+    <div class="confirm-actions">
+      <button class="cancel-btn" type="button" (click)="cancelarEliminacionVenue()">
+        Cancelar
+      </button>
+      <button class="delete-btn" type="button" (click)="confirmarEliminacionVenue()">
+        Eliminar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="registro-overlay" *ngIf="mostrandoRegistroDifusion">
+  <section class="registro-modal registro-modal--difusion">
+    <header class="registro-modal__header">
+      <h2>Registro de Difusión y Participación</h2>
+      <button
+        class="registro-modal__close"
+        type="button"
+        aria-label="Cerrar registro de difusión y participación"
+        (click)="cerrarRegistroDifusion()"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </header>
+
+    <div class="registro-toolbar registro-toolbar--difusion">
+      <label class="registro-search">
+        <i class="pi pi-search"></i>
+        <input
+          type="text"
+          [(ngModel)]="busquedaDifusion"
+          placeholder="Buscar difusión ......"
+        />
+      </label>
+
+      <select class="registro-filter" [(ngModel)]="estadoDifusionFiltro">
+        <option value="todos">Todos</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="contactado">Contactado</option>
+      </select>
+
+      <button class="registro-save" type="button" aria-label="Descargar difusión en Excel" (click)="exportarDifusionesExcel()">
+        <i class="pi pi-save"></i>
+      </button>
+    </div>
+
+    <div class="registro-table-wrap registro-table-wrap--difusion">
+      <table class="registro-table registro-table--difusion">
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Plataforma</th>
+            <th>Lugar</th>
+            <th>Contacto</th>
+            <th>Celular</th>
+            <th>Correo</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Observaciones</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let difusion of difusionesFiltradas; let i = index">
+            <tr *ngIf="estaEditandoDifusion(difusion); else difusionSoloLectura">
+              <td>{{ i + 1 }}</td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.nombre" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.tipo" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.plataforma" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.lugar" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.contacto" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.celular" /></td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.correo" /></td>
+              <td><input class="registro-table__cell-input" type="date" [(ngModel)]="difusionBorrador!.fecha" /></td>
+              <td>
+                <select class="registro-table__cell-select" [(ngModel)]="difusionBorrador!.estado">
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="Contactado">Contactado</option>
+                </select>
+              </td>
+              <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.observaciones" /></td>
+              <td>
+                <div class="registro-actions">
+                  <button
+                    type="button"
+                    class="registro-actions__save"
+                    aria-label="Guardar difusión"
+                    (click)="guardarDifusion()"
+                  >
+                    <i class="pi pi-save"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="registro-actions__cancel"
+                    aria-label="Cancelar difusión"
+                    (click)="cancelarEdicionDifusion()"
+                  >
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <ng-template #difusionSoloLectura>
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td>{{ difusion.nombre }}</td>
+                <td>{{ difusion.tipo }}</td>
+                <td>{{ difusion.plataforma }}</td>
+                <td>{{ difusion.lugar }}</td>
+                <td>{{ difusion.contacto }}</td>
+                <td>{{ difusion.celular }}</td>
+                <td>{{ difusion.correo }}</td>
+                <td>{{ difusion.fecha }}</td>
+                <td>{{ difusion.estado }}</td>
+                <td class="registro-table__descripcion">{{ difusion.observaciones }}</td>
+                <td>
+                  <div class="registro-actions">
+                    <button
+                      type="button"
+                      class="registro-actions__edit"
+                      aria-label="Editar difusión"
+                      (click)="editarDifusion(difusion)"
+                    >
+                      <i class="pi pi-pencil"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="registro-actions__delete"
+                      aria-label="Eliminar difusión"
+                      (click)="solicitarEliminarDifusion(difusion)"
+                    >
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </ng-container>
+
+          <tr *ngIf="difusionBorradorEsNuevo && difusionBorrador">
+            <td class="registro-table__indicator">+</td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.nombre" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.tipo" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.plataforma" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.lugar" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.contacto" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.celular" /></td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.correo" /></td>
+            <td><input class="registro-table__cell-input" type="date" [(ngModel)]="difusionBorrador!.fecha" /></td>
+            <td>
+              <select class="registro-table__cell-select" [(ngModel)]="difusionBorrador!.estado">
+                <option value="Pendiente">Pendiente</option>
+                <option value="Contactado">Contactado</option>
+              </select>
+            </td>
+            <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.observaciones" /></td>
+            <td>
+              <div class="registro-actions">
+                <button
+                  type="button"
+                  class="registro-actions__save"
+                  aria-label="Guardar difusión"
+                  (click)="guardarDifusion()"
+                >
+                  <i class="pi pi-save"></i>
+                </button>
+                <button
+                  type="button"
+                  class="registro-actions__cancel"
+                  aria-label="Cancelar difusión"
+                  (click)="cancelarEdicionDifusion()"
+                >
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="!difusionesFiltradas.length && !(difusionBorradorEsNuevo && difusionBorrador)">
+            <td colspan="12" class="registro-table__empty">
+              No se encontraron medios de comunicación.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="registro-modal__footer">
+      <span>{{ difusionesFiltradas.length }} medios de comunicaciones registrados</span>
+      <button
+        class="registro-add"
+        type="button"
+        [disabled]="!!difusionBorrador"
+        (click)="agregarDifusion()"
+      >
+        <i class="pi pi-plus"></i>
+        Agregar Difusión
+      </button>
+    </footer>
+  </section>
+</div>
+
+<div class="confirm-overlay" *ngIf="difusionPorEliminar">
+  <div class="confirm-card">
+    <h4>Eliminar difusión</h4>
+    <p>¿Estás seguro de que deseas eliminar este registro?</p>
+    <p class="muted">{{ difusionPorEliminar.nombre || difusionPorEliminar.correo }}</p>
+
+    <div class="confirm-actions">
+      <button class="cancel-btn" type="button" (click)="cancelarEliminacionDifusion()">
+        Cancelar
+      </button>
+      <button class="delete-btn" type="button" (click)="confirmarEliminacionDifusion()">
+        Eliminar
+      </button>
+    </div>
+  </div>
 </div>

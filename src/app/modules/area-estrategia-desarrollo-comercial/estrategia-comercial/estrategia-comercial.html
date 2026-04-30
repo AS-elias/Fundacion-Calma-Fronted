@@ -1,64 +1,625 @@
 <div class="estrategia-page">
-  <header class="hero">
-    <h1>Estrategia Comercial</h1>
-    <p>Seguimiento de acciones comerciales</p>
+  <div
+    *ngIf="notificacion"
+    class="toast-notificacion"
+    [class.toast-notificacion--error]="notificacion.tipo === 'error'"
+    [class.toast-notificacion--success]="notificacion.tipo === 'success'"
+    role="status"
+    aria-live="polite"
+  >
+    <div class="toast-notificacion__contenido">
+      <i
+        class="pi"
+        [ngClass]="notificacion.tipo === 'success' ? 'pi-check-circle' : 'pi-exclamation-circle'"
+      ></i>
+      <span>{{ notificacion.mensaje }}</span>
+    </div>
+    <button type="button" class="toast-notificacion__cerrar" (click)="cerrarNotificacion()">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <header class="page-head">
+    <div>
+      <h1>Estrategia Comercial</h1>
+      <p>
+        {{
+          vistaActiva === 'actividades'
+            ? 'Seguimiento de actividades comerciales'
+            : 'Seguimiento de proyectos con empresas'
+        }}
+      </p>
+    </div>
+
+    <div class="page-tabs">
+      <button
+        type="button"
+        class="page-tab"
+        [class.page-tab--active]="vistaActiva === 'actividades'"
+        (click)="cambiarVista('actividades')"
+      >
+        Actividades
+      </button>
+      <button
+        type="button"
+        class="page-tab"
+        [class.page-tab--active]="vistaActiva === 'proyectos'"
+        (click)="cambiarVista('proyectos')"
+      >
+        Proyectos con Empresas
+      </button>
+    </div>
   </header>
 
-  <section class="kanban">
-    <article class="column">
-      <div class="column-head">
-        <span class="pill pill-pendiente">PENDIENTE</span>
+  <section class="kanban-view" *ngIf="vistaActiva === 'actividades'">
+    <article class="kanban-column" *ngFor="let columna of columnas" [ngClass]="'kanban-column--' + columna.clase">
+      <div class="kanban-column__head">
+        <span class="kanban-badge" [ngClass]="'kanban-badge--' + columna.clase">
+          <span class="kanban-badge__icon" [ngClass]="'kanban-badge__icon--' + columna.clase" aria-hidden="true"></span>
+          {{ columna.etiqueta }}
+        </span>
       </div>
-      <div class="task-card">
-        <h4>MODELAMIENTO DE ESCENARIOS DE CRECIMIENTO</h4>
-        <div class="task-actions">
-          <i class="pi pi-eye" title="Ver"></i>
-          <i class="pi pi-pencil" title="Editar"></i>
-          <i class="pi pi-trash" title="Eliminar"></i>
-        </div>
-      </div>
-    </article>
 
-    <article class="column">
-      <div class="column-head">
-        <span class="pill pill-progreso">EN PROGRESO</span>
-      </div>
-      <button class="add-link" type="button">+ A&ntilde;adir tarea</button>
-    </article>
+      <div class="kanban-column__body">
+        <article
+          class="kanban-card"
+          *ngFor="let actividad of actividadesPorEstado(columna.estado)"
+          role="button"
+          tabindex="0"
+          (click)="verDetalleActividad(actividad)"
+          (keyup.enter)="verDetalleActividad(actividad)"
+        >
+          <h3>{{ actividad.titulo }}</h3>
+          <p *ngIf="actividad.descripcion">{{ actividad.descripcion }}</p>
 
-    <article class="column">
-      <div class="column-head">
-        <span class="pill pill-revision">EN REVISI&Oacute;N</span>
-      </div>
-      <button class="add-link" type="button">+ A&ntilde;adir tarea</button>
-    </article>
+          <div class="kanban-card__meta">
+            <span class="kanban-card__meta-author">
+              <span class="kanban-card__meta-icon kanban-card__meta-icon--avatar">
+                {{ inicialCreador(actividad.creadoPor) }}
+              </span>
+              <span class="kanban-card__meta-text">{{ actividad.creadoPor }}</span>
+            </span>
+            <span class="kanban-card__meta-chip">
+              <i class="pi pi-calendar"></i>
+              <span class="kanban-card__meta-text">{{ actividad.fechaCreacion }}</span>
+            </span>
+            <span
+              class="kanban-card__meta-chip kanban-card__meta-chip--priority"
+              [ngClass]="'kanban-card__meta-chip--' + prioridadClase(actividad.prioridad)"
+            >
+              <i class="pi pi-flag-fill"></i>
+              <span class="kanban-card__meta-text">{{ actividad.prioridad }}</span>
+            </span>
+          </div>
+        </article>
 
-    <article class="column">
-      <div class="column-head">
-        <span class="pill pill-ejecucion">EN EJECUCI&Oacute;N</span>
-      </div>
-      <button class="add-link" type="button">+ A&ntilde;adir tarea</button>
-    </article>
-
-    <article class="column">
-      <div class="column-head">
-        <span class="pill pill-finalizado">FINALIZADO</span>
-      </div>
-      <button class="add-link" type="button">+ A&ntilde;adir tarea</button>
-    </article>
-
-    <article class="column">
-      <div class="column-head">
-        <span class="pill pill-completado">COMPLETADO</span>
-      </div>
-      <div class="task-card success">
-        <h4>ESTRATEGIA DE...</h4>
-        <div class="task-actions">
-          <i class="pi pi-eye" title="Ver"></i>
-          <i class="pi pi-pencil" title="Editar"></i>
-          <i class="pi pi-trash" title="Eliminar"></i>
-        </div>
+        <button type="button" class="kanban-add" (click)="abrirModalNuevaActividad(columna.estado)">
+          + A&ntilde;adir Actividad
+        </button>
       </div>
     </article>
   </section>
+
+  <section class="projects-view" *ngIf="vistaActiva === 'proyectos'">
+    <div class="projects-toolbar">
+      <label class="search-field">
+        <i class="pi pi-search"></i>
+        <input type="text" [(ngModel)]="busquedaProyecto" placeholder="Buscar Actividades........." />
+      </label>
+
+      <label class="filter-field">
+        <select [(ngModel)]="filtroProyecto">
+          <option value="todos">Todos</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="en-progreso">En progreso</option>
+          <option value="completada">Completada</option>
+          <option value="paralizado">Paralizado</option>
+        </select>
+      </label>
+
+      <button type="button" class="new-company" (click)="abrirModalNuevaEmpresa()">
+        <i class="pi pi-plus"></i>
+        Nueva Empresa
+      </button>
+    </div>
+
+    <div class="company-list">
+      <article class="company-card" *ngFor="let item of empresasFiltradas">
+        <div
+          class="company-card__summary"
+          role="button"
+          tabindex="0"
+          (click)="toggleEmpresaDesdeResumen(item.empresa)"
+          (keyup)="toggleEmpresaDesdeTeclado($event, item.empresa)"
+        >
+          <div class="company-card__info">
+            <div class="company-card__title">
+              <i class="pi" [ngClass]="item.empresa.expandida ? 'pi-folder-open' : 'pi-folder'"></i>
+              <h2>{{ item.empresa.nombre }}</h2>
+            </div>
+            <p>{{ item.empresa.descripcion }}</p>
+          </div>
+
+          <div class="company-card__meta">
+            <span>{{ proyectosLabel(item.empresa) }}</span>
+            <div class="company-card__icons">
+              <button
+                type="button"
+                aria-label="Editar empresa"
+                (click)="$event.stopPropagation(); editarEmpresa(item.empresa)"
+              >
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button
+                type="button"
+                aria-label="Eliminar empresa"
+                [disabled]="item.empresa.proyectos.length > 0"
+                [title]="item.empresa.proyectos.length > 0 ? 'No se puede eliminar una empresa con proyectos' : 'Eliminar empresa'"
+                (click)="$event.stopPropagation(); pedirConfirmarEliminacionEmpresa(item.empresa)"
+              >
+                <i class="pi pi-trash"></i>
+              </button>
+              <button
+                type="button"
+                aria-label="Expandir empresa"
+                (click)="$event.stopPropagation(); toggleEmpresa(item.empresa)"
+              >
+                <i class="pi" [ngClass]="item.empresa.expandida ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="company-card__projects" *ngIf="item.empresa.expandida">
+          <article
+            class="project-item"
+            *ngFor="let proyecto of item.proyectos"
+            role="button"
+            tabindex="0"
+            (click)="verDetalleProyecto(item.empresa, proyecto)"
+            (keyup.enter)="verDetalleProyecto(item.empresa, proyecto)"
+          >
+            <div class="project-item__head">
+              <div class="project-item__title">
+                <h3>{{ proyecto.titulo }}</h3>
+                <span
+                  class="project-state"
+                  [ngClass]="'project-state--' + estadoProyectoClase(proyecto.estado)"
+                  [style.background]="proyecto.estado === 'Paralizado' ? '#6b7280' : null"
+                  [style.color]="proyecto.estado === 'Paralizado' ? '#fff' : null"
+                >
+                  {{ proyecto.estado }}
+                </span>
+              </div>
+            </div>
+
+            <p class="project-item__description">{{ proyecto.descripcion }}</p>
+
+            <div class="project-item__links">
+              <span class="project-date">
+                <i class="pi pi-calendar"></i>
+                {{ formatearFechaProyecto(proyecto.fechaLimite) }}
+              </span>
+
+              <button
+                type="button"
+                class="project-link"
+                *ngFor="let enlace of proyecto.enlaces"
+                (click)="$event.stopPropagation(); abrirEnlaceProyecto(enlace)"
+              >
+                <i class="pi pi-external-link"></i>
+                {{ enlace.etiqueta || 'Abrir enlace' }}
+              </button>
+            </div>
+          </article>
+
+          <p class="company-card__empty" *ngIf="!item.proyectos.length">No hay proyectos registrados con ese filtro.</p>
+
+          <button type="button" class="new-project" (click)="abrirModalNuevoProyecto(item.empresa)">
+            <i class="pi pi-plus"></i>
+            Nuevo Proyecto
+          </button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <div
+    class="activity-modal"
+    *ngIf="modalDetalleActividadAbierto && actividadSeleccionada"
+    (click)="cerrarDetalleActividad()"
+    aria-modal="true"
+    role="dialog"
+  >
+    <div class="activity-modal__dialog activity-detail" (click)="$event.stopPropagation()">
+      <button type="button" class="activity-modal__close" (click)="cerrarDetalleActividad()" aria-label="Cerrar">
+        <i class="pi pi-times"></i>
+      </button>
+
+      <h2>Detalle de la Actividad</h2>
+
+      <div class="activity-detail__content">
+        <section class="activity-detail__panel">
+          <h3>{{ actividadSeleccionada.titulo }}</h3>
+          <p>Creada el {{ actividadSeleccionada.fechaCreacion }}</p>
+        </section>
+
+        <section class="activity-detail__panel">
+          <span class="activity-detail__label">Descripcion</span>
+          <p>{{ actividadSeleccionada.descripcion || 'Sin descripcion registrada.' }}</p>
+        </section>
+
+        <div class="activity-detail__grid">
+          <section class="activity-detail__field">
+            <span class="activity-detail__label">Estado</span>
+            <div class="activity-detail__value">{{ etiquetaEstado(actividadSeleccionada.estado) }}</div>
+          </section>
+
+          <section class="activity-detail__field">
+            <span class="activity-detail__label">Fecha L&iacute;mite</span>
+            <div class="activity-detail__value">{{ actividadSeleccionada.fechaLimite || 'Sin fecha' }}</div>
+          </section>
+
+          <section class="activity-detail__field">
+            <span class="activity-detail__label">Responsable</span>
+            <div class="activity-detail__value">{{ actividadSeleccionada.creadoPor }}</div>
+          </section>
+
+          <section class="activity-detail__field">
+            <span class="activity-detail__label">Prioridad</span>
+            <div class="activity-detail__value">{{ actividadSeleccionada.prioridad }}</div>
+          </section>
+        </div>
+
+        <section class="activity-detail__links">
+          <span class="activity-detail__label">
+            <i class="pi pi-paperclip"></i>
+            Enlaces de trabajo
+          </span>
+
+          <div class="activity-detail__links-list" *ngIf="actividadSeleccionada.enlaces.length; else sinEnlaces">
+            <button
+              type="button"
+              class="activity-detail__link"
+              *ngFor="let enlace of actividadSeleccionada.enlaces"
+              (click)="abrirEnlaceActividad(enlace)"
+            >
+              <span class="activity-detail__link-main">
+                <i class="pi pi-file"></i>
+                {{ enlace.nombre || 'Abrir documento' }}
+              </span>
+              <i class="pi pi-external-link"></i>
+            </button>
+          </div>
+
+          <ng-template #sinEnlaces>
+            <p class="activity-detail__empty">No hay enlaces de trabajo registrados.</p>
+          </ng-template>
+        </section>
+      </div>
+
+      <div class="activity-detail__actions">
+        <button type="button" class="activity-form__cancel" (click)="cerrarDetalleActividad()">Volver</button>
+        <button type="button" class="activity-form__submit" (click)="editarActividadSeleccionada()">
+          <i class="pi pi-pencil"></i>
+          Editar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="activity-modal"
+    *ngIf="modalDetalleProyectoAbierto && proyectoSeleccionado && empresaSeleccionada"
+    (click)="cerrarDetalleProyecto()"
+    aria-modal="true"
+    role="dialog"
+  >
+    <div class="activity-modal__dialog activity-detail" (click)="$event.stopPropagation()">
+      <button type="button" class="activity-modal__close" (click)="cerrarDetalleProyecto()" aria-label="Cerrar">
+        <i class="pi pi-times"></i>
+      </button>
+
+      <h2>Detalle del Proyecto</h2>
+
+      <div class="activity-detail__content">
+        <section class="activity-detail__panel">
+          <h3>{{ proyectoSeleccionado.titulo }}</h3>
+          <p>{{ empresaSeleccionada.nombre }}</p>
+        </section>
+
+        <section class="activity-detail__panel">
+          <span class="activity-detail__label">Descripcion</span>
+          <p>{{ proyectoSeleccionado.descripcion || 'Sin descripcion registrada.' }}</p>
+        </section>
+
+        <div class="activity-detail__grid">
+          <section class="activity-detail__field">
+            <span class="activity-detail__label">Estado</span>
+            <div class="activity-detail__value">{{ proyectoSeleccionado.estado }}</div>
+          </section>
+
+          <section class="activity-detail__field">
+            <span class="activity-detail__label">Fecha L&iacute;mite</span>
+            <div class="activity-detail__value">{{ formatearFechaProyecto(proyectoSeleccionado.fechaLimite) }}</div>
+          </section>
+
+          <section class="activity-detail__field activity-detail__field--full">
+            <span class="activity-detail__label">Empresa</span>
+            <div class="activity-detail__value">{{ empresaSeleccionada.nombre }}</div>
+          </section>
+        </div>
+
+        <section class="activity-detail__links">
+          <span class="activity-detail__label">
+            <i class="pi pi-paperclip"></i>
+            Enlaces de trabajo
+          </span>
+
+          <div class="activity-detail__links-list" *ngIf="proyectoSeleccionado.enlaces.length; else sinEnlacesProyecto">
+            <button
+              type="button"
+              class="activity-detail__link"
+              *ngFor="let enlace of proyectoSeleccionado.enlaces"
+              (click)="abrirEnlaceProyecto(enlace)"
+            >
+              <span class="activity-detail__link-main">
+                <i class="pi pi-file"></i>
+                {{ enlace.etiqueta || 'Abrir documento' }}
+              </span>
+              <i class="pi pi-external-link"></i>
+            </button>
+          </div>
+
+          <ng-template #sinEnlacesProyecto>
+            <p class="activity-detail__empty">No hay enlaces de trabajo registrados.</p>
+          </ng-template>
+        </section>
+      </div>
+
+      <div class="activity-detail__actions">
+        <button type="button" class="activity-form__cancel" (click)="cerrarDetalleProyecto()">Volver</button>
+        <button type="button" class="activity-form__submit" (click)="editarProyectoSeleccionado()">
+          <i class="pi pi-pencil"></i>
+          Editar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="activity-modal"
+    *ngIf="modalEmpresaAbierto"
+    (click)="cerrarModalEmpresa()"
+    aria-modal="true"
+    role="dialog"
+  >
+    <div class="activity-modal__dialog" (click)="$event.stopPropagation()">
+      <button type="button" class="activity-modal__close" (click)="cerrarModalEmpresa()" aria-label="Cerrar">
+        <i class="pi pi-times"></i>
+      </button>
+
+      <h2>{{ empresaEditandoId ? 'Editar Empresa' : 'Nueva Empresa' }}</h2>
+
+      <div class="activity-form">
+        <label class="activity-form__field activity-form__field--full">
+          <span>Nombre</span>
+          <input type="text" [(ngModel)]="empresaForm.nombre" placeholder="Nombre de la empresa" />
+        </label>
+
+        <label class="activity-form__field activity-form__field--full">
+          <span>Descripcion</span>
+          <textarea rows="4" [(ngModel)]="empresaForm.descripcion" placeholder="Descripcion breve"></textarea>
+        </label>
+      </div>
+
+      <div class="activity-form__actions">
+        <button type="button" class="activity-form__cancel" (click)="cerrarModalEmpresa()">Cancelar</button>
+        <button type="button" class="activity-form__submit" (click)="guardarEmpresa()" [disabled]="!empresaForm.nombre.trim()">
+          <i class="pi pi-building"></i>
+          {{ empresaEditandoId ? 'Guardar Empresa' : 'Crear Empresa' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="activity-modal"
+    *ngIf="modalProyectoAbierto"
+    (click)="cerrarModalProyecto()"
+    aria-modal="true"
+    role="dialog"
+  >
+    <div class="activity-modal__dialog" (click)="$event.stopPropagation()">
+      <button type="button" class="activity-modal__close" (click)="cerrarModalProyecto()" aria-label="Cerrar">
+        <i class="pi pi-times"></i>
+      </button>
+
+      <h2>{{ proyectoEditandoId ? 'Editar Proyecto' : 'Nuevo Proyecto' }}</h2>
+
+      <div class="activity-form">
+        <label class="activity-form__field activity-form__field--full">
+          <span>Nombre</span>
+          <input type="text" [(ngModel)]="proyectoForm.titulo" placeholder="Nombre del proyecto" />
+        </label>
+
+        <label class="activity-form__field activity-form__field--full">
+          <span>Descripcion</span>
+          <textarea rows="4" [(ngModel)]="proyectoForm.descripcion" placeholder="Descripcion breve"></textarea>
+        </label>
+
+        <label class="activity-form__field">
+          <span>Estado</span>
+          <select [(ngModel)]="proyectoForm.estado">
+            <option value="Pendiente">Pendiente</option>
+            <option value="En Progreso">En Progreso</option>
+            <option value="Completada">Completada</option>
+            <option value="Paralizado">Paralizado</option>
+          </select>
+        </label>
+
+        <label class="activity-form__field">
+          <span>Fecha L&iacute;mite</span>
+          <input type="date" [(ngModel)]="proyectoForm.fechaLimite" />
+        </label>
+
+        <label class="activity-form__field activity-form__field--full">
+          <span>Empresa</span>
+          <input type="text" [value]="nombreEmpresaActiva()" readonly />
+        </label>
+
+        <div class="activity-form__field activity-form__field--full">
+          <span class="activity-form__links-title">Link de trabajo</span>
+
+          <div class="activity-form__links">
+            <div class="activity-form__link-row" *ngFor="let enlace of proyectoForm.enlaces; let i = index">
+              <input
+                type="text"
+                [(ngModel)]="enlace.etiqueta"
+                [name]="'etiquetaProyecto' + i"
+                placeholder="Etiqueta"
+              />
+              <input
+                type="url"
+                [(ngModel)]="enlace.url"
+                [name]="'urlProyecto' + i"
+                placeholder="https://..."
+              />
+              <button
+                type="button"
+                class="activity-form__add-link"
+                (click)="agregarEnlaceProyecto()"
+                aria-label="Agregar enlace"
+              >
+                <i class="pi pi-plus"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="activity-form__actions">
+        <button type="button" class="activity-form__cancel" (click)="cerrarModalProyecto()">Cancelar</button>
+        <button type="button" class="activity-form__submit" (click)="guardarProyecto()" [disabled]="!proyectoForm.titulo.trim()">
+          <i class="pi pi-folder-open"></i>
+          {{ proyectoEditandoId ? 'Guardar Proyecto' : 'Crear Proyecto' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="activity-modal"
+    *ngIf="modalNuevaActividadAbierto"
+    (click)="cerrarModalNuevaActividad()"
+    aria-modal="true"
+    role="dialog"
+  >
+    <div class="activity-modal__dialog" (click)="$event.stopPropagation()">
+      <button type="button" class="activity-modal__close" (click)="cerrarModalNuevaActividad()" aria-label="Cerrar">
+        <i class="pi pi-times"></i>
+      </button>
+
+      <h2>{{ actividadEditandoId ? 'Editar Actividad' : 'Nueva Actividad' }}</h2>
+
+      <div class="activity-form">
+        <label class="activity-form__field activity-form__field--full">
+          <span>T&iacute;tulo</span>
+          <input
+            type="text"
+            [(ngModel)]="actividadForm.titulo"
+            placeholder="Nombre de la actividad..."
+          />
+        </label>
+
+        <label class="activity-form__field activity-form__field--full">
+          <span>Descripci&oacute;n</span>
+          <textarea
+            rows="4"
+            [(ngModel)]="actividadForm.descripcion"
+            placeholder="Descripcion detallada de la actividad..."
+          ></textarea>
+        </label>
+
+        <label class="activity-form__field">
+          <span>Estado</span>
+          <select [(ngModel)]="actividadForm.estado">
+            <option *ngFor="let columna of columnas" [ngValue]="columna.estado">{{ columna.etiqueta }}</option>
+          </select>
+        </label>
+
+        <label class="activity-form__field">
+          <span>Fecha L&iacute;mite</span>
+          <input type="date" [(ngModel)]="actividadForm.fechaLimite" />
+        </label>
+
+        <label class="activity-form__field">
+          <span>Responsable</span>
+          <input type="text" [value]="actividadForm.responsable" readonly />
+        </label>
+
+        <label class="activity-form__field">
+          <span>Prioridad</span>
+          <select [(ngModel)]="actividadForm.prioridad">
+            <option *ngFor="let prioridad of prioridadesActividad" [ngValue]="prioridad">{{ prioridad }}</option>
+          </select>
+        </label>
+
+        <div class="activity-form__field activity-form__field--full">
+          <span class="activity-form__links-title">
+            <i class="pi pi-paperclip"></i>
+            Enlaces
+          </span>
+          <p>Agrega los links de trabajo</p>
+
+          <div class="activity-form__links">
+            <div class="activity-form__link-row" *ngFor="let enlace of actividadForm.enlaces; let i = index">
+              <input
+                type="text"
+                [(ngModel)]="enlace.nombre"
+                [name]="'nombreEnlace' + i"
+                placeholder="Nombre del documento"
+              />
+              <input
+                type="url"
+                [(ngModel)]="enlace.url"
+                [name]="'urlEnlace' + i"
+                placeholder="https://docs.google.com/..."
+              />
+              <button
+                type="button"
+                class="activity-form__add-link"
+                (click)="agregarEnlaceActividad()"
+                aria-label="Agregar enlace"
+              >
+                <i class="pi pi-plus"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="activity-form__actions">
+        <button type="button" class="activity-form__cancel" (click)="cerrarModalNuevaActividad()" [disabled]="guardandoActividad">Cancelar</button>
+        <button type="button" class="activity-form__submit" (click)="crearActividad()" [disabled]="guardandoActividad || !actividadForm.titulo.trim()">
+          <i class="pi pi-folder-open"></i>
+          {{ guardandoActividad ? 'Guardando...' : (actividadEditandoId ? 'Guardar Cambios' : 'Crear Actividad') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="confirm-overlay" *ngIf="confirmacionEliminacion">
+    <div class="confirm-card">
+      <h4>{{ confirmacionEliminacion.titulo }}</h4>
+      <p>{{ confirmacionEliminacion.mensaje }}</p>
+      <p class="muted">{{ confirmacionEliminacion.detalle }}</p>
+      <div class="confirm-actions">
+        <button class="cancel-btn" type="button" (click)="cancelarConfirmacionEliminacion()">
+          Cancelar
+        </button>
+        <button class="delete-btn" type="button" (click)="confirmarEliminacion()">Eliminar</button>
+      </div>
+    </div>
+  </div>
 </div>

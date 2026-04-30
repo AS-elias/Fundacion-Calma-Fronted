@@ -1,4 +1,26 @@
 ﻿<div class="page-container">
+  <div
+    *ngIf="notificacion"
+    class="toast-notificacion"
+    [class.toast-notificacion--error]="notificacion.tipo === 'error'"
+    [class.toast-notificacion--success]="notificacion.tipo === 'success'"
+    role="status"
+    aria-live="polite"
+  >
+    <div class="toast-notificacion__contenido">
+      <i
+        class="pi"
+        [ngClass]="
+          notificacion.tipo === 'success' ? 'pi-check-circle' : 'pi-exclamation-circle'
+        "
+      ></i>
+      <span>{{ notificacion.mensaje }}</span>
+    </div>
+    <button type="button" class="toast-notificacion__cerrar" (click)="cerrarNotificacion()">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
   <div class="page-header-row">
     <header class="page-header">
       <h2 class="page-title">Desarrollo Comercial</h2>
@@ -24,7 +46,7 @@
       </button>
     </div>
   </div>
-  <div class="top-actions" *ngIf="vistaActual === 'convenios' || !mostrandoFormularioActividad">
+  <div class="top-actions">
     <div class="search-box">
       <input
         type="text"
@@ -47,9 +69,9 @@
       <div class="conexion-filter" *ngIf="vistaActual === 'actividades'">
         <select [(ngModel)]="filtroActividad" (ngModelChange)="setFiltroActividad($event)">
           <option value="todos">Todos</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="proceso">En proceso</option>
-          <option value="firmado">Completada</option>
+          <option *ngFor="let estado of estadosActividad" [value]="estado.value">
+            {{ estado.label }}
+          </option>
         </select>
       </div>
       <button class="btn-nuevo" (click)="ejecutarAccionPrincipal()">
@@ -183,36 +205,30 @@
 
   <div
     class="actividades-list"
-    *ngIf="vistaActual === 'actividades' && !mostrandoFormularioActividad"
+    *ngIf="vistaActual === 'actividades'"
   >
-    <article class="actividad-card" *ngFor="let actividad of actividadesPaginadas">
+    <article
+      class="actividad-card"
+      *ngFor="let actividad of actividadesPaginadas"
+      role="button"
+      tabindex="0"
+      (click)="abrirDetalleActividad(actividad)"
+      (keydown.enter)="abrirDetalleActividad(actividad)"
+    >
       <div class="actividad-card__top">
         <div>
           <h3>{{ actividad.titulo }}</h3>
           <p>{{ actividad.descripcion }}</p>
         </div>
-        <div class="actividad-card__actions">
-          <button class="icon-btn ghost" type="button" title="Editar actividad">
-            <i class="pi pi-pencil"></i>
-          </button>
-          <button class="icon-btn ghost danger small" type="button" title="Eliminar actividad">
-            <i class="pi pi-trash"></i>
-          </button>
-        </div>
       </div>
 
       <div class="actividad-card__meta">
-        <span class="status" [ngClass]="actividad.estado">
-          <i class="pi pi-clock" *ngIf="actividad.estado === 'pendiente'"></i>
-          <i class="pi pi-spinner" *ngIf="actividad.estado === 'proceso'"></i>
-          <i class="pi pi-check-circle" *ngIf="actividad.estado === 'firmado'"></i>
-          {{
-            actividad.estado === 'pendiente'
-              ? 'PENDIENTE'
-              : actividad.estado === 'proceso'
-                ? 'EN PROCESO'
-                : 'COMPLETADA'
-          }}
+        <span class="status" [ngClass]="actividadEstadoClase(actividad.estado)">
+          <i class="pi pi-clock" *ngIf="actividad.estado === EstadoActividad.PENDIENTE"></i>
+          <i class="pi pi-spinner" *ngIf="actividad.estado === EstadoActividad.EN_PROCESO"></i>
+          <i class="pi pi-pause-circle" *ngIf="actividad.estado === EstadoActividad.PARALIZADO"></i>
+          <i class="pi pi-check-circle" *ngIf="actividad.estado === EstadoActividad.COMPLETADO"></i>
+          {{ labelActividadEstado(actividad.estado) }}
         </span>
         <span class="actividad-fecha">Fecha Límite: {{ actividad.fechaLimite }}</span>
       </div>
@@ -221,7 +237,7 @@
 
   <div
     class="paginator"
-    *ngIf="totalPaginas > 1 && (vistaActual === 'convenios' || !mostrandoFormularioActividad)"
+    *ngIf="totalPaginas > 1"
   >
     <button class="page-btn" (click)="prevPage()" [disabled]="page === 1">
       <span class="arrow">&#x2039;</span>
@@ -251,7 +267,9 @@
   >
     <section class="actividad-form">
       <div class="actividad-form__header">
-        <h2 class="actividad-form__title">Nueva Actividad</h2>
+        <h2 class="actividad-form__title">
+          {{ actividadEditandoId ? 'Editar Actividad' : 'Nueva Actividad' }}
+        </h2>
         <button type="button" class="actividad-form__close" (click)="cancelarFormularioActividad()">
           <i class="pi pi-times"></i>
         </button>
@@ -279,28 +297,14 @@
         <span>Estado</span>
         <div class="actividad-form__states">
           <button
+            *ngFor="let estado of estadosActividad"
             type="button"
-            class="activity-state-chip pendiente"
-            [class.active]="actividadEnEdicion.estado === 'pendiente'"
-            (click)="actividadEnEdicion.estado = 'pendiente'"
+            class="activity-state-chip"
+            [ngClass]="estado.className"
+            [class.active]="actividadEnEdicion.estado === estado.value"
+            (click)="actividadEnEdicion.estado = estado.value"
           >
-            Pendiente
-          </button>
-          <button
-            type="button"
-            class="activity-state-chip proceso"
-            [class.active]="actividadEnEdicion.estado === 'proceso'"
-            (click)="actividadEnEdicion.estado = 'proceso'"
-          >
-            En proceso
-          </button>
-          <button
-            type="button"
-            class="activity-state-chip firmado"
-            [class.active]="actividadEnEdicion.estado === 'firmado'"
-            (click)="actividadEnEdicion.estado = 'firmado'"
-          >
-            Completado
+            {{ estado.label }}
           </button>
         </div>
       </div>
@@ -340,12 +344,107 @@
         </button>
         <button type="button" class="activity-submit" (click)="guardarActividad()">
           <i class="pi pi-save"></i>
-          Crear Actividad
+          {{ actividadEditandoId ? 'Guardar Cambios' : 'Crear Actividad' }}
         </button>
       </div>
     </section>
   </div>
 
+  <div
+    class="actividad-modal-backdrop"
+    *ngIf="vistaActual === 'actividades' && actividadSeleccionada"
+  >
+    <section class="actividad-detail">
+      <div class="actividad-detail__header">
+        <div>
+          <h2 class="actividad-detail__title">Detalle de la Actividad</h2>
+        </div>
+        <button type="button" class="actividad-form__close" (click)="cerrarDetalleActividad()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="actividad-detail__summary">
+        <div class="actividad-detail__summary-main">
+          <h3 class="actividad-detail__name">{{ actividadSeleccionada.titulo }}</h3>
+          <p class="actividad-detail__created">
+            Creada el {{ actividadSeleccionada.fechaCreacion || actividadSeleccionada.fechaLimite }}
+          </p>
+        </div>
+        <span class="status" [ngClass]="actividadEstadoClase(actividadSeleccionada.estado)">
+          <i
+            class="pi pi-clock"
+            *ngIf="actividadSeleccionada.estado === EstadoActividad.PENDIENTE"
+          ></i>
+          <i
+            class="pi pi-spinner"
+            *ngIf="actividadSeleccionada.estado === EstadoActividad.EN_PROCESO"
+          ></i>
+          <i
+            class="pi pi-pause-circle"
+            *ngIf="actividadSeleccionada.estado === EstadoActividad.PARALIZADO"
+          ></i>
+          <i
+            class="pi pi-check-circle"
+            *ngIf="actividadSeleccionada.estado === EstadoActividad.COMPLETADO"
+          ></i>
+          {{ labelActividadEstado(actividadSeleccionada.estado) }}
+        </span>
+      </div>
+
+      <section class="actividad-detail__block">
+        <span class="actividad-detail__label">Descripción</span>
+        <p class="actividad-detail__description">{{ actividadSeleccionada.descripcion }}</p>
+      </section>
+
+      <section class="actividad-detail__meta">
+        <div class="actividad-detail__meta-item">
+          <span class="actividad-detail__label">Fecha Límite</span>
+          <div class="actividad-detail__date-pill">
+            <strong>{{ actividadSeleccionada.fechaLimite }}</strong>
+            <i class="pi pi-calendar"></i>
+          </div>
+        </div>
+      </section>
+
+      <section class="actividad-detail__block">
+        <span class="actividad-detail__label actividad-detail__label--with-icon">
+          <i class="pi pi-link"></i>
+          Enlaces de trabajo
+        </span>
+        <div class="actividad-detail__links" *ngIf="actividadSeleccionada.enlaces?.length; else sinEnlaces">
+          <a
+            class="actividad-detail__link"
+            *ngFor="let enlace of actividadSeleccionada.enlaces"
+            [href]="enlace.url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <i class="pi pi-paperclip"></i>
+            {{ enlace.nombre || enlace.url }}
+            <i class="pi pi-external-link"></i>
+          </a>
+        </div>
+        <ng-template #sinEnlaces>
+          <p class="actividad-detail__empty">No hay enlaces registrados.</p>
+        </ng-template>
+      </section>
+
+      <div class="actividad-detail__actions">
+        <button type="button" class="activity-cancel" (click)="cerrarDetalleActividad()">
+          Volver
+        </button>
+        <button
+          type="button"
+          class="activity-submit"
+          (click)="editarActividad(actividadSeleccionada)"
+        >
+          <i class="pi pi-pencil"></i>
+          Editar
+        </button>
+      </div>
+    </section>
+  </div>
 
   <div class="modal-backdrop" *ngIf="convenioSeleccionado">
     <div class="modal-card">
@@ -576,9 +675,6 @@
           <div class="comments-list">
             <div class="comment-box" *ngFor="let c of convenioSeleccionado.comentarios">
               <p class="comment-text">{{ c.texto }}</p>
-              <button class="icon-btn ghost danger small" type="button" (click)="eliminarComentario(c)" title="Eliminar comentario">
-                <i class="pi pi-trash"></i>
-              </button>
             </div>
             <div class="comment-box" *ngIf="!(convenioSeleccionado.comentarios?.length)">
               <p class="placeholder">Sin comentarios aún</p>
@@ -588,6 +684,7 @@
           <textarea
             [(ngModel)]="nuevoComentario"
             placeholder="Escribir comentario...."
+            (keydown.enter)="agregarComentarioConEnter($event)"
           ></textarea>
           <button class="add-comment" (click)="agregarComentario()" [disabled]="!nuevoComentario.trim()">
             <i class="pi pi-plus"></i>
@@ -633,3 +730,4 @@
     </div>
   </div>
 </div>
+

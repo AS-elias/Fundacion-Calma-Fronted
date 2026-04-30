@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, of, throwError } from 'rxjs';
+import { Observable, catchError, map, of, throwError } from 'rxjs';
 import { AuthService } from '../../auth/services/auth.service';
 
 export interface ConvenioDto {
@@ -28,6 +28,45 @@ export interface ConvenioDto {
   historial?: string[];
 }
 
+export interface ConvenioMutationResult {
+  convenio: ConvenioDto;
+  message?: string;
+  mensaje?: string;
+}
+
+export interface HistorialCleanupResult {
+  deletedCount?: number;
+  message?: string;
+  mensaje?: string;
+}
+
+export interface ConvenioHistorialDto {
+  id?: number;
+  convenioId?: number;
+  usuarioId?: number | null;
+  accion?: string;
+  descripcion?: string;
+  fechaCreacion?: string;
+  createdAt?: string;
+  fecha?: string;
+}
+
+type ConvenioHistorialApiResponse =
+  | ConvenioHistorialDto[]
+  | {
+      data?: ConvenioHistorialDto[];
+      historial?: ConvenioHistorialDto[];
+      message?: string;
+      mensaje?: string;
+    };
+
+type ConvenioApiResponse = ConvenioDto & {
+  message?: string;
+  mensaje?: string;
+  convenio?: ConvenioDto;
+  data?: ConvenioDto;
+};
+
 interface CreateComentarioDto {
   convenioId: number;
   usuarioId: number;
@@ -54,18 +93,20 @@ export class ConveniosService {
   private readonly apiUrl = 'http://localhost:3005/api/convenios';
   private readonly comentariosApiUrl = 'http://localhost:3005/api/comentarios';
   private readonly archivosApiUrl = 'http://localhost:3005/api/convenio-archivos';
+  private readonly historialApiUrl = 'http://localhost:3005/api/convenio-historial';
 
   constructor(
     private http: HttpClient,
     private authService: AuthService,
   ) {}
 
-  createConvenio(convenio: ConvenioDto): Observable<ConvenioDto> {
+  createConvenio(convenio: ConvenioDto): Observable<ConvenioMutationResult> {
     return this.http
-      .post<ConvenioDto>(this.apiUrl, convenio, {
+      .post<ConvenioApiResponse>(this.apiUrl, convenio, {
         headers: this.authService.getAuthHeaders(),
       })
       .pipe(
+        map((response) => this.normalizarRespuestaConvenio(response)),
         catchError((error) => {
           console.error('Error al crear convenio', error);
           return throwError(() => error);
@@ -86,13 +127,14 @@ export class ConveniosService {
       .pipe(catchError(() => of([])));
   }
 
-  updateConvenio(convenio: ConvenioDto): Observable<ConvenioDto> {
+  updateConvenio(convenio: ConvenioDto): Observable<ConvenioMutationResult> {
     if (!convenio.id) return throwError(() => new Error('Convenio sin id'));
     return this.http
-      .put<ConvenioDto>(`${this.apiUrl}/${convenio.id}`, convenio, {
+      .put<ConvenioApiResponse>(`${this.apiUrl}/${convenio.id}`, convenio, {
         headers: this.authService.getAuthHeaders(),
       })
       .pipe(
+        map((response) => this.normalizarRespuestaConvenio(response)),
         catchError((error) => {
           console.error('Error al actualizar convenio', error);
           return throwError(() => error);
@@ -155,6 +197,18 @@ export class ConveniosService {
       .pipe(catchError(() => of([])));
   }
 
+  getHistorialByConvenio(convenioId: string): Observable<ConvenioHistorialDto[]> {
+    if (!convenioId) return of([]);
+    return this.http
+      .get<ConvenioHistorialApiResponse>(`${this.historialApiUrl}/convenio/${convenioId}`, {
+        headers: this.authService.getAuthHeaders(),
+      })
+      .pipe(
+        map((response) => this.normalizarRespuestaHistorial(response)),
+        catchError(() => of([])),
+      );
+  }
+
   deleteComentario(comentarioId: number): Observable<void> {
     if (!comentarioId) return throwError(() => new Error('Comentario sin id'));
     return this.http
@@ -164,6 +218,20 @@ export class ConveniosService {
       .pipe(
         catchError((error) => {
           console.error('Error al eliminar comentario', error);
+          return throwError(() => error);
+        }),
+      );
+  }
+
+  clearHistorialByConvenio(convenioId: string): Observable<HistorialCleanupResult> {
+    if (!convenioId) return throwError(() => new Error('Convenio sin id'));
+    return this.http
+      .delete<HistorialCleanupResult>(`${this.historialApiUrl}/convenio/${convenioId}`, {
+        headers: this.authService.getAuthHeaders(),
+      })
+      .pipe(
+        catchError((error) => {
+          console.error('Error al limpiar historial', error);
           return throwError(() => error);
         }),
       );
@@ -222,5 +290,26 @@ export class ConveniosService {
           return throwError(() => error);
         }),
       );
+  }
+
+  private normalizarRespuestaConvenio(response: ConvenioApiResponse): ConvenioMutationResult {
+    const convenio = response.convenio ?? response.data ?? this.extraerConvenioPlano(response);
+    return {
+      convenio,
+      message: response.message,
+      mensaje: response.mensaje,
+    };
+  }
+
+  private extraerConvenioPlano(response: ConvenioApiResponse): ConvenioDto {
+    const { message, mensaje, convenio, data, ...dto } = response;
+    return dto;
+  }
+
+  private normalizarRespuestaHistorial(
+    response: ConvenioHistorialApiResponse,
+  ): ConvenioHistorialDto[] {
+    if (Array.isArray(response)) return response;
+    return response.data ?? response.historial ?? [];
   }
 }

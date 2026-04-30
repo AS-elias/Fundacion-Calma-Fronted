@@ -90,3 +90,429 @@ body {
   width: 100% !important;
   table-layout: fixed;
 }
+
+.estrategia-page .activity-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 76px 20px 24px;
+  background: rgba(17, 17, 17, 0.24);
+}
+
+.estrategia-page .activity-modal__dialog {
+  position: relative;
+  width: min(100%, 610px);
+  max-height: calc(100vh - 100px);
+  overflow: auto;
+  border-radius: 14px;
+  background: #fff;
+  padding: 16px 18px 22px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+}
+
+.estrategia-page .activity-modal__dialog h2 {
+  margin: 0 0 14px;
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.estrategia-page .activity-modal__close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.estrategia-page .activity-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
+}
+
+.estrategia-page .activity-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.estrategia-page .activity-form__field span,
+.estrategia-page .activity-form__field p {
+  margin: 0;
+}
+
+.estrategia-page .activity-form__field span {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.estrategia-page .activity-form__field p {
+  font-size: 11px;
+  color: #8b8b8b;
+}
+
+.estrategia-page .activity-form__field input,
+.estrategia-page .activity-form__field select,
+.estrategia-page .activity-form__field textarea {
+  width: 100%;
+  border: 1px solid #d7d7d7;
+  border-radius: 10px;
+  background: #fff;
+  padding: 11px 12px;
+  font: inherit;
+  color: #111;
+  outline: none;
+}
+
+.estrategia-page .activity-form__field textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.estrategia-page .activity-form__field input:focus,
+.estrategia-page .activity-form__field select:focus,
+.estrategia-page .activity-form__field textarea:focus {
+  border-color: #6bc4eb;
+  box-shadow: 0 0 0 3px rgba(107, 196, 235, 0.18);
+}
+
+.estrategia-page .activity-form__field--full {
+  grid-column: 1 / -1;
+}
+
+.estrategia-page .activity-form__links-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.estrategia-page .activity-form__links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.estrategia-page .activity-form__link-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 42px;
+  gap: 10px;
+  align-items: center;
+}
+
+.estrategia-page .activity-form__add-link {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 10px;
+  background: #8ed0ee;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.estrategia-page .activity-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.estrategia-page .activity-form__cancel,
+.estrategia-page .activity-form__submit {
+  min-width: 108px;
+  height: 38px;
+  border: 0;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.estrategia-page .activity-form__cancel {
+  background: #ececec;
+  color: #222;
+}
+
+.estrategia-page .activity-form__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #46b7eb;
+  color: #111;
+}
+
+.estrategia-page .activity-form__submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.estrategia-page .activity-detail__content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.estrategia-page .activity-detail__panel,
+.estrategia-page .activity-detail__value,
+.estrategia-page .activity-detail__link {
+  border: 1px solid #d7d7d7;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.estrategia-page .activity-detail__panel {
+  padding: 10px 14px;
+}
+
+.estrategia-page .activity-detail__panel h3,
+.estrategia-page .activity-detail__panel p,
+.estrategia-page .activity-detail__label,
+.estrategia-page .activity-detail__empty {
+  margin: 0;
+}
+
+.estrategia-page .activity-detail__panel h3 {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.estrategia-page .activity-detail__panel p,
+.estrategia-page .activity-detail__empty {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.estrategia-page .activity-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
+}
+
+.estrategia-page .activity-detail__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.estrategia-page .activity-detail__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.estrategia-page .activity-detail__value {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 14px;
+  color: #222;
+}
+
+.estrategia-page .activity-detail__links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.estrategia-page .activity-detail__links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.estrategia-page .activity-detail__link {
+  min-height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 12px;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.estrategia-page .activity-detail__link-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.estrategia-page .activity-detail__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.estrategia-page .toast-notificacion {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 1200;
+  min-width: min(420px, calc(100vw - 24px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
+  animation: toast-slide-in 0.22s ease-out;
+}
+
+.estrategia-page .toast-notificacion--success {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.estrategia-page .toast-notificacion--error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.estrategia-page .toast-notificacion__contenido {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.estrategia-page .toast-notificacion__contenido .pi {
+  font-size: 24px;
+}
+
+.estrategia-page .toast-notificacion__cerrar {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+.estrategia-page .confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1150;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(17, 24, 39, 0.46);
+}
+
+.estrategia-page .confirm-card {
+  width: min(100%, 494px);
+  border-radius: 20px;
+  background: #fff;
+  padding: 28px 28px 26px;
+  text-align: center;
+  box-shadow: 0 25px 55px rgba(15, 23, 42, 0.24);
+}
+
+.estrategia-page .confirm-card h4 {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.estrategia-page .confirm-card p {
+  margin: 0;
+  font-size: 15px;
+  color: #374151;
+}
+
+.estrategia-page .confirm-card .muted {
+  margin-top: 6px;
+  color: #6b7280;
+}
+
+.estrategia-page .confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.estrategia-page .confirm-actions .cancel-btn,
+.estrategia-page .confirm-actions .delete-btn {
+  min-width: 124px;
+  height: 42px;
+  border: 0;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.estrategia-page .confirm-actions .cancel-btn {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+.estrategia-page .confirm-actions .delete-btn {
+  background: #ef4444;
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .estrategia-page .activity-modal {
+    padding: 32px 12px 16px;
+  }
+
+  .estrategia-page .activity-detail__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .estrategia-page .activity-form {
+    grid-template-columns: 1fr;
+  }
+
+  .estrategia-page .activity-form__link-row {
+    grid-template-columns: 1fr;
+  }
+
+  .estrategia-page .activity-form__add-link,
+  .estrategia-page .activity-form__cancel,
+  .estrategia-page .activity-form__submit {
+    width: 100%;
+  }
+
+  .estrategia-page .activity-form__actions {
+    flex-direction: column-reverse;
+  }
+
+  .estrategia-page .activity-detail__actions {
+    flex-direction: column-reverse;
+  }
+
+  .estrategia-page .toast-notificacion {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    min-width: 0;
+    padding: 16px;
+  }
+
+  .estrategia-page .confirm-actions {
+    flex-direction: column-reverse;
+  }
+
+  .estrategia-page .confirm-actions .cancel-btn,
+  .estrategia-page .confirm-actions .delete-btn {
+    width: 100%;
+  }
+}
