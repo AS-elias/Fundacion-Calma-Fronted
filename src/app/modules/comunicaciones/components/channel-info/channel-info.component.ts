@@ -18,9 +18,25 @@ export class ChannelInfoComponent implements OnChanges {
   @Output() removeParticipant = new EventEmitter<any>();
   @Output() leaveChannel = new EventEmitter<any>();
   @Output() closeInfoPanel = new EventEmitter<void>();
+  @Output() makeAdmin = new EventEmitter<any>();
+  @Output() removeAdmin = new EventEmitter<any>();
 
   ngOnChanges() {
     this.calculateDisplayProfile();
+  }
+
+  get isCurrentUserAdmin(): boolean {
+    if (!this.channelInfo || !this.channelInfo.esGrupo) return false;
+    
+    // Si el grupo es viejo y nadie es admin, permitimos a todos invitar para no bloquear la app
+    const tieneAdmins = this.channelInfo.participantes?.some((p: any) => p.esAdmin === true);
+    if (!tieneAdmins) return true;
+    
+    // Buscar si tú eres admin
+    const me = this.channelInfo.participantes?.find((p: any) => 
+      Number(p.id) === Number(this.currentUserId) || Number(p.usuarioId) === Number(this.currentUserId)
+    );
+    return me?.esAdmin === true;
   }
 
   calculateDisplayProfile() {
@@ -55,7 +71,7 @@ export class ChannelInfoComponent implements OnChanges {
         icon: 'pi pi-user',
         iniciales: nombreMostrar.substring(0, 2).toUpperCase(),
         esGrupo: false,
-        online: infoOtro.isOnline || false
+        online: infoOtro.isOnline || infoOtro.enLinea || otroUsuario?.enLinea || false
       };
     }
   }
@@ -79,6 +95,28 @@ export class ChannelInfoComponent implements OnChanges {
     const canalId = this.getChannelId();
     if (canalId > 0) {
       this.removeParticipant.emit({
+        canalId,
+        usuarioId,
+        actorId: this.currentUserId
+      });
+    }
+  }
+
+  onMakeAdmin(usuarioId: number) {
+    const canalId = this.getChannelId();
+    if (canalId > 0) {
+      this.makeAdmin.emit({
+        canalId,
+        usuarioId,
+        actorId: this.currentUserId
+      });
+    }
+  }
+
+  onRemoveAdmin(usuarioId: number) {
+    const canalId = this.getChannelId();
+    if (canalId > 0) {
+      this.removeAdmin.emit({
         canalId,
         usuarioId,
         actorId: this.currentUserId

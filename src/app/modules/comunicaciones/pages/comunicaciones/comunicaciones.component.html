@@ -2,31 +2,37 @@
 
     <aside class="chat-sidebar">
         <div class="sidebar-header">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="margin: 0;">Comunicaciones</h2>
-                <button class="icon-btn" (click)="abrirModalNuevoChat()" title="Nuevo Chat" style="background:#f3f4f6; width:35px; height:35px;">
-                    <i class="pi pi-plus" style="font-size: 14px; color: #111827;"></i>
+            <div class="sidebar-title">
+                <h2>Comunicaciones</h2>
+                <button class="icon-btn new-chat-btn" (click)="abrirModalNuevoChat()" title="Nuevo Chat">
+                    <i class="pi pi-plus"></i>
                 </button>
             </div>
             <div class="search-box">
                 <i class="pi pi-search"></i>
-                <input type="text" placeholder="Buscar mensajes..." [(ngModel)]="textoBusqueda" />
+                <input type="text" 
+                       placeholder="Buscar mensajes..." 
+                       [value]="textoBusqueda()"
+                       (input)="textoBusqueda.set($any($event.target).value)" />
             </div>
         </div>
 
         <div class="contact-list">
             <!-- Empty state -->
-            <div *ngIf="contactos.length === 0" style="padding: 20px; text-align: center; color: #9ca3af; font-size: 14px;">
-                <i class="pi pi-comments" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+            <div *ngIf="chatManagement.contactos().length === 0" class="empty-contacts">
+                <i class="pi pi-comments"></i>
                 <p>No tienes mensajes activos.</p>
-                <a href="javascript:void(0)" (click)="abrirModalNuevoChat()" style="color: #0284c7; text-decoration: none; font-weight: 500;">Inicia un nuevo chat</a>
+                <a href="javascript:void(0)" (click)="abrirModalNuevoChat()">Inicia un nuevo chat</a>
             </div>
 
             <!-- Listado con filtro -->
-            <div class="contact-item" *ngFor="let contacto of contactosFiltrados"
-                [class.active]="contactoActivo?.id === contacto.id" (click)="seleccionarContacto(contacto)">
+            <div class="contact-item" *ngFor="let contacto of contactosFiltrados()"
+                [class.active]="chatManagement.contactoActivo()?.id === contacto.id" (click)="seleccionarContacto(contacto)">
 
-                <div class="avatar" [ngClass]="contacto.colorBg">{{ contacto.iniciales }}</div>
+                <div class="avatar" [ngClass]="contacto.colorBg">
+                    <img *ngIf="$any(contacto).avatarUrl" [src]="$any(contacto).avatarUrl" class="avatar-img">
+                    <span *ngIf="!$any(contacto).avatarUrl">{{ contacto.iniciales }}</span>
+                </div>
 
                 <div class="contact-info">
                     <span class="name">{{ contacto.nombre }}</span>
@@ -45,23 +51,23 @@
         </div>
     </aside>
 
-    <main class="chat-main" *ngIf="contactoActivo">
+    <main class="chat-main" *ngIf="chatManagement.contactoActivo()">
 
         <header class="chat-header">
             <div class="user-info">
-                <div class="avatar" [ngClass]="contactoActivo.colorBg">{{ contactoActivo.iniciales }}</div>
+                <div class="avatar" [ngClass]="chatManagement.contactoActivo()!.colorBg">
+                    <img *ngIf="$any(chatManagement.contactoActivo()).avatarUrl" [src]="$any(chatManagement.contactoActivo()).avatarUrl" class="avatar-img">
+                    <span *ngIf="!$any(chatManagement.contactoActivo()).avatarUrl">{{ chatManagement.contactoActivo()!.iniciales }}</span>
+                </div>
                 <div class="details">
-                    <span class="name">{{ contactoActivo.nombre }}</span>
-                    <span class="status" *ngIf="contactoActivo.enLinea"><span class="dot"></span> En línea</span>
-                    <span class="status" *ngIf="!contactoActivo.enLinea" style="color:#9ca3af;">Desconectado</span>
+                    <span class="name">{{ chatManagement.contactoActivo()!.nombre }}</span>
+                    <span class="status" *ngIf="chatManagement.contactoActivo()!.enLinea"><span class="dot"></span> En línea</span>
+                    <span class="status offline" *ngIf="!chatManagement.contactoActivo()!.enLinea">Desconectado</span>
                 </div>
             </div>
             <div class="actions">
-                <button class="icon-btn" (click)="iniciarLlamada()" title="Llamada de voz" [disabled]="true" style="opacity: 0.5; cursor: not-allowed;">
-                    <i class="pi pi-phone"></i>
-                </button>
-                <button class="icon-btn" (click)="iniciarVideoLlamada()" title="Videollamada" [disabled]="true" style="opacity: 0.5; cursor: not-allowed;">
-                    <i class="pi pi-video"></i>
+                <button class="icon-btn" *ngIf="chatManagement.contactoActivo()?.esGrupo" (click)="abrirModalEditarGrupo()" title="Editar perfil del grupo">
+                    <i class="pi pi-pencil"></i>
                 </button>
                 <button class="icon-btn" (click)="verInfoContacto()" title="Ver información">
                     <i class="pi pi-info-circle"></i>
@@ -71,35 +77,44 @@
 
         <div class="chat-messages" #messagesContainer>
             <div class="messages-wrapper">
-                <div *ngIf="contactoActivo.mensajes.length === 0" class="messages-empty">
-                    <div class="empty-chat-icon">
-                        <i class="pi pi-comments"></i>
-                    </div>
-                    <p class="empty-text">No hay mensajes aún.<br>¡Sé el primero en iniciar la conversación!</p>
-                </div>
+                <!-- EMPTY CHAT - Extracted Component -->
+                <app-empty-chat *ngIf="chatManagement.contactoActivo()!.mensajes.length === 0"></app-empty-chat>
 
-                <div *ngFor="let msj of contactoActivo.mensajes; let i = index" class="message" [ngClass]="msj.enviadoPorMi ? 'sent' : 'received'">
-                    <div class="avatar-small" [ngClass]="contactoActivo.colorBg" *ngIf="!msj.enviadoPorMi">
-                        {{ contactoActivo.iniciales }}
+                <div *ngFor="let msj of chatManagement.contactoActivo()!.mensajes; let i = index" class="message" [ngClass]="msj.enviadoPorMi ? 'sent' : 'received'">
+                    <div class="avatar-small" [ngClass]="chatManagement.contactoActivo()!.colorBg" *ngIf="!msj.enviadoPorMi">
+                        {{ chatManagement.contactoActivo()!.iniciales }}
                     </div>
 
                     <div class="message-content">
+                        <!-- Nombre del remitente (Solo en grupos y mensajes recibidos) -->
+                        <span class="sender-name-bubble" *ngIf="chatManagement.contactoActivo()?.esGrupo && !msj.enviadoPorMi">
+                            {{ $any(msj).remitenteNombre || 'Usuario' }}
+                        </span>
+
                         <div class="bubble">
                             <!-- Soporte para archivos -->
                             <div *ngIf="msj.tipo === 'file' || msj.tipo === 'image'" class="file-wrapper">
-                               <a [href]="msj.archivoUrl" target="_blank" class="file-link">
+                               <a *ngIf="msj.tipo === 'file'" [href]="msj.archivoUrl" download="archivo_adjunto" target="_blank" class="file-link">
                                  <i class="pi pi-file"></i> 
                                  <span>Archivo Adjunto</span>
                                  <i class="pi pi-download"></i>
+                               </a>
+                               <a *ngIf="msj.tipo === 'image'" [href]="msj.archivoUrl" target="_blank" class="image-link" style="display:block; overflow:hidden; border-radius:12px; margin-bottom:5px;">
+                                 <img [src]="msj.archivoUrl" alt="Imagen enviada" style="max-width:200px; height:auto; object-fit:cover; display:block;">
                                </a>
                             </div>
                             <p class="message-text">{{ msj.texto }}</p>
                         </div>
                         <div class="message-meta">
-                            <span class="time">{{ msj.hora }}</span>
+                            <span class="time">{{ msj.hora }} <span *ngIf="$any(msj).editado" class="edited-mark">(Editado)</span></span>
                             <span *ngIf="msj.enviadoPorMi" class="read-status" [title]="msj.leido ? 'Leído' : 'Enviado'">
-                                <i class="pi" [ngClass]="msj.leido ? 'pi-check-circle text-blue-500' : 'pi-check text-500'"></i>
+                                <!-- Doble Check WhatsApp Style -->
+                                <i class="pi pi-check" [ngClass]="msj.leido ? 'text-blue-500' : 'text-500'"></i>
+                                <i class="pi pi-check" [ngClass]="msj.leido ? 'text-blue-500' : 'text-500'" style="margin-left: -7px;"></i>
                             </span>
+                            <button *ngIf="msj.enviadoPorMi && msj.tipo === 'text'" class="action-edit-msg" (click)="iniciarEdicion(msj)" title="Editar mensaje">
+                                <i class="pi pi-pencil"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -107,37 +122,72 @@
         </div>
 
         <footer class="chat-footer">
+            <!-- Indicador de Edición -->
+            <div *ngIf="mensajeEnEdicion()" class="edit-indicator">
+                <span><i class="pi pi-pencil"></i> Editando mensaje...</span>
+                <button (click)="cancelarEdicion()" class="cancel-edit-btn"><i class="pi pi-times"></i></button>
+            </div>
+
+            <!-- Emoji Picker Popover -->
+            <div class="emoji-picker" *ngIf="mostrarEmojis()">
+                <div class="emoji-header">
+                    <span>Emojis</span>
+                    <button (click)="mostrarEmojis.set(false)"><i class="pi pi-times"></i></button>
+                </div>
+                <div class="emoji-grid">
+                    <span class="emoji-item" *ngFor="let emoji of listaEmojis" (click)="agregarEmojiSeleccionado(emoji)">
+                        {{ emoji }}
+                    </span>
+                </div>
+                <div style="padding: 8px; text-align: center; font-size: 11px; color: #9ca3af; background: #f9fafb; border-top: 1px solid #e5e7eb;">
+                    Tip: Presiona <b>Win + .</b> (Windows) o <b>Cmd+Ctrl+Espacio</b> (Mac) para ver emojis infinitos.
+                </div>
+            </div>
+
+            <!-- Indicador de subida flotante -->
+            <div *ngIf="subiendoArchivo()" class="upload-indicator">
+                <i class="pi pi-spin pi-spinner"></i> Subiendo archivo...
+            </div>
+
             <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;" />
 
-            <button class="icon-btn" (click)="fileInput.click()" title="Adjuntar archivo">
+            <button class="icon-btn" (click)="fileInput.click()" title="Adjuntar archivo" [disabled]="subiendoArchivo()">
                 <i class="pi pi-paperclip"></i>
             </button>
 
-            <input type="text" [(ngModel)]="nuevoMensaje" (keyup.enter)="enviarMensaje()"
-                placeholder="Escribe un mensaje..." class="msg-input" />
+            <input type="text" 
+                   [value]="chatManagement.nuevoMensaje()"
+                   (input)="chatManagement.nuevoMensaje.set($any($event.target).value)"
+                   (keyup.enter)="enviarMensaje()"
+                   placeholder="Escribe un mensaje..." 
+                   class="msg-input" />
 
-            <button class="icon-btn" (click)="agregarEmoji()" title="Agregar emoji">
+            <button class="icon-btn" (click)="toggleEmojiPicker()" title="Agregar emoji">
                 <i class="pi pi-face-smile"></i>
             </button>
-            <button class="send-btn" (click)="enviarMensaje()" [disabled]="!nuevoMensaje.trim()">
-                <i class="pi pi-send"></i>
+            <button class="send-btn" (click)="enviarMensaje()" [disabled]="!chatManagement.nuevoMensaje().trim() || subiendoArchivo()">
+                <i class="pi" [ngClass]="mensajeEnEdicion() ? 'pi-check' : 'pi-send'"></i>
             </button>
         </footer>
 
     </main>
 
     <!-- Panel Derecho de Información -->
-    <aside class="chat-sidebar-right" *ngIf="mostrarInfoContacto" style="width: 320px; border-left: 1px solid #f3f4f6; background: #ffffff;">
+    <aside class="chat-sidebar-right panel-info" *ngIf="chatManagement.mostrarInfoContacto()">
         <app-channel-info 
-            [channelInfo]="infoCanalActual" 
+            [channelInfo]="chatManagement.contactoActivo()" 
             [currentUserId]="currentUserId"
             (closeInfoPanel)="cerrarInfoContacto()"
-            (leaveChannel)="eliminarChat($event)">
+            (leaveChannel)="eliminarChat(chatManagement.contactoActivo()!)"
+            (addParticipant)="abrirModalAgregarMiembro()"
+            (removeParticipant)="eliminarMiembro($event)"
+            (makeAdmin)="hacerAdministrador($event)"
+            (removeAdmin)="quitarAdministrador($event)">
         </app-channel-info>
     </aside>
     
     <!-- Estado vacío / Placeholder -->
-    <main class="chat-main empty-state-container" *ngIf="!contactoActivo">
+    <main class="chat-main empty-state-container" *ngIf="!chatManagement.contactoActivo()">
         <div class="empty-state-content">
             <div class="empty-icon-circle">
                 <i class="pi pi-comments"></i>
@@ -151,51 +201,93 @@
     </main>
 
     <!-- Modal Nuevo Chat -->
-    <div class="modal-overlay" *ngIf="mostrarModalNuevoChat" (click)="cerrarModalNuevoChat()">
+    <div class="modal-overlay" *ngIf="chatManagement.mostrarModalNuevoChat()" (click)="cerrarModalNuevoChat()">
         <div class="modal-content" (click)="$event.stopPropagation()">
             
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="tab-btn" [class.active]="!esModoGrupo" (click)="esModoGrupo = false">Chat Directo</button>
-                <button class="tab-btn" [class.active]="esModoGrupo" (click)="esModoGrupo = true">Nuevo Grupo</button>
+            <div class="modal-tabs" *ngIf="!esModoAgregarMiembro() && !esModoEditarGrupo()">
+                <button class="tab-btn" [class.active]="!esModoGrupo()" (click)="esModoGrupo.set(false)">Chat Directo</button>
+                <button class="tab-btn" [class.active]="esModoGrupo()" (click)="esModoGrupo.set(true)">Nuevo Grupo</button>
             </div>
 
-            <h3 *ngIf="!esModoGrupo">Iniciar Chat Directo</h3>
-            <h3 *ngIf="esModoGrupo">Crear Grupo</h3>
+            <h3 *ngIf="!esModoGrupo() && !esModoAgregarMiembro() && !esModoEditarGrupo()">Iniciar Chat Directo</h3>
+            <h3 *ngIf="esModoGrupo() && !esModoAgregarMiembro() && !esModoEditarGrupo()">Crear Grupo</h3>
+            <h3 *ngIf="esModoAgregarMiembro()">Añadir al Grupo</h3>
+            <h3 *ngIf="esModoEditarGrupo()">Editar Grupo</h3>
 
-            <div *ngIf="esModoGrupo" style="margin-bottom: 15px;">
+            <div *ngIf="esModoGrupo()" class="form-group mb-15">
                 <p>Ingresa el nombre del grupo:</p>
-                <input type="text" [(ngModel)]="nombreGrupoNuevo" placeholder="Nombre del grupo..." />
+                <input type="text" 
+                       [value]="nombreGrupoNuevo()"
+                       (input)="nombreGrupoNuevo.set($any($event.target).value)"
+                       placeholder="Nombre del grupo..." />
             </div>
 
-            <p *ngIf="!esModoGrupo">Busca un usuario para iniciar chat:</p>
-            <p *ngIf="esModoGrupo">Busca e invita usuarios al grupo:</p>
-            
-            <input type="text" [(ngModel)]="buscarUsuario" (ngModelChange)="filtrarUsuarios()" placeholder="Nombre o correo..." autofocus />
-            
-            <div class="user-list-modal">
-                <div class="user-item" *ngFor="let user of usuariosBuscados" 
-                     (click)="iniciarChatConUsuario(user)"
-                     [class.selected-bg]="esModoGrupo && usuariosSeleccionadosGrupo.has(user.id)">
-                    
-                    <div class="avatar bg-blue">{{ user.nombre | slice:0:2 | uppercase }}</div>
-                    <div class="user-info">
-                        <span class="name">{{ user.nombre }}</span>
-                        <span class="rol">{{ user.rol }} - {{ user.email }}</span>
+            <div *ngIf="esModoGrupo()" class="form-group mb-15">
+                <p>Foto del grupo (Opcional):</p>
+                <div class="group-photo-container">
+                    <div class="photo-preview" *ngIf="fotoGrupoBase64()">
+                        <img [src]="fotoGrupoBase64()" alt="Vista previa" />
                     </div>
-                    <div *ngIf="esModoGrupo && usuariosSeleccionadosGrupo.has(user.id)" style="margin-left:auto; color: #16a34a;">
-                        <i class="pi pi-check"></i>
+                    <div class="photo-actions">
+                        <button class="btn-cancel" (click)="fotoGrupoInput.click()"><i class="pi pi-camera"></i> {{ fotoGrupoBase64() ? 'Cambiar foto' : 'Subir foto' }}</button>
+                        <button class="btn-cancel text-red-500" *ngIf="fotoGrupoBase64()" (click)="fotoGrupoBase64.set(null)"><i class="pi pi-trash"></i></button>
                     </div>
-                </div>
-                <div *ngIf="usuariosBuscados.length === 0" style="text-align:center; padding: 15px; color:#9ca3af; font-size:14px;">
-                    No se encontraron usuarios.
+                    <input type="file" #fotoGrupoInput accept="image/*" style="display: none;" (change)="onFotoGrupoSelected($event)" />
                 </div>
             </div>
+
+            <ng-container *ngIf="!esModoEditarGrupo()">
+                <p *ngIf="!esModoGrupo() && !esModoAgregarMiembro()">Busca un usuario para iniciar chat:</p>
+                <p *ngIf="esModoGrupo() && !esModoAgregarMiembro()">Busca e invita usuarios al grupo:</p>
+                <p *ngIf="esModoAgregarMiembro()">Busca al usuario a invitar:</p>
+                
+                <input type="text" [(ngModel)]="buscarUsuario" (ngModelChange)="filtrarUsuarios()" placeholder="Nombre o correo..." autofocus />
+                
+                <div class="user-list-modal">
+                    <div class="user-item" *ngFor="let user of usuariosBuscados" 
+                         (click)="iniciarChatConUsuario(user)"
+                         [class.selected-bg]="esModoGrupo() && isUsuarioSeleccionado(user.id)">
+                        
+                        <div class="avatar bg-blue">{{ ((user.nombre_completo || user.nombre || user.email || 'U') + '') | slice:0:2 | uppercase }}</div>
+                        <div class="user-info">
+                            <span class="name">{{ user.nombre_completo || user.nombre || user.email || 'Usuario Desconocido' }}</span>
+                            <span class="rol">{{ user.rol?.nombre || user.rol || 'Usuario' }} - {{ user.email || 'Sin correo' }}</span>
+                        </div>
+                        <div *ngIf="esModoGrupo() && isUsuarioSeleccionado(user.id)" class="check-icon">
+                            <i class="pi pi-check"></i>
+                        </div>
+                    </div>
+                    <div *ngIf="usuariosBuscados.length === 0" class="empty-search">
+                        No se encontraron usuarios.
+                    </div>
+                </div>
+            </ng-container>
             
-            <div class="modal-actions" style="margin-top: 15px;">
-                <button class="btn-cancel" (click)="cerrarModalNuevoChat()">Cerrar</button>
-                <button *ngIf="esModoGrupo" class="btn-primary" (click)="crearGrupo()" [disabled]="!nombreGrupoNuevo.trim() || usuariosSeleccionadosGrupo.size === 0">
+            <div class="modal-actions mt-15">
+                <button class="btn-cancel" (click)="cerrarModalNuevoChat()">Cancelar</button>
+                <button *ngIf="esModoGrupo() && !esModoEditarGrupo()" class="btn-primary" (click)="crearGrupo()" [disabled]="!nombreGrupoNuevo().trim() || usuariosSeleccionadosGrupo.size === 0">
                     Crear Grupo ({{usuariosSeleccionadosGrupo.size}})
                 </button>
+                <button *ngIf="esModoEditarGrupo()" class="btn-primary" (click)="guardarEdicionGrupo()" [disabled]="!nombreGrupoNuevo().trim()">
+                    Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Alerta / Confirmación Genérico -->
+    <div class="modal-overlay" *ngIf="dialogVisible()" (click)="cerrarDialogo()">
+        <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+            <div class="confirm-icon-wrapper">
+                <i class="pi" [ngClass]="dialogType() === 'confirm' ? 'pi-question-circle text-blue-500' : 'pi-exclamation-triangle text-yellow-500'"></i>
+            </div>
+            <h3>{{ dialogType() === 'confirm' ? 'Confirmar Acción' : 'Aviso' }}</h3>
+            <p class="confirm-text">{{ dialogMessage() }}</p>
+            
+            <div class="modal-actions center">
+                <button *ngIf="dialogType() === 'confirm'" class="btn-cancel" (click)="cerrarDialogo()">Cancelar</button>
+                <button *ngIf="dialogType() === 'confirm'" class="btn-primary" (click)="ejecutarDialogo()">Aceptar</button>
+                <button *ngIf="dialogType() === 'alert'" class="btn-primary" (click)="cerrarDialogo()">Entendido</button>
             </div>
         </div>
     </div>

@@ -3,6 +3,7 @@ export interface User {
   email: string;
   nombre: string;
   rol: string; // Director, Usuario, etc.
+  area?: string; // Área a la que pertenece el usuario
 }
 
 export interface LoginResponse {

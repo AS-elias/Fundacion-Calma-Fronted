@@ -14,6 +14,12 @@ export class CommunicationService {
 
   connect(jwtToken: string): Promise<void> {
     return new Promise((resolve, reject) => {
+      // Validar si ya estamos conectados para evitar crear múltiples sockets
+      if (this.socket && this.socket.connected) {
+        console.log('Socket ya estaba conectado');
+        return resolve();
+      }
+
       this.jwtToken = jwtToken;
 
       this.socket = io('http://localhost:3005/comunicaciones', {
@@ -55,11 +61,11 @@ export class CommunicationService {
   }
 
   getCurrentUserId(): number {
-    const token = localStorage.getItem('calma_token') || this.jwtToken;
+    const token = localStorage.getItem('calma_token') || localStorage.getItem('token') || this.jwtToken;
     if (!token) return 0;
     try {
       const decoded: any = jwtDecode(token);
-      return decoded.sub || decoded.userId || 0; // Ajustar según payload JWT
+      return decoded.sub || decoded.userId || decoded.id || decoded.usuarioId || 0; // Ajustar según payload JWT
     } catch (error) {
       console.warn('Error decodificando JWT:', error);
       return 0;
@@ -70,40 +76,39 @@ export class CommunicationService {
   // EVENTOS QUE EL FRONT-END DEBE EMITIR
 
   // A) Crear Canal
-  createChannel(data: any): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        return reject("No hay conexión Socket");
-      }
-
-      // Fallback de timeout por si el Backend se queda callado (no llama al callback)
-      const timer = setTimeout(() => {
-        resolve({ error: "El servidor demoró demasiado en responder (Timeout)." });
-      }, 5000);
-
-      this.socket.emit('createChannel', data, (response: any) => {
-        clearTimeout(timer);
-        resolve(response);
-      });
-    });
+  // ✅ FIRE-AND-FORGET: No esperar respuesta
+  createChannel(data: any): void {
+    if (!this.socket) {
+      console.error('❌ No hay conexión Socket');
+      return;
+    }
+    console.log('📤 Creando canal:', data);
+    this.socket.emit('createChannel', data);
+    // Backend enviará userChannels cuando esté listo
   }
 
   // B) Unirse a un Canal
-  joinChannel(data: { canalId: number, usuarioId: number }): Promise<any> {
-    return new Promise((resolve) => {
-      this.socket?.emit('joinChannel', data, (response: any) => {
-        resolve(response);
-      });
-    });
+  // ✅ FIRE-AND-FORGET: No esperar respuesta
+  joinChannel(data: { canalId: number, usuarioId: number }): void {
+    if (!this.socket) {
+      console.error('❌ No hay conexión Socket');
+      return;
+    }
+    console.log('📤 Uniéndose al canal:', data);
+    this.socket?.emit('joinChannel', data);
+    // Backend responderá con recentMessages
   }
 
   // C) Enviar Mensaje
-  sendMessage(data: { canalId: number, remitenteId: number, contenido: string, tipo: string, archivoUrl: string | null }): Promise<any> {
-    return new Promise((resolve) => {
-      this.socket?.emit('sendMessage', data, (response: any) => {
-        resolve(response);
-      });
-    });
+  // ✅ FIRE-AND-FORGET: No esperar respuesta (actualizar UI localmente)
+  sendMessage(data: { canalId: number, remitenteId: number, contenido: string, tipo: string, archivoUrl: string | null }): void {
+    if (!this.socket) {
+      console.error('❌ No hay conexión Socket');
+      return;
+    }
+    console.log('📤 Emitiendo mensaje:', data);
+    this.socket.emit('sendMessage', data);
+    // UI debe actualizarse localmente de inmediato
   }
 
   // D) Obtener Canales del Usuario
@@ -124,6 +129,59 @@ export class CommunicationService {
   // G) Obtener Mensajes Recientes
   getRecentMessages(data: { canalId: number, limit?: number }): void {
     this.socket?.emit('getRecentMessages', data);
+  }
+
+  // WebRTC / llamadas
+  sendCallOffer(data: { targetUserId: number, fromUserId: number, fromName: string, callType: 'voice' | 'video', offer: any, callId: string }): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (!this.socket) {
+        return reject('No hay conexión Socket');
+      }
+      const timer = setTimeout(() => {
+        resolve({ error: 'Timeout de señalización callOffer' });
+      }, 5000);
+      this.socket.emit('callOffer', data, (response: any) => {
+        clearTimeout(timer);
+        resolve(response);
+      });
+    });
+  }
+
+  sendCallAnswer(data: { targetUserId: number, fromUserId: number, answer: any, callId: string }): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (!this.socket) {
+        return reject('No hay conexión Socket');
+      }
+      const timer = setTimeout(() => {
+        resolve({ error: 'Timeout de señalización callAnswer' });
+      }, 5000);
+      this.socket.emit('callAnswer', data, (response: any) => {
+        clearTimeout(timer);
+        resolve(response);
+      });
+    });
+  }
+
+  sendIceCandidate(data: { targetUserId: number, fromUserId: number, candidate: any, callId: string }): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (!this.socket) {
+        return reject('No hay conexión Socket');
+      }
+      this.socket.emit('iceCandidate', data, (response: any) => {
+        resolve(response);
+      });
+    });
+  }
+
+  endCall(data: { targetUserId: number, fromUserId: number, callId?: string }): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (!this.socket) {
+        return reject('No hay conexión Socket');
+      }
+      this.socket.emit('endCall', data, (response: any) => {
+        resolve(response);
+      });
+    });
   }
 
   // H) Editar Mensaje
@@ -171,13 +229,26 @@ export class CommunicationService {
   }
 
   // P) Salir del Canal
-  // ✅ CORRECTO (con callback como los otros)
-  leaveChannel(data: { canalId: number, usuarioId: number }): Promise<any> {
-    return new Promise((resolve) => {
-      this.socket?.emit('leaveChannel', data, (response: any) => {
-        resolve(response);
-      });
-    });
+  // ✅ FIRE-AND-FORGET: No esperar respuesta (websockets deben ser instantáneos)
+  leaveChannel(data: { canalId: number, usuarioId: number }): void {
+    if (!this.socket) {
+      console.error('❌ No hay conexión Socket');
+      return;
+    }
+
+    console.log('📤 Emitiendo leaveChannel:', data);
+    this.socket.emit('leaveChannel', data);
+    // No esperar callback - actualizar UI localmente de inmediato
+  }
+
+  // Q) Hacer Administrador
+  makeAdmin(data: { canalId: number, usuarioId: number, actorId: number }): void {
+    this.socket?.emit('makeAdmin', data);
+  }
+
+  // R) Quitar Administrador
+  removeAdmin(data: { canalId: number, usuarioId: number, actorId: number }): void {
+    this.socket?.emit('removeAdmin', data);
   }
 
   // API REST (para archivos)
@@ -267,7 +338,10 @@ export class CommunicationService {
         body: JSON.stringify({ usuarioId, emoji })
       }
     );
-    return response.json();
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || result.error || 'Error subiendo archivo al servidor');
+    }
+    return result;
   }
 }
-

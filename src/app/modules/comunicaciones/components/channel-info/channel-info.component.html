@@ -1,110 +1,93 @@
-<div class="channel-info-container flex flex-column h-full bg-white relative shadow-3">
+<div class="channel-info-wrapper">
   
-  <div class="header p-3 flex justify-content-between align-items-center border-bottom-1 surface-border">
-    <h3 class="m-0 font-semibold text-color">Información</h3>
-    <button class="p-button p-button-rounded p-button-text p-button-secondary p-button-sm btn-close" (click)="onClose()">
+  <!-- Cabecera -->
+  <div class="info-header">
+    <h3>Detalles del Chat</h3>
+    <button class="close-btn" (click)="onClose()">
       <i class="pi pi-times"></i>
     </button>
   </div>
-  
-  <div *ngIf="displayProfile" class="content-scrollable flex-1 overflow-auto pb-4">
+
+  <!-- Contenido principal -->
+  <div class="info-content" *ngIf="displayProfile">
     
-    <!-- Premium Profile Header -->
-    <div class="profile-header text-center p-4 border-bottom-1 surface-border">
-      <div class="avatar-wrapper mx-auto mb-3 relative">
-        <div class="avatar-circle flex align-items-center justify-content-center shadow-4" [ngClass]="displayProfile.esGrupo ? 'bg-purple-gradient' : 'bg-blue-gradient'">
-           <span *ngIf="!channelInfo.avatarUrl" class="text-5xl font-bold text-white">{{ displayProfile.iniciales }}</span>
-           <img *ngIf="channelInfo.avatarUrl" [src]="channelInfo.avatarUrl" alt="Avatar" class="avatar-img w-full h-full object-cover border-circle">
-        </div>
-        <div *ngIf="!displayProfile.esGrupo" class="online-indicator" [ngClass]="displayProfile.online ? 'bg-green-500' : 'bg-gray-400'"></div>
+    <!-- Perfil -->
+    <div class="profile-section">
+      <div class="avatar-large" [ngClass]="displayProfile.esGrupo ? 'bg-purple' : 'bg-blue'">
+        <span *ngIf="!channelInfo.avatarUrl">{{ displayProfile.iniciales }}</span>
+        <img *ngIf="channelInfo.avatarUrl" [src]="channelInfo.avatarUrl" alt="Avatar">
+        <span *ngIf="!displayProfile.esGrupo" class="status-indicator" [ngClass]="displayProfile.online ? 'online' : 'offline'"></span>
       </div>
-      
-      <h2 class="m-0 text-2xl font-bold text-gray-900 mb-2">{{ displayProfile.nombre }}</h2>
-      <p class="role-badge m-0 inline-block px-3 py-1 border-round-2xl font-medium text-sm" [ngClass]="displayProfile.esGrupo ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'">
+      <h2>{{ displayProfile.nombre }}</h2>
+      <span class="badge" [ngClass]="displayProfile.esGrupo ? 'grupo' : 'directo'">
         {{ displayProfile.tipo }}
-      </p>
-      
-      <p *ngIf="!displayProfile.esGrupo && displayProfile.online" class="m-0 mt-2 text-sm text-green-600 font-medium">
-        <i class="pi pi-circle-fill mr-1" style="font-size: 0.5rem;"></i> En línea
-      </p>
-      <p *ngIf="!displayProfile.esGrupo && !displayProfile.online" class="m-0 mt-2 text-sm text-gray-500 font-medium">
-        Desconectado
-      </p>
+      </span>
     </div>
 
-    <!-- Contact Info Section (Only for Direct Chats) -->
-    <div *ngIf="!displayProfile.esGrupo && displayProfile.email" class="info-section px-4 py-4">
-        <div class="info-card p-3 border-round-xl surface-50 border-1 surface-border">
-            <div class="flex align-items-center mb-2">
-                <i class="pi pi-envelope text-primary mr-2"></i>
-                <span class="text-sm font-semibold text-700">Correo Electrónico</span>
-            </div>
-            <div class="text-gray-900 font-medium ml-4 text-sm break-all">{{ displayProfile.email }}</div>
-        </div>
+    <!-- Botón Eliminar / Salir -->
+    <div class="actions-section">
+      <button class="action-btn delete" (click)="onLeaveChannel()" title="Abandonar chat">
+        <i class="pi pi-trash"></i>
+        <span>{{ displayProfile.esGrupo ? 'Salir del Grupo' : 'Eliminar Chat' }}</span>
+      </button>
     </div>
 
-    <!-- Group Stats Section (For Groups) -->
-    <div *ngIf="displayProfile.esGrupo" class="info-section px-4 py-4">
-      <h4 class="mt-0 mb-3 font-semibold text-700 text-sm">Información del Grupo</h4>
-      <div class="stats-container flex gap-3 mb-3">
-        <div class="stat-card flex-1 p-3 border-round-xl surface-50 border-1 surface-border text-center">
-          <div class="text-xl font-bold text-primary">{{ channelInfo.totalParticipantes || channelInfo.participantes?.length || 0 }}</div>
-          <div class="text-xs text-gray-600 mt-1">Miembros</div>
-        </div>
-      </div>
+    <hr class="divider">
+
+    <!-- Detalles extras (Contactos Directos) -->
+    <div class="details-section" *ngIf="!displayProfile.esGrupo && displayProfile.email">
+      <h4><i class="pi pi-envelope"></i> Correo Electrónico</h4>
+      <div class="detail-box">{{ displayProfile.email }}</div>
     </div>
 
-    <!-- Description (For Groups) -->
-    <div *ngIf="displayProfile.esGrupo && channelInfo.descripcion" class="info-section px-4 py-4">
-      <h4 class="mt-0 mb-2 font-semibold text-700 text-sm">Descripción</h4>
-      <p class="text-sm line-height-3 m-0 text-600 bg-surface-50 p-3 border-round-xl border-1 surface-border">
-        {{ channelInfo.descripcion }}
-      </p>
+    <!-- Descripción (Grupos) -->
+    <div class="details-section" *ngIf="displayProfile.esGrupo && channelInfo.descripcion">
+      <h4><i class="pi pi-align-left"></i> Descripción</h4>
+      <div class="detail-box">{{ channelInfo.descripcion }}</div>
     </div>
 
-    <!-- Participants (For Groups) -->
-    <div class="participants-section px-4 py-4 border-top-1 surface-border" *ngIf="displayProfile.esGrupo">
-      <div class="flex justify-content-between align-items-center mb-3">
-        <h4 class="m-0 font-semibold text-700 text-sm">Miembros del Grupo</h4>
-        <button class="p-button p-button-rounded p-button-text p-button-primary p-button-sm p-0 w-2rem h-2rem hover:surface-100 border-round-lg" (click)="onAddParticipant(0)" title="Añadir miembro">
+    <!-- Participantes (Grupos) -->
+    <div class="participants-section" *ngIf="displayProfile.esGrupo">
+      <div class="participants-header">
+        <h4><i class="pi pi-users"></i> Miembros ({{ channelInfo.totalParticipantes || channelInfo.participantes?.length || 0 }})</h4>
+        <button class="add-member-btn" *ngIf="isCurrentUserAdmin" (click)="onAddParticipant(0)" title="Añadir miembro">
           <i class="pi pi-user-plus"></i>
         </button>
       </div>
       
-      <div class="participants-list max-h-40 overflow-auto">
-        <div *ngFor="let participant of channelInfo.participantes" class="participant-item flex align-items-center justify-content-between p-2 border-round-lg mb-2 hover:surface-50 transition-colors">
-          <div class="flex align-items-center flex-1">
-            <div class="part-avatar w-2rem h-2rem bg-indigo-500 border-circle flex align-items-center justify-content-center mr-3 text-white font-bold text-xs shadow-1" style="flex-shrink: 0;">
-              {{ (participant.nombre || 'U').charAt(0).toUpperCase() }}
-            </div>
-            <div class="flex-1">
-                <div class="text-sm font-semibold text-800">{{ participant.nombre || 'Usuario ' + participant.id }}</div>
-                <div class="text-xs text-gray-500" *ngIf="participant.rol">{{ participant.rol }}</div>
-            </div>
-            <div *ngIf="participant.id === currentUserId" class="text-xs px-2 py-1 bg-blue-100 text-blue-700 border-round font-medium">Tú</div>
+      <ul class="participants-list">
+        <li class="participant-item" *ngFor="let participant of channelInfo.participantes">
+          <div class="part-avatar">
+            {{ participant.nombre ? participant.nombre.charAt(0).toUpperCase() : 'U' }}
           </div>
-          <button *ngIf="participant.id !== currentUserId" 
-                  class="p-button p-button-rounded p-button-text p-button-danger p-button-sm p-0 w-2rem h-2rem btn-remove hover:surface-100 border-round-lg"
-                  (click)="onRemoveParticipant(participant.id)"
-                  title="Eliminar participante">
-            <i class="pi pi-times text-sm"></i>
-          </button>
-        </div>
-      </div>
+          <div class="part-info">
+            <span class="part-name">
+              {{ participant.nombre || 'Usuario' }}
+              <span class="is-admin-badge" *ngIf="participant.esAdmin" title="Administrador"><i class="pi pi-crown"></i> Admin</span>
+              <span class="is-me" *ngIf="participant.id == currentUserId || participant.usuarioId == currentUserId">Tú</span>
+            </span>
+            <span class="part-role" *ngIf="participant.rol">{{ participant.rol }}</span>
+          </div>
+          <div class="part-actions" *ngIf="isCurrentUserAdmin && participant.id != currentUserId && participant.usuarioId != currentUserId">
+            <button class="action-btn-small promote-btn" *ngIf="!participant.esAdmin" (click)="onMakeAdmin(participant.id || participant.usuarioId)" title="Hacer Administrador">
+              <i class="pi pi-angle-double-up"></i>
+            </button>
+            <button class="action-btn-small demote-btn" *ngIf="participant.esAdmin" (click)="onRemoveAdmin(participant.id || participant.usuarioId)" title="Quitar Administrador">
+              <i class="pi pi-angle-double-down"></i>
+            </button>
+            <button class="action-btn-small remove-btn" (click)="onRemoveParticipant(participant.id || participant.usuarioId)" title="Eliminar del grupo">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+        </li>
+      </ul>
     </div>
 
-    <!-- Actions (Bottom) -->
-    <div class="actions-section w-full px-4 py-4 border-top-1 surface-border mt-auto">
-      <button class="btn-danger-action w-full flex align-items-center justify-content-center p-3 border-round-xl font-semibold transition-all text-white" (click)="onLeaveChannel()">
-        <i class="pi pi-trash mr-2 text-lg"></i> 
-        <span>{{ displayProfile.esGrupo ? 'Salir del Grupo' : 'Eliminar Chat' }}</span>
-      </button>
-    </div>
   </div>
 
-  <!-- Empty State -->
-  <div *ngIf="!displayProfile" class="flex-1 flex flex-column align-items-center justify-content-center text-color-secondary p-4 text-center">
-    <i class="pi pi-spin pi-spinner text-4xl mb-3 text-primary"></i>
-    <p class="m-0">Cargando información...</p>
+  <!-- Estado Cargando -->
+  <div class="loading-state" *ngIf="!displayProfile">
+    <i class="pi pi-spin pi-spinner"></i>
+    <p>Cargando detalles...</p>
   </div>
 </div>
