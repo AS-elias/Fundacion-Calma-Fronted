@@ -2,18 +2,20 @@
     width: 260px;
     min-width: 260px;
     height: 100%;
-    background: #ffffff;
-    border-right: 1px solid #e6e6e6;
+    background: var(--surface-section);
+    border-right: 1px solid var(--surface-border);
     display: flex;
     flex-direction: column;
 }
+
 :host {
     width: 260px;
     min-width: 260px;
     height: 100%;
+    height: 100%;
     display: block;
-    background: #ffffff;
-    border-right: 1px solid #e6e6e6;
+    background: var(--surface-section);
+    border-right: 1px solid var(--surface-border);
 }
 
 .sidebar-header {
@@ -24,7 +26,8 @@
 }
 
 .logo {
-    max-width: 225px; /* limit width to avoid pushing sidebar/header */
+    max-width: 225px;
+    /* limit width to avoid pushing sidebar/header */
     width: 100%;
     height: auto;
 }
@@ -33,7 +36,7 @@
     font-family: 'Inria Sans', sans-serif;
     font-size: 16px;
     font-weight: 700;
-    color: rgba(0, 0, 0, 0.35);
+    color: var(--text-color-secondary);
     padding: 10px 20px;
     margin-top: 10px;
     text-transform: uppercase;
@@ -57,7 +60,7 @@
     gap: 10px;
     padding: 12px 20px;
     text-decoration: none;
-    color: rgba(0, 0, 0, 0.57);
+    color: var(--text-color-secondary);
     font-family: 'Inria Sans', sans-serif;
     font-size: 14px;
     font-weight: 700;
@@ -69,7 +72,7 @@
 }
 
 .menu-item a:hover {
-    color: rgba(0, 0, 0, 0.75);
+    color: var(--text-color);
 }
 
 .menu-item a.active {
@@ -81,7 +84,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 12px 20px;
-    color: rgba(0, 0, 0, 0.57);
+    color: var(--text-color-secondary);
     font-family: 'Inria Sans', sans-serif;
     font-size: 14px;
     font-weight: 700;
@@ -96,7 +99,7 @@
 }
 
 .menu-parent:hover {
-    color: rgba(0, 0, 0, 0.75);
+    color: var(--text-color);
 }
 
 .active-parent {
@@ -122,7 +125,7 @@
     align-items: center;
     gap: 8px;
     text-decoration: none;
-    color: rgba(0, 0, 0, 0.57);
+    color: var(--text-color-secondary);
     font-family: 'Inria Sans', sans-serif;
     font-size: 14px;
     font-weight: 700;
@@ -134,7 +137,7 @@
 }
 
 .submenu a:hover {
-    color: rgba(0, 0, 0, 0.75);
+    color: var(--text-color);
 }
 
 .submenu a.active {
@@ -170,3 +173,27 @@
 .logout-btn:hover i {
     color: #d31212;
 }
+
+/* Cargando áreas en sidebar */
+.areas-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 13px;
+    color: var(--text-color-secondary);
+    font-family: 'Inria Sans', sans-serif;
+}
+
+/* Sin áreas asignadas */
+.no-areas-msg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 13px;
+    color: var(--text-color-secondary);
+    font-family: 'Inria Sans', sans-serif;
+    opacity: 0.6;
+    list-style: none;
+}

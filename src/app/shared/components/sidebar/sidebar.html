@@ -2,12 +2,15 @@
   <img src="assets/logo-calma.png" alt="Logo Calma" class="logo">
 </div>
 
+<!-- ══════════════════════════ -->
+<!--      MENÚ PRINCIPAL       -->
+<!-- ══════════════════════════ -->
 <div class="menu-title">MENÚ PRINCIPAL</div>
 
 <ul class="menu-list">
 
   <li class="menu-item">
-    <a routerLink="/dashboard/usuario" routerLinkActive="active">
+    <a [routerLink]="dashboardLink" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
       <i class="pi pi-th-large"></i>
       Dashboard
     </a>
@@ -50,111 +53,82 @@
 
 </ul>
 
+<!-- ══════════════════════════ -->
+<!--      ÁREAS & ADMIN (dinámico) -->
+<!-- ══════════════════════════ -->
+<ng-container *ngIf="isAdminUser">
+  <div class="menu-title">ADMINISTRACIÓN</div>
+
+  <ul class="menu-list">
+    <li class="menu-item">
+      <a routerLink="/dashboard/admin-dashboard/usuarios" routerLinkActive="active">
+        <i class="pi pi-users"></i>
+        Gestión de Usuarios
+      </a>
+    </li>
+  </ul>
+</ng-container>
+
 <div class="menu-title">ÁREAS</div>
 
-<ul class="menu-list">
+<!-- Cargando -->
+<div *ngIf="cargandoAreas()" class="areas-loading">
+  <i class="pi pi-spin pi-spinner"></i> Cargando...
+</div>
 
-  <li class="menu-item parent">
+<ul class="menu-list" *ngIf="!cargandoAreas()">
 
-    <div class="menu-parent" (click)="toggleComercial()" [class.active-parent]="isComercialOpen">
+  <!-- Sin subáreas: enlace directo -->
+  <ng-container *ngFor="let area of areas()">
 
-      <div class="menu-left">
-        <i class="pi pi-chart-line"></i>
-        <span>Estrategia y Desarrollo Comercial</span>
+    <!-- ÁREA CON SUBÁREAS → menú desplegable -->
+    <li class="menu-item parent" *ngIf="area.subareas && area.subareas.length > 0; else areaSimple">
+
+      <div class="menu-parent"
+           [class.active-parent]="areaAbierta === area.id"
+           (click)="toggleArea(area.id)">
+        <div class="menu-left">
+          <i class="pi pi-sitemap"></i>
+          <span>{{ getAreaLabel(area) }}</span>
+        </div>
+        <i class="pi" [ngClass]="areaAbierta === area.id ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
       </div>
 
-      <i class="pi" [ngClass]="isComercialOpen ? 'pi-chevron-up' : 'pi-chevron-down'">
-      </i>
+      <ul class="submenu" *ngIf="areaAbierta === area.id">
+        <li *ngFor="let sub of area.subareas">
+          <a [routerLink]="getAreaLink(sub)" routerLinkActive="active">
+            <i class="pi" [ngClass]="getAreaIcon(sub)"></i>
+            {{ getAreaLabel(sub) }}
+          </a>
+        </li>
+      </ul>
 
-    </div>
+    </li>
 
-    <ul class="submenu" *ngIf="isComercialOpen">
-
-      <li>
-        <a routerLink="/dashboard/comercial/estrategia-comercial" routerLinkActive="active">
-          <i class="pi pi-compass"></i>
-          Estrategia Comercial
+    <!-- ÁREA SIMPLE → enlace directo -->
+    <ng-template #areaSimple>
+      <li class="menu-item">
+        <a [routerLink]="getAreaLink(area)" routerLinkActive="active">
+          <i class="pi pi-building"></i>
+          {{ getAreaLabel(area) }}
         </a>
       </li>
+    </ng-template>
 
-      <li>
-        <a routerLink="/dashboard/comercial/analisis-datos" routerLinkActive="active">
-          <i class="pi pi-chart-bar"></i>
-          Análisis de Datos
-        </a>
-      </li>
+  </ng-container>
 
-      <li>
-        <a routerLink="/dashboard/comercial/desarrollo-comercial" routerLinkActive="active">
-          <i class="pi pi-cog"></i>
-          Desarrollo Comercial
-        </a>
-      </li>
-
-    </ul>
-
-  </li>
-
-  <li class="menu-item">
-    <a routerLink="/clinica-calma" routerLinkActive="active">
-      <i class="pi pi-heart"></i>
-      Clínica Calma
-    </a>
-  </li>
-
-  <li class="menu-item">
-    <a routerLink="/suyay" routerLinkActive="active">
-      <i class="pi pi-star"></i>
-      Suyay
-    </a>
-  </li>
-
-  <li class="menu-item">
-    <a routerLink="/brave-up" routerLinkActive="active">
-      <i class="pi pi-shield"></i>
-      Brave Up
-    </a>
-  </li>
-
-  <li class="menu-item">
-    <a routerLink="/recursos-humanos" routerLinkActive="active">
-      <i class="pi pi-users"></i>
-      Recursos Humanos
-    </a>
-  </li>
-
-  <li class="menu-item">
-    <a routerLink="/educalma" routerLinkActive="active">
-      <i class="pi pi-book"></i>
-      EduCalma
-    </a>
-  </li>
-
-  <li class="menu-item">
-    <a routerLink="/marketing" routerLinkActive="active">
-      <i class="pi pi-bullseye"></i>
-      Marketing
-    </a>
-  </li>
-
-  <li class="menu-item">
-    <a routerLink="/tecnologia" routerLinkActive="active">
-      <i class="pi pi-cog"></i>
-      Tecnología
-    </a>
-  </li>
-
-  <li class="menu-item">
-    <a routerLink="/control-calidad" routerLinkActive="active">
-      <i class="pi pi-check-circle"></i>
-      Control y Calidad
-    </a>
+  <!-- Sin áreas asignadas -->
+  <li *ngIf="areas().length === 0" class="no-areas-msg">
+    <i class="pi pi-lock"></i> Sin áreas asignadas
   </li>
 
 </ul>
 
+<!-- ══════════════════════════ -->
+<!--      CERRAR SESIÓN        -->
+<!-- ══════════════════════════ -->
 <div class="logout-container">
-  <a routerLink="/logout" class="logout-btn">
+  <a (click)="cerrarSesion()" class="logout-btn" style="cursor:pointer">
     <i class="pi pi-sign-out"></i>
     Cerrar Sesión
   </a>

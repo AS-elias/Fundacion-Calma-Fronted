@@ -20,11 +20,11 @@ export const adminGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.isAdmin()) {
+  if (authService.isAdmin() || authService.isDirector()) {
     return true;
   }
 
   console.warn('⚠️ Acceso denegado. Se requieren permisos de Director/Admin.');
-  router.navigate(['/dashboard/usuario']);
+  router.navigate(['/dashboard/usuario-dashboard']);
   return false;
 };

@@ -1,0 +1,180 @@
+@use "sass:color";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap');
+
+/* Variables */
+$primary-cyan: #4EB3E4;
+$bg-light: #f9fafb;
+$border-color: #e5e7eb;
+$text-dark: #111827;
+$text-gray: #6b7280;
+$error-red: #ef4444;
+
+.registro-container {
+  font-family: 'Inter', sans-serif;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.header-section {
+  text-align: center;
+  margin-bottom: 30px;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: $text-dark;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    i { color: $primary-cyan; }
+  }
+
+  p {
+    color: $text-gray;
+    font-size: 14px;
+    max-width: 500px;
+    margin: 10px auto 0;
+  }
+}
+
+.card-form {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid $border-color;
+  padding: 30px 40px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: $text-dark;
+
+    .required { color: $error-red; }
+  }
+
+  input, select {
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid $border-color;
+    background: $bg-light;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: $text-dark;
+    transition: all 0.2s;
+    outline: none;
+
+    &:focus {
+      border-color: $primary-cyan;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(78, 179, 228, 0.1);
+    }
+
+    &.is-invalid {
+      border-color: $error-red;
+      background: #fef2f2;
+    }
+  }
+
+  .input-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    i {
+      position: absolute;
+      left: 15px;
+      color: $text-gray;
+    }
+
+    input {
+      width: 100%;
+      padding-left: 40px;
+    }
+  }
+
+  .error-msg {
+    color: $error-red;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .info-text {
+    color: $text-gray;
+    font-size: 11px;
+  }
+}
+
+.form-actions {
+  margin-top: 30px;
+  border-top: 1px solid $border-color;
+  padding-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+
+  .btn-submit {
+    background: $primary-cyan;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:hover:not(:disabled) {
+      background: color.adjust($primary-cyan, $lightness: -10%);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.alert {
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &.exito {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #10b981;
+  }
+
+  &.error {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #ef4444;
+  }
+}

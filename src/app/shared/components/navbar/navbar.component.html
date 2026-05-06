@@ -10,6 +10,12 @@
   <!-- AREA DERECHA -->
   <div class="header-right">
 
+    <!-- MODO OSCURO -->
+    <button class="theme-toggle" (click)="toggleDarkMode()"
+      [attr.aria-label]="isDarkMode() ? 'Modo Claro' : 'Modo Oscuro'">
+      <i class="pi" [class.pi-sun]="isDarkMode()" [class.pi-moon]="!isDarkMode()"></i>
+    </button>
+
     <!-- NOTIFICACIONES -->
     <i class="pi pi-bell notification"></i>
 
@@ -17,12 +23,12 @@
     <div class="user-info">
 
       <div class="user-text">
-        <strong>Deivi Flores</strong>
-        <span>Dir. de Estrategia y Desarrollo Comercial</span>
+        <strong>{{ nombreUsuario() }}</strong>
+        <span>{{ rolUsuario() }}</span>
       </div>
 
       <div class="avatar">
-        DF
+        {{ inicialesUsuario() }}
       </div>
 
     </div>

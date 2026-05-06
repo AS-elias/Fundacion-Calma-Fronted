@@ -1,9 +1,11 @@
 import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { AuthService } from './modules/auth/services/auth.service';
 import { LoginComponent } from './modules/auth/pages/login/login.component';
 import { LogoutComponent } from './modules/auth/pages/logout/logout.component';
 import { authGuard, adminGuard } from './core/guards/auth.guard';
-import { AdminDashboardComponent } from './modules/dashboard/pages/admin/admin.component';
-import { UserDashboardComponent } from './modules/dashboard/pages/user/user.component';
+import { AdminComponent } from './modules/dashboard/pages/admin/admin.component';
+import { UserComponent } from './modules/dashboard/pages/user/user.component';
 import { MainLayoutComponent } from './shared/layouts/main-layout/main-layout';
 
 // Nuevos componentes importados
@@ -32,32 +34,60 @@ export const routes: Routes = [
         children: [
           // Dashboard de Admin (solo admins)
           {
-            path: 'admin',
-            component: AdminDashboardComponent,
+            path: 'admin-dashboard', // <-- CAMBIADO
+            component: AdminComponent,
+            canActivate: [adminGuard],
+          },
+          // Gestión de Usuarios (lista)
+          {
+            path: 'admin-dashboard/usuarios',
+            loadComponent: () => import('./modules/dashboard/pages/admin/usuarios/lista-usuarios/lista-usuarios.component').then(m => m.ListaUsuariosComponent),
+            canActivate: [adminGuard],
+          },
+          // Registro de Usuarios (solo admins)
+          {
+            path: 'admin-dashboard/usuarios/registro',
+            loadComponent: () => import('./modules/dashboard/pages/admin/usuarios/registro/registro-usuario.component').then(m => m.RegistroUsuarioComponent),
+            canActivate: [adminGuard],
+          },
+          // Edición de Usuarios (solo admins)
+          {
+            path: 'admin-dashboard/usuarios/editar/:id',
+            loadComponent: () => import('./modules/dashboard/pages/admin/usuarios/editar/editar-usuario.component').then(m => m.EditarUsuarioComponent),
             canActivate: [adminGuard],
           },
           // Dashboard de Usuario (cualquier usuario autenticado)
           {
-            path: 'usuario',
-            component: UserDashboardComponent,
+            path: 'usuario-dashboard', // <-- CAMBIADO
+            component: UserComponent,
             canActivate: [authGuard],
           },
+          // Rutas de las áreas (Estrategia, Análisis, etc.)
           {
-            path: 'comercial',
+            path: 'director-dashboard',
             loadChildren: () =>
               import('./modules/area-estrategia-desarrollo-comercial/comercial.routes').then(
                 (m) => m.COMERCIAL_ROUTES,
               ),
+            canActivate: [authGuard]
           },
-          // Redirigir dashboard raíz según el rol
+          // Redirigir dashboard raíz según el rol del usuario
           {
             path: '',
-            redirectTo: 'usuario',
+            redirectTo: () => {
+              const authService = inject(AuthService);
+
+              if (authService.isAdmin() || authService.isDirector()) {
+                return 'admin-dashboard';
+              } else {
+                return 'usuario-dashboard';
+              }
+            },
             pathMatch: 'full',
           },
         ]
       },
-      // Nuevas rutas agregadas del Sidebar
+      // Nuevas rutas agregadas del Sidebar (Fuera de 'dashboard' pero dentro del layout)
       {
         path: 'comunicaciones',
         component: ComunicacionesComponent
@@ -81,6 +111,6 @@ export const routes: Routes = [
     ],
   },
 
-  // 5. Comodín
+  // 4. Comodín para atrapar rutas que no existen
   { path: '**', redirectTo: 'login' },
 ];

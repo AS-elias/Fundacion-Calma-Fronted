@@ -1,26 +1,87 @@
 ﻿<div class="page-container">
-  <header class="page-header">
-    <h2 class="page-title">Desarrollo Comercial</h2>
-    <p class="page-subtitle">Gestión de convenios</p>
-  </header>
+  <div
+    *ngIf="notificacion"
+    class="toast-notificacion"
+    [class.toast-notificacion--error]="notificacion.tipo === 'error'"
+    [class.toast-notificacion--success]="notificacion.tipo === 'success'"
+    role="status"
+    aria-live="polite"
+  >
+    <div class="toast-notificacion__contenido">
+      <i
+        class="pi"
+        [ngClass]="
+          notificacion.tipo === 'success' ? 'pi-check-circle' : 'pi-exclamation-circle'
+        "
+      ></i>
+      <span>{{ notificacion.mensaje }}</span>
+    </div>
+    <button type="button" class="toast-notificacion__cerrar" (click)="cerrarNotificacion()">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
 
+  <div class="page-header-row">
+    <header class="page-header">
+      <h2 class="page-title">Desarrollo Comercial</h2>
+      <p class="page-subtitle">
+        Gestión de {{ vistaActual === 'convenios' ? 'convenios' : 'actividades' }}
+      </p>
+    </header>
+    <div class="tabs">
+      <button
+        class="tab-btn"
+        [class.active]="vistaActual === 'convenios'"
+        (click)="cambiarVista('convenios')"
+      >
+        Convenios
+      </button>
+
+      <button
+        class="tab-btn"
+        [class.active]="vistaActual === 'actividades'"
+        (click)="cambiarVista('actividades')"
+      >
+        Actividades
+      </button>
+    </div>
+  </div>
   <div class="top-actions">
     <div class="search-box">
       <input
         type="text"
         [(ngModel)]="busqueda"
         (input)="onBuscar()"
-        placeholder="Buscar convenios........."
+        [placeholder]="
+          vistaActual === 'convenios'
+            ? 'Buscar convenios.........'
+            : 'Buscar actividades.........'
+        "
       />
     </div>
-
-    <button class="btn-nuevo" (click)="crearNuevoConvenio()">
-      <i class="pi pi-plus"></i>
-      Nuevo Convenio
-    </button>
+    <div class="top-actions__right">
+      <div class="conexion-filter" *ngIf="vistaActual === 'convenios'">
+        <select [(ngModel)]="filtroConexion" (ngModelChange)="setConexionFiltro($event)">
+          <option value="todos">Todos</option>
+          <option *ngFor="let con of tiposConexion" [value]="con">{{ con }}</option>
+        </select>
+      </div>
+      <div class="conexion-filter" *ngIf="vistaActual === 'actividades'">
+        <select [(ngModel)]="filtroActividad" (ngModelChange)="setFiltroActividad($event)">
+          <option value="todos">Todos</option>
+          <option *ngFor="let estado of estadosActividad" [value]="estado.value">
+            {{ estado.label }}
+          </option>
+        </select>
+      </div>
+      <button class="btn-nuevo" (click)="ejecutarAccionPrincipal()">
+        <i class="pi pi-plus"></i>
+        {{ vistaActual === 'convenios' ? 'Nuevo Convenio' : 'Nueva Actividad' }}
+      </button>
+    </div>
   </div>
 
-  <div class="filters">
+  <div class="filters" *ngIf="vistaActual === 'convenios'">
     <button
       class="chip pendiente"
       [class.active]="estadoSeleccionado === 'pendiente'"
@@ -65,36 +126,15 @@
     </button>
   </div>
 
-  <div class="convenios-list">
+  <div class="convenios-list" *ngIf="vistaActual === 'convenios'">
     <div
       class="convenio-card"
-      *ngFor="let convenio of conveniosFiltrados"
+      *ngFor="let convenio of conveniosPaginados"
       [ngClass]="convenio.estado"
       (click)="abrirDetalle(convenio)"
     >
       <div class="card-content">
-        <div class="card-left">
-          <div class="logo-inst" [style.background]="convenio.color">
-            <img
-              *ngIf="convenio.logo; else siglas"
-              [src]="convenio.logo"
-              [alt]="convenio.nombre"
-            />
-            <ng-template #siglas>
-              {{ convenio.siglas }}
-            </ng-template>
-          </div>
-
-          <div class="card-info">
-            <h4>{{ convenio.nombre }}</h4>
-            <div class="fecha">
-              <i class="pi pi-calendar"></i>
-              <span>Vence: {{ convenio.fecha }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="status-actions">
+        <div class="card-header">
           <span class="status" [ngClass]="convenio.estado">
             <i class="pi pi-clock" *ngIf="convenio.estado === 'pendiente'"></i>
             <i class="pi pi-spinner" *ngIf="convenio.estado === 'proceso'"></i>
@@ -112,11 +152,300 @@
             <i class="pi pi-trash"></i>
           </button>
         </div>
+
+        <div class="card-body">
+          <div class="inst-header">
+            <div class="logo-inst" [style.background]="convenio.color">
+              <img
+                *ngIf="convenio.logo; else siglas"
+                [src]="convenio.logo"
+                [alt]="convenio.nombre"
+              />
+
+              <ng-template #siglas>
+                {{ convenio.siglas }}
+              </ng-template>
+            </div>
+
+            <h4>{{ convenio.nombre }}</h4>
+          </div>
+
+          <div class="info-item">
+            <i class="pi pi-building"></i>
+            <div class="info-copy">
+              <span>Tipo</span>
+              <strong>{{ convenio.tipo }}</strong>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <i class="pi pi-briefcase"></i>
+            <div class="info-copy">
+              <span>Rubro</span>
+              <strong>{{ convenio.rubro }}</strong>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <i class="pi pi-share-alt"></i>
+            <div class="info-copy">
+              <span>Conexión</span>
+              <strong>{{ convenio.conexion }}</strong>
+            </div>
+          </div>
+
+          <div class="fecha">
+            <i class="pi pi-calendar"></i>
+            Vence: {{ convenio.fecha }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal detalle -->
+  <div
+    class="actividades-list"
+    *ngIf="vistaActual === 'actividades'"
+  >
+    <article
+      class="actividad-card"
+      *ngFor="let actividad of actividadesPaginadas"
+      role="button"
+      tabindex="0"
+      (click)="abrirDetalleActividad(actividad)"
+      (keydown.enter)="abrirDetalleActividad(actividad)"
+    >
+      <div class="actividad-card__top">
+        <div>
+          <h3>{{ actividad.titulo }}</h3>
+          <p>{{ actividad.descripcion }}</p>
+        </div>
+      </div>
+
+      <div class="actividad-card__meta">
+        <span class="status" [ngClass]="actividadEstadoClase(actividad.estado)">
+          <i class="pi pi-clock" *ngIf="actividad.estado === EstadoActividad.PENDIENTE"></i>
+          <i class="pi pi-spinner" *ngIf="actividad.estado === EstadoActividad.EN_PROCESO"></i>
+          <i class="pi pi-pause-circle" *ngIf="actividad.estado === EstadoActividad.PARALIZADO"></i>
+          <i class="pi pi-check-circle" *ngIf="actividad.estado === EstadoActividad.COMPLETADO"></i>
+          {{ labelActividadEstado(actividad.estado) }}
+        </span>
+        <span class="actividad-fecha">Fecha Límite: {{ actividad.fechaLimite }}</span>
+      </div>
+    </article>
+  </div>
+
+  <div
+    class="paginator"
+    *ngIf="totalPaginas > 1"
+  >
+    <button class="page-btn" (click)="prevPage()" [disabled]="page === 1">
+      <span class="arrow">&#x2039;</span>
+      Anterior
+    </button>
+
+    <div class="page-numbers">
+      <button
+        class="page-number"
+        *ngFor="let p of paginas"
+        [class.active]="p === page"
+        (click)="setPage(p)"
+      >
+        {{ p }}
+      </button>
+    </div>
+
+    <button class="page-btn" (click)="nextPage()" [disabled]="page === totalPaginas">
+      Siguiente
+      <span class="arrow">&#x203a;</span>
+    </button>
+  </div>
+
+  <div
+    class="actividad-modal-backdrop"
+    *ngIf="vistaActual === 'actividades' && mostrandoFormularioActividad"
+  >
+    <section class="actividad-form">
+      <div class="actividad-form__header">
+        <h2 class="actividad-form__title">
+          {{ actividadEditandoId ? 'Editar Actividad' : 'Nueva Actividad' }}
+        </h2>
+        <button type="button" class="actividad-form__close" (click)="cancelarFormularioActividad()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <label class="actividad-form__field">
+        <span>Título</span>
+        <input
+          type="text"
+          [(ngModel)]="actividadEnEdicion.titulo"
+          placeholder="Nombre de la actividad"
+        />
+      </label>
+
+      <label class="actividad-form__field">
+        <span>Descripción</span>
+        <textarea
+          [(ngModel)]="actividadEnEdicion.descripcion"
+          rows="4"
+          placeholder="Descripción detallada de la actividad"
+        ></textarea>
+      </label>
+
+      <div class="actividad-form__field">
+        <span>Estado</span>
+        <div class="actividad-form__states">
+          <button
+            *ngFor="let estado of estadosActividad"
+            type="button"
+            class="activity-state-chip"
+            [ngClass]="estado.className"
+            [class.active]="actividadEnEdicion.estado === estado.value"
+            (click)="actividadEnEdicion.estado = estado.value"
+          >
+            {{ estado.label }}
+          </button>
+        </div>
+      </div>
+
+      <label class="actividad-form__field actividad-form__field--date">
+        <span>Fecha Límite</span>
+        <input type="date" [(ngModel)]="actividadEnEdicion.fechaLimite" />
+      </label>
+
+      <div class="actividad-form__field">
+        <span>Enlaces</span>
+        <small>Agrega los links de trabajo</small>
+
+        <div
+          class="actividad-form__link-row"
+          *ngFor="let enlace of actividadEnEdicion.enlaces; let i = index"
+        >
+          <input
+            type="text"
+            [(ngModel)]="actividadEnEdicion.enlaces[i].nombre"
+            placeholder="Nombre del documento"
+          />
+          <input
+            type="url"
+            [(ngModel)]="actividadEnEdicion.enlaces[i].url"
+            placeholder="https://docs.google.com/..."
+          />
+          <button type="button" class="activity-link-add" (click)="agregarEnlaceActividad()">
+            <i class="pi pi-plus"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="actividad-form__actions">
+        <button type="button" class="activity-cancel" (click)="cancelarFormularioActividad()">
+          Cancelar
+        </button>
+        <button type="button" class="activity-submit" (click)="guardarActividad()">
+          <i class="pi pi-save"></i>
+          {{ actividadEditandoId ? 'Guardar Cambios' : 'Crear Actividad' }}
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <div
+    class="actividad-modal-backdrop"
+    *ngIf="vistaActual === 'actividades' && actividadSeleccionada"
+  >
+    <section class="actividad-detail">
+      <div class="actividad-detail__header">
+        <div>
+          <h2 class="actividad-detail__title">Detalle de la Actividad</h2>
+        </div>
+        <button type="button" class="actividad-form__close" (click)="cerrarDetalleActividad()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="actividad-detail__summary">
+        <div class="actividad-detail__summary-main">
+          <h3 class="actividad-detail__name">{{ actividadSeleccionada.titulo }}</h3>
+          <p class="actividad-detail__created">
+            Creada el {{ actividadSeleccionada.fechaCreacion || actividadSeleccionada.fechaLimite }}
+          </p>
+        </div>
+        <span class="status" [ngClass]="actividadEstadoClase(actividadSeleccionada.estado)">
+          <i
+            class="pi pi-clock"
+            *ngIf="actividadSeleccionada.estado === EstadoActividad.PENDIENTE"
+          ></i>
+          <i
+            class="pi pi-spinner"
+            *ngIf="actividadSeleccionada.estado === EstadoActividad.EN_PROCESO"
+          ></i>
+          <i
+            class="pi pi-pause-circle"
+            *ngIf="actividadSeleccionada.estado === EstadoActividad.PARALIZADO"
+          ></i>
+          <i
+            class="pi pi-check-circle"
+            *ngIf="actividadSeleccionada.estado === EstadoActividad.COMPLETADO"
+          ></i>
+          {{ labelActividadEstado(actividadSeleccionada.estado) }}
+        </span>
+      </div>
+
+      <section class="actividad-detail__block">
+        <span class="actividad-detail__label">Descripción</span>
+        <p class="actividad-detail__description">{{ actividadSeleccionada.descripcion }}</p>
+      </section>
+
+      <section class="actividad-detail__meta">
+        <div class="actividad-detail__meta-item">
+          <span class="actividad-detail__label">Fecha Límite</span>
+          <div class="actividad-detail__date-pill">
+            <strong>{{ actividadSeleccionada.fechaLimite }}</strong>
+            <i class="pi pi-calendar"></i>
+          </div>
+        </div>
+      </section>
+
+      <section class="actividad-detail__block">
+        <span class="actividad-detail__label actividad-detail__label--with-icon">
+          <i class="pi pi-link"></i>
+          Enlaces de trabajo
+        </span>
+        <div class="actividad-detail__links" *ngIf="actividadSeleccionada.enlaces?.length; else sinEnlaces">
+          <a
+            class="actividad-detail__link"
+            *ngFor="let enlace of actividadSeleccionada.enlaces"
+            [href]="enlace.url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <i class="pi pi-paperclip"></i>
+            {{ enlace.nombre || enlace.url }}
+            <i class="pi pi-external-link"></i>
+          </a>
+        </div>
+        <ng-template #sinEnlaces>
+          <p class="actividad-detail__empty">No hay enlaces registrados.</p>
+        </ng-template>
+      </section>
+
+      <div class="actividad-detail__actions">
+        <button type="button" class="activity-cancel" (click)="cerrarDetalleActividad()">
+          Volver
+        </button>
+        <button
+          type="button"
+          class="activity-submit"
+          (click)="editarActividad(actividadSeleccionada)"
+        >
+          <i class="pi pi-pencil"></i>
+          Editar
+        </button>
+      </div>
+    </section>
+  </div>
+
   <div class="modal-backdrop" *ngIf="convenioSeleccionado">
     <div class="modal-card">
       <header class="modal-bar">
@@ -138,10 +467,21 @@
           </div>
         </ng-container>
         <ng-template #logoPlaceholder>
-          <div class="modal-logo placeholder" (click)="editMode && abrirLogo()">
+          <div
+            class="modal-logo placeholder"
+            [class.disabled]="!editMode"
+            (click)="editMode && abrirLogo()"
+          >
             <span>+ Adjuntar logo</span>
           </div>
         </ng-template>
+        <input
+          #logoInput
+          type="file"
+          class="file-hidden"
+          accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+          (change)="onLogoSeleccionado($event)"
+        />
         <div class="title-cell">
           <h3>{{ convenioSeleccionado.nombre || 'Nuevo Convenio' }}</h3>
         </div>
@@ -163,19 +503,6 @@
               <i class="pi pi-pencil"></i>
             </button>
           </div>
-          <div class="logo-actions" *ngIf="editMode">
-            <button class="link-btn" (click)="logoInput.click()" title="Subir logo">
-              <i class="pi pi-upload"></i>
-              <span *ngIf="esNuevo">Adjuntar logo</span>
-            </button>
-            <input
-              #logoInput
-              type="file"
-              class="file-hidden"
-              accept=".png,.jpg,.jpeg,image/png,image/jpeg"
-              (change)="onLogoSeleccionado($event)"
-            />
-          </div>
           <div class="info-grid">
             <div>
               <span class="label">Nombre de Institución</span>
@@ -183,16 +510,31 @@
                 <p>{{ convenioSeleccionado.nombre || '-' }}</p>
               </ng-container>
               <ng-template #nombreInstEdit>
-                <input type="text" [(ngModel)]="convenioSeleccionado.nombre" placeholder="Nombre de institución" />
+                <input
+                  type="text"
+                  [(ngModel)]="convenioSeleccionado.nombre"
+                  placeholder="Nombre de institución"
+                  required
+                  [class.invalid]="campoInvalido('nombre')"
+                />
               </ng-template>
             </div>
             <div>
               <span class="label">RUC</span>
               <ng-container *ngIf="!editMode; else rucEdit">
-                <p>{{ convenioSeleccionado.ruc || '00000000' }}</p>
+                <p>{{ convenioSeleccionado.ruc || '00000000000' }}</p>
               </ng-container>
               <ng-template #rucEdit>
-                <input type="text" [(ngModel)]="convenioSeleccionado.ruc" placeholder="RUC" />
+                <input
+                  type="tel"
+                  inputmode="numeric"
+                  pattern="\\d*"
+                  maxlength="11"
+                  [(ngModel)]="convenioSeleccionado.ruc"
+                  placeholder="RUC"
+                  required
+                  [class.invalid]="campoInvalido('ruc')"
+                />
               </ng-template>
             </div>
             <div>
@@ -203,7 +545,7 @@
                 </span>
               </ng-container>
               <ng-template #estadoEdit>
-                <select [(ngModel)]="convenioSeleccionado.estado">
+                <select [(ngModel)]="convenioSeleccionado.estado" required [class.invalid]="campoInvalido('estado')">
                   <option *ngFor="let est of estadosDisponibles" [value]="est">
                     {{ labelEstado(est) }}
                   </option>
@@ -216,7 +558,18 @@
                 <p>{{ convenioSeleccionado.fecha || 'dd/mm/aaaa' }}</p>
               </ng-container>
               <ng-template #fechaEdit>
-                <input type="date" [(ngModel)]="convenioSeleccionado.fecha" />
+                <input type="date" [(ngModel)]="convenioSeleccionado.fecha" required [class.invalid]="campoInvalido('fecha')" />
+              </ng-template>
+            </div>
+            <div>
+              <span class="label">Tipo</span>
+              <ng-container *ngIf="!editMode; else tipoEdit">
+                <p>{{ convenioSeleccionado.tipo || '-' }}</p>
+              </ng-container>
+              <ng-template #tipoEdit>
+                <select [(ngModel)]="convenioSeleccionado.tipo" required [class.invalid]="campoInvalido('tipo')">
+                  <option *ngFor="let tipo of tiposInstitucion" [value]="tipo">{{ tipo }}</option>
+                </select>
               </ng-template>
             </div>
             <div>
@@ -225,7 +578,24 @@
                 <p>{{ convenioSeleccionado.rubro || '-' }}</p>
               </ng-container>
               <ng-template #rubroEdit>
-                <input type="text" [(ngModel)]="convenioSeleccionado.rubro" placeholder="Rubro" />
+                <input
+                  type="text"
+                  [(ngModel)]="convenioSeleccionado.rubro"
+                  placeholder="Rubro"
+                  required
+                  [class.invalid]="campoInvalido('rubro')"
+                />
+              </ng-template>
+            </div>
+            <div>
+              <span class="label">Conexión</span>
+              <ng-container *ngIf="!editMode; else conexionEdit">
+                <p>{{ convenioSeleccionado.conexion || '-' }}</p>
+              </ng-container>
+              <ng-template #conexionEdit>
+                <select [(ngModel)]="convenioSeleccionado.conexion" required [class.invalid]="campoInvalido('conexion')">
+                  <option *ngFor="let con of tiposConexion" [value]="con">{{ con }}</option>
+                </select>
               </ng-template>
             </div>
             <div>
@@ -234,20 +604,41 @@
                 <p>{{ convenioSeleccionado.contacto || '-' }}</p>
               </ng-container>
               <ng-template #contactoEdit>
-                <input type="text" [(ngModel)]="convenioSeleccionado.contacto" placeholder="Contacto" />
+                <input
+                  type="text"
+                  [(ngModel)]="convenioSeleccionado.contacto"
+                  placeholder="Contacto"
+                  required
+                  [class.invalid]="campoInvalido('contacto')"
+                />
               </ng-template>
             </div>
             <div>
-              <span class="label">Número de contacto</span>
+              <span class="label">Número de telefono</span>
               <ng-container *ngIf="!editMode; else telefonoEdit">
                 <p>{{ convenioSeleccionado.telefono || '-' }}</p>
               </ng-container>
               <ng-template #telefonoEdit>
-                <input type="text" [(ngModel)]="convenioSeleccionado.telefono" placeholder="Número de contacto" />
+                <input
+                  type="tel"
+                  inputmode="numeric"
+                  pattern="\\d*"
+                  maxlength="9"
+                  [(ngModel)]="convenioSeleccionado.telefono"
+                  placeholder="Número de telefono"
+                  required
+                  [class.invalid]="campoInvalido('telefono')"
+                />
               </ng-template>
             </div>
           </div>
-          <button class="attach-btn" *ngIf="convenioSeleccionado && !convenioSeleccionado.archivoAdjunto" (click)="fileInput.click()">
+          <button
+            class="attach-btn"
+            *ngIf="convenioSeleccionado && !convenioSeleccionado.archivoAdjunto"
+            [class.disabled]="!editMode"
+            (click)="editMode && fileInput.click()"
+            [title]="editMode ? 'Adjuntar archivo' : 'Activa edición para adjuntar archivo'"
+          >
             <i class="pi pi-paperclip"></i>
             Adjuntar archivo
           </button>
@@ -283,7 +674,7 @@
 
           <div class="comments-list">
             <div class="comment-box" *ngFor="let c of convenioSeleccionado.comentarios">
-              <p class="comment-text">{{ c }}</p>
+              <p class="comment-text">{{ c.texto }}</p>
             </div>
             <div class="comment-box" *ngIf="!(convenioSeleccionado.comentarios?.length)">
               <p class="placeholder">Sin comentarios aún</p>
@@ -293,6 +684,7 @@
           <textarea
             [(ngModel)]="nuevoComentario"
             placeholder="Escribir comentario...."
+            (keydown.enter)="agregarComentarioConEnter($event)"
           ></textarea>
           <button class="add-comment" (click)="agregarComentario()" [disabled]="!nuevoComentario.trim()">
             <i class="pi pi-plus"></i>
@@ -317,14 +709,16 @@
       </div>
 
       <div class="modal-actions" *ngIf="editMode">
-        <button class="save-btn" (click)="guardarEdicion()">{{ esNuevo ? 'Agregar Convenio' : 'Guardar cambios' }}</button>
+        <button class="save-btn" (click)="guardarEdicion()">
+          {{ esNuevo ? 'Agregar Convenio' : 'Guardar cambios' }}
+        </button>
         <button class="cancel-btn" (click)="esNuevo ? cerrarDetalle() : (editMode = false)">Cancelar</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Confirmación de eliminación -->
+
 <div class="confirm-overlay" *ngIf="convenioPorEliminar">
   <div class="confirm-card">
     <h4>¿Eliminar convenio?</h4>
@@ -336,5 +730,4 @@
     </div>
   </div>
 </div>
-
 

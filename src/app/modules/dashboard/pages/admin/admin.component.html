@@ -1,0 +1,184 @@
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <h1>Bienvenido al Panel Calma</h1>
+        <p>Visualización estratégica de Fundación Calma y sus dependencias</p>
+    </header>
+
+    <div *ngIf="cargando" class="loading-overlay" style="text-align: center; padding: 3rem;">
+        <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: var(--calma-primary, #048abf);"></i>
+        <p style="margin-top: 1rem; color: #718096;">Cargando estadísticas...</p>
+    </div>
+
+    <!-- Vista Admin completa -->
+    <ng-container *ngIf="!cargando && esAdmin">
+        <div *ngIf="stats" class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon users"><i class="pi pi-users"></i></div>
+                <div class="stat-data">
+                    <span class="label">Proyectos Registrados</span>
+                    <span class="number text-blue">{{ stats.totalProyectos }}</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon areas"><i class="pi pi-map"></i></div>
+                <div class="stat-data">
+                    <span class="label">Convenios Vigentes</span>
+                    <span class="number text-yellow">{{ stats.conveniosVigentes }}</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon docs"><i class="pi pi-chart-line"></i></div>
+                <div class="stat-data">
+                    <span class="label">Desempeño del Equipo</span>
+                    <span class="number text-green">{{ stats.desempenoEquipo | number:'1.0-0' }}%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid 2 Columnas: Izquierda (Actividad) | Derecha (Gráficos) -->
+        <div class="charts-grid">
+
+            <!-- BLOQUE 1: Actividad Reciente (50% Izquierda) -->
+            <div class="detail-box">
+                <h3>Actividad Reciente</h3>
+                <div class="placeholder-chart" *ngIf="!stats?.actividadReciente?.length">
+                    <span>No hay actividad reciente registrada.</span>
+                </div>
+                <div class="recent-activity-list" *ngIf="stats?.actividadReciente?.length" style="padding-right: 5px;">
+                    <div class="activity-item" *ngFor="let act of stats?.actividadReciente"
+                        style="margin-bottom: 0.8rem; padding-bottom: 0.8rem; border-bottom: 1px solid #f3f4f6; display: flex; gap: 0.8rem; align-items: flex-start;">
+                        <div class="icon-circle"
+                            style="background: #e0f2fe; color: #0284c7; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="pi" [ngClass]="act.tipo === 'CONVENIO' ? 'pi-file' : 'pi-check-square'"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="margin: 0; font-size: 0.9rem; color: #374151; line-height: 1.4;">
+                                <strong>{{ act.usuario }}</strong> {{ act.accion }} <br>
+                                <span style="color: #1a56db;">"{{ act.entidad }}"</span>
+                            </p>
+                            <span style="font-size: 0.75rem; color: #9ca3af; display: block; margin-top: 4px;">
+                                {{ act.fecha | date:'dd MMM yyyy, HH:mm' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOQUE 2: Tareas -->
+            <div class="detail-box">
+                <h3>Actividades por Estado</h3>
+                <div class="chart-container" style="position: relative; height: 230px; width: 100%; display: flex; justify-content: center;">
+                    <p-chart type="pie" [data]="tareasChartData" [options]="pieOptions" height="230px"></p-chart>
+                </div>
+                <div *ngIf="!tareasChartData" style="text-align: center; color: #a0aec0; padding: 1rem;">
+                    Sin datos de tareas.
+                </div>
+            </div>
+
+            <!-- BLOQUE 3: Comunicaciones -->
+            <div class="detail-box">
+                <h3>Comunicación y Convenios</h3>
+                <div class="chart-container" style="position: relative; height: 230px; width: 100%; display: flex; justify-content: center;">
+                    <p-chart type="doughnut" [data]="comunicacionesChartData" [options]="pieOptions" height="230px"></p-chart>
+                </div>
+            </div>
+
+            <!-- BLOQUE 4: Desempeño -->
+            <div class="detail-box">
+                <h3>Desempeño del Equipo</h3>
+                <div class="chart-container" style="position: relative; height: 230px; width: 100%;">
+                    <p-chart type="bar" [data]="desempenoChartData" [options]="barOptions" height="230px"></p-chart>
+                </div>
+            </div>
+
+        </div>
+    </ng-container>
+
+    <!-- Vista Director -->
+    <ng-container *ngIf="!cargando && !esAdmin && userStats">
+        <div style="margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.1rem; color: #111827; margin: 0 0 0.25rem;">Panel de tu Área</h2>
+            <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Estadísticas de tu gestión asignada.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon users"><i class="pi pi-briefcase"></i></div>
+                <div class="stat-data">
+                    <span class="label">Proyectos Área</span>
+                    <span class="number text-blue">{{ userStats.misProyectos }}</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon areas"><i class="pi pi-map"></i></div>
+                <div class="stat-data">
+                    <span class="label">Convenios Área</span>
+                    <span class="number text-yellow">{{ userStats.misConvenios }}</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon docs"><i class="pi pi-chart-line"></i></div>
+                <div class="stat-data">
+                    <span class="label">Desempeño Equipo</span>
+                    <span class="number text-green">{{ userStats.desempenoEquipoArea }}%</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon docs"><i class="pi pi-star"></i></div>
+                <div class="stat-data">
+                    <span class="label">Tu Desempeño</span>
+                    <span class="number text-green">{{ userStats.desempenoPersonal }}%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <!-- BLOQUE 1: Actividad Reciente del Área -->
+            <div class="detail-box">
+                <h3>Actividad Reciente del Área</h3>
+                <div class="placeholder-chart" *ngIf="!userStats.actividadReciente?.length">
+                    <span>No hay actividad reciente en tu área.</span>
+                </div>
+                <div class="recent-activity-list" *ngIf="userStats.actividadReciente?.length">
+                    <div class="activity-item" *ngFor="let act of userStats.actividadReciente"
+                        style="margin-bottom: 0.8rem; padding-bottom: 0.8rem; border-bottom: 1px solid #f3f4f6; display: flex; gap: 0.8rem; align-items: flex-start;">
+                        <div class="icon-circle" style="background: #e0f2fe; color: #0284c7; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="pi" [ngClass]="act.tipo === 'CONVENIO' ? 'pi-file' : 'pi-check-square'"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="margin: 0; font-size: 0.9rem; color: #374151; line-height: 1.4;">
+                                <strong>{{ act.usuario }}</strong> {{ act.accion }} <br>
+                                <span style="color: #1a56db;">"{{ act.entidad }}"</span>
+                            </p>
+                            <span style="font-size: 0.75rem; color: #9ca3af;">{{ act.fecha | date:'dd MMM yyyy, HH:mm' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOQUE 2: Tareas -->
+            <div class="detail-box">
+                <h3>Estado de Actividades</h3>
+                <div class="chart-container" style="position: relative; height: 230px; width: 100%; display: flex; justify-content: center;">
+                    <p-chart type="pie" [data]="tareasChartData" [options]="pieOptions" height="230px"></p-chart>
+                </div>
+            </div>
+
+            <!-- BLOQUE 3: Comunicaciones -->
+            <div class="detail-box">
+                <h3>Estado de Convenios</h3>
+                <div class="chart-container" style="position: relative; height: 230px; width: 100%; display: flex; justify-content: center;">
+                    <p-chart type="doughnut" [data]="comunicacionesChartData" [options]="pieOptions" height="230px"></p-chart>
+                </div>
+            </div>
+
+            <!-- BLOQUE 4: Desempeño -->
+            <div class="detail-box">
+                <h3>Desempeño del Área</h3>
+                <div class="chart-container" style="position: relative; height: 230px; width: 100%;">
+                    <p-chart type="bar" [data]="desempenoChartData" [options]="barOptions" height="230px"></p-chart>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+</div>

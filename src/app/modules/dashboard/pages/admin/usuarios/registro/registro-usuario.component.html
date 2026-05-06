@@ -1,0 +1,131 @@
+<div class="registro-container">
+  <div class="header-section">
+    <h1><i class="pi pi-user-plus"></i> Registrar Nuevo Usuario</h1>
+    <p>Agrega un nuevo miembro al equipo Calma. Se enviará un correo con instrucciones para que establezca su contraseña.</p>
+  </div>
+
+  <div class="card-form">
+    
+    <!-- Mensajes de Alerta -->
+    <div *ngIf="mensaje" class="alert" [ngClass]="mensaje.tipo">
+      <i class="pi" [ngClass]="mensaje.tipo === 'exito' ? 'pi-check-circle' : 'pi-exclamation-triangle'"></i>
+      <span>{{ mensaje.texto }}</span>
+    </div>
+
+    <!-- Formulario Reactivo -->
+    <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
+
+      <div class="form-grid">
+        <!-- Nombre -->
+        <div class="form-group">
+          <label for="nombre">Nombre <span class="required">*</span></label>
+          <input id="nombre" type="text" formControlName="nombre" placeholder="Ej. Juan" 
+                 (input)="onInputLetras($event, 'nombre')"
+                 [class.is-invalid]="registroForm.get('nombre')?.invalid && registroForm.get('nombre')?.touched">
+          <small class="error-msg" *ngIf="registroForm.get('nombre')?.hasError('required') && registroForm.get('nombre')?.touched">
+            El nombre es obligatorio.
+          </small>
+          <small class="error-msg" *ngIf="registroForm.get('nombre')?.hasError('minlength') && registroForm.get('nombre')?.touched">
+            Mínimo 2 caracteres.
+          </small>
+          <small class="error-msg" *ngIf="registroForm.get('nombre')?.hasError('pattern') && registroForm.get('nombre')?.touched">
+            Solo se permiten letras y espacios.
+          </small>
+        </div>
+
+        <!-- Apellido -->
+        <div class="form-group">
+          <label for="apellido">Apellido <span class="required">*</span></label>
+          <input id="apellido" type="text" formControlName="apellido" placeholder="Ej. Pérez"
+                 (input)="onInputLetras($event, 'apellido')"
+                 [class.is-invalid]="registroForm.get('apellido')?.invalid && registroForm.get('apellido')?.touched">
+          <small class="error-msg" *ngIf="registroForm.get('apellido')?.hasError('required') && registroForm.get('apellido')?.touched">
+            El apellido es obligatorio.
+          </small>
+          <small class="error-msg" *ngIf="registroForm.get('apellido')?.hasError('minlength') && registroForm.get('apellido')?.touched">
+            Mínimo 2 caracteres.
+          </small>
+          <small class="error-msg" *ngIf="registroForm.get('apellido')?.hasError('pattern') && registroForm.get('apellido')?.touched">
+            Solo se permiten letras y espacios.
+          </small>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group full-width">
+          <label for="email">Correo Institucional <span class="required">*</span></label>
+          <div class="input-icon">
+            <i class="pi pi-envelope"></i>
+            <input id="email" type="email" formControlName="email" placeholder="juan.perez@fundacioncalma.org"
+                   [class.is-invalid]="registroForm.get('email')?.invalid && registroForm.get('email')?.touched">
+          </div>
+          <small class="error-msg" *ngIf="registroForm.get('email')?.invalid && registroForm.get('email')?.touched">
+            Ingresa un correo válido.
+          </small>
+        </div>
+
+        <!-- Rol -->
+        <div class="form-group">
+          <label for="rol">Rol en el Sistema <span class="required">*</span></label>
+          <select id="rol" formControlName="rol">
+            <option value="usuario">Usuario Estándar (Estratega, Analista)</option>
+            <option value="director">Director de Área</option>
+            <option value="admin">Administrador Global</option>
+          </select>
+        </div>
+
+        <!-- Área Asignada (Si no es Admin) -->
+        <div class="form-group" *ngIf="registroForm.get('rol')?.value !== 'admin'">
+          <label for="area_id">Área Asignada <span class="required">*</span></label>
+          <select id="area_id" formControlName="area_id" [class.is-invalid]="registroForm.get('area_id')?.invalid && registroForm.get('area_id')?.touched">
+            <option [ngValue]="null" disabled selected>Seleccione un área principal</option>
+            <option *ngFor="let area of todasLasAreas" [value]="area.id">
+              {{ area.nombre }}
+            </option>
+          </select>
+          <small class="error-msg" *ngIf="registroForm.get('area_id')?.invalid && registroForm.get('area_id')?.touched">
+            Seleccionar un área es obligatorio para este rol.
+          </small>
+        </div>
+
+        <!-- Sub-área Asignada (Si hay subareas) -->
+        <div class="form-group" *ngIf="subareasDisponibles.length > 0 && registroForm.get('rol')?.value !== 'admin'">
+          <label for="subarea_id">Sub-área Específica</label>
+          <select id="subarea_id" formControlName="subarea_id">
+            <option [ngValue]="null">Ninguna (Solo área principal)</option>
+            <option *ngFor="let sub of subareasDisponibles" [value]="sub.id">
+              {{ sub.nombre }}
+            </option>
+          </select>
+          <small class="info-text">Puedes asignarle una sub-área opcionalmente.</small>
+        </div>
+
+        <!-- Puesto Organizacional -->
+        <div class="form-group">
+          <label for="puesto">Puesto Organizacional</label>
+          <input id="puesto" type="text" formControlName="puesto" placeholder="Ej. Analista de Datos, Gerente"
+                 (input)="onInputLetras($event, 'puesto')">
+          <small class="info-text">Cargo que se mostrará en su perfil y directorio (solo letras).</small>
+        </div>
+
+        <!-- Fecha Fin de Contrato -->
+        <div class="form-group">
+          <label for="fecha_fin_contrato">Fecha Fin de Contrato</label>
+          <div class="input-icon">
+            <i class="pi pi-calendar"></i>
+            <input id="fecha_fin_contrato" type="date" formControlName="fecha_fin_contrato" 
+                   [min]="minDate" [max]="maxDate">
+          </div>
+          <small class="info-text">El usuario se desactivará automáticamente luego de esta fecha. Déjalo vacío si es indefinido.</small>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-submit" [disabled]="cargando">
+          <span *ngIf="!cargando">Crear Usuario</span>
+          <span *ngIf="cargando"><i class="pi pi-spin pi-spinner"></i> Procesando...</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

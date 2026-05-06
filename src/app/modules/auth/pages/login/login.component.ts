@@ -36,15 +36,15 @@ export class LoginComponent {
         const rol = respuesta.usuario?.rol;
         console.log("🎯 Rol detectado:", rol);
         
-        // Redirigir según el rol
-        if (rol === 'Director' || rol === 'admin') {
-          console.log("👑 Redirigiendo a /dashboard/admin");
-          this.router.navigate(['/dashboard/admin']).then(success => {
+        // Redirigir según el rol usando los métodos del AuthService
+        if (this.authService.isAdmin() || this.authService.isDirector()) {
+          console.log("👑 Redirigiendo a /dashboard/admin-dashboard");
+          this.router.navigate(['/dashboard/admin-dashboard']).then(success => {
             console.log("✅ Navegación exitosa:", success);
           });
         } else {
-          console.log("👤 Redirigiendo a /dashboard/usuario");
-          this.router.navigate(['/dashboard/usuario']).then(success => {
+          console.log("👤 Redirigiendo a /dashboard/usuario-dashboard");
+          this.router.navigate(['/dashboard/usuario-dashboard']).then(success => {
             console.log("✅ Navegación exitosa:", success);
           });
         }

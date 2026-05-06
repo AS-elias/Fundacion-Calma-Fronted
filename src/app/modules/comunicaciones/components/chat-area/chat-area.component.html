@@ -1,0 +1,107 @@
+<div class="chat-area flex flex-column h-full bg-bluegray-50">
+  <!-- Header -->
+  <div *ngIf="channel" class="header p-3 bg-white border-bottom-1 surface-border shadow-1 z-1 flex align-items-center">
+    <div class="avatar bg-primary text-white border-circle w-2rem h-2rem flex align-items-center justify-content-center mr-2">
+      <img *ngIf="channel.avatarUrl" [src]="channel.avatarUrl" alt="Avatar" class="w-full h-full border-circle object-cover">
+      <i *ngIf="!channel.avatarUrl" [class]="channel.esGrupo ? 'pi pi-users' : 'pi pi-user'"></i>
+    </div>
+    <div class="flex-1">
+      <h3 class="m-0 font-semibold">{{ channel.nombre }}</h3>
+      <span class="text-xs text-color-secondary">{{ channel.esGrupo ? channel.totalParticipantes + ' participantes' : 'Privado' }}</span>
+    </div>
+    <div class="actions">
+      <button class="p-button p-button-rounded p-button-text p-button-secondary">
+        <i class="pi pi-ellipsis-v"></i>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!channel" class="flex-1 flex align-items-center justify-content-center justify-content-center text-color-secondary">
+    <div class="text-center">
+      <i class="pi pi-comments text-6xl mb-3"></i>
+      <h3>Selecciona un canal</h3>
+      <p>Elige un chat para comenzar a enviar mensajes</p>
+    </div>
+  </div>
+
+  <!-- Messages Container -->
+  <div #messagesContainer *ngIf="channel" class="messages flex-1 overflow-auto p-3">
+    <div *ngFor="let msg of messages" class="message-wrapper flex mb-3 w-full" 
+         [ngClass]="{'justify-content-end': msg.remitenteId === currentUserId}">
+      
+      <!-- Received Avatar -->
+      <div *ngIf="msg.remitenteId !== currentUserId" class="avatar-container mr-2 align-self-end">
+        <div class="w-2rem h-2rem bg-gray-300 border-circle flex align-items-center justify-content-center shadow-1">
+          <i class="pi pi-user text-xs"></i>
+        </div>
+      </div>
+
+      <!-- Bubble -->
+      <div class="message-bubble p-2 border-round-xl shadow-1 relative max-w-20rem"
+           [ngClass]="msg.remitenteId === currentUserId ? 'bg-primary text-white custom-bubble-sent' : 'bg-white text-color custom-bubble-received'">
+        
+        <!-- File Handling -->
+        <div *ngIf="msg.tipo === 'file' || msg.tipo === 'image'" class="mb-2">
+          <img *ngIf="msg.tipo === 'image' || (msg.archivoUrl && msg.archivoUrl.match('jpg|jpeg|png|gif'))" 
+               [src]="msg.archivoUrl" alt="imagen" class="w-full border-round mb-2 cursor-pointer shadow-1" style="max-height: 200px; object-fit: contain;">
+          <a *ngIf="msg.tipo !== 'image' && !(msg.archivoUrl && msg.archivoUrl.match('jpg|jpeg|png|gif'))"
+             [href]="msg.archivoUrl" target="_blank" 
+             class="flex align-items-center p-2 surface-100 border-round text-primary hover:surface-200 transition-colors cursor-pointer text-decoration-none bg-bluegray-100 mb-1"
+             [ngClass]="{'bg-primary-reverse': msg.remitenteId === currentUserId}">
+            <i class="pi pi-file mr-2 text-xl"></i>
+            <span class="text-sm font-medium white-space-nowrap overflow-hidden text-overflow-ellipsis">{{ "Archivo Adjunto" }}</span>
+            <i class="pi pi-download ml-auto pl-2"></i>
+          </a>
+        </div>
+        
+        <p class="m-0 text-sm line-height-3" style="word-break: break-word;">{{ msg.contenido }}</p>
+        
+        <div class="meta flex align-items-center justify-content-end mt-1 gap-1">
+          <span class="text-xs opacity-70">{{ msg.creadoAt | date:'shortTime' }}</span>
+          <i *ngIf="msg.remitenteId === currentUserId" class="pi text-xs opacity-70" 
+             [ngClass]="msg.leido ? 'pi-check-circle' : 'pi-check'"></i>
+        </div>
+        
+        <!-- Hover actions & Reacciones -->
+        <div class="message-actions hidden absolute ml-2" *ngIf="msg.remitenteId === currentUserId" style="right: -40px; top: 0px;">
+          <button class="p-button p-button-rounded p-button-danger p-button-text p-button-sm shadow-1 bg-white ml-2" (click)="onDelete(msg.id)">
+            <i class="pi pi-trash" style="font-size: 0.8rem"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div *ngIf="channel" class="input-area p-3 bg-white border-top-1 surface-border shadow-2 z-1 relative">
+    
+    <!-- Simple Emoji Picker Popup -->
+    <div *ngIf="showEmojiPicker" class="absolute bg-white shadow-2 border-round p-2 flex flex-wrap gap-2 z-5" style="bottom: 100%; left: 50px; width: 200px; max-height: 150px; overflow-y: auto; border: 1px solid var(--surface-border);">
+      <button *ngFor="let emoji of ['👍','❤️','😂','😮','😢','😡','🙏','👏','🔥','🎉','😊','😎']" 
+              class="p-button p-button-text p-button-rounded p-1 text-xl" 
+              (click)="newMessageContent = newMessageContent + emoji; showEmojiPicker = false">
+        {{ emoji }}
+      </button>
+    </div>
+
+    <div class="flex align-items-center border-1 surface-border border-round-3xl p-1 bg-surface-50">
+      <button class="p-button p-button-rounded p-button-text p-button-secondary w-2rem h-2rem mx-1" (click)="fileInput.click()">
+        <i class="pi pi-paperclip"></i>
+      </button>
+      <input type="file" #fileInput hidden (change)="onFileUpload($event)">
+      
+      <button class="p-button p-button-rounded p-button-text p-button-secondary w-2rem h-2rem mr-1" (click)="showEmojiPicker = !showEmojiPicker">
+        <i class="pi pi-face-smile"></i>
+      </button>
+
+      <input type="text" class="w-full border-none bg-transparent outline-none p-2" 
+             placeholder="Escribe un mensaje..."
+             [(ngModel)]="newMessageContent" 
+             (keyup.enter)="onSend()">
+      
+      <button class="p-button p-button-rounded bg-primary border-none ml-2 shadow-1 h-2rem w-2rem flex justify-content-center" (click)="onSend()" [disabled]="!newMessageContent.trim()">
+        <i class="pi pi-send ml-1"></i>
+      </button>
+    </div>
+  </div>
+</div>

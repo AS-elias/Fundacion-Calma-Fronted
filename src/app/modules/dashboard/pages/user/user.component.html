@@ -1,0 +1,118 @@
+<div class="user-dashboard-container">
+    <header class="dashboard-header">
+        <h1>Mi Panel de Actividades</h1>
+        <p>Resumen de tus tareas y proyectos asignados en Fundación Calma.</p>
+    </header>
+
+    <div *ngIf="cargando" class="loading-overlay" style="text-align: center; padding: 3rem;">
+        <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: var(--calma-primary, #048abf);"></i>
+        <p style="margin-top: 1rem; color: #718096;">Cargando tu panel de actividades...</p>
+    </div>
+
+    <div *ngIf="!cargando && stats" class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-blue"><i class="pi pi-briefcase"></i></div>
+            <div class="stat-data">
+                <span class="label">Proyectos Realizados</span>
+                <span class="number">{{ stats.misProyectos }}</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon bg-yellow"><i class="pi pi-map"></i></div>
+            <div class="stat-data">
+                <span class="label">Convenios Vigentes</span>
+                <span class="number">{{ stats.misConvenios }}</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon bg-purple"><i class="pi pi-users"></i></div>
+            <div class="stat-data">
+                <span class="label">Desempeño de Equipo</span>
+                <span class="number">{{ stats.desempenoEquipoArea | number:'1.0-0' }}%</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon bg-green"><i class="pi pi-star-fill"></i></div>
+            <div class="stat-data">
+                <span class="label">Desempeño Personal</span>
+                <span class="number">{{ stats.desempenoPersonal | number:'1.0-0' }}%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content-grid">
+
+        <div class="lists-column" *ngIf="!cargando && stats">
+
+            <div class="task-card">
+                <div class="card-header">
+                    <h3>Mis Tareas Recientes</h3>
+                </div>
+                
+                <div class="task-list" *ngIf="stats.misTareasRecientes.length">
+                    <div class="task-item" *ngFor="let tarea of stats.misTareasRecientes">
+                        <div class="task-info">
+                            <div class="icon-box" [ngClass]="tarea.estado === 'COMPLETADA' ? 'bg-green' : 'bg-blue'">
+                                <i class="pi" [ngClass]="tarea.estado === 'COMPLETADA' ? 'pi-check' : 'pi-sync'"></i>
+                            </div>
+                            <div class="details">
+                                <span class="title">{{ tarea.titulo }}</span>
+                                <span class="area">{{ tarea.area_nombre }}</span>
+                            </div>
+                        </div>
+                        <div class="task-meta">
+                            <span class="badge" [ngClass]="{'progress': tarea.estado === 'EN_EJECUCION', 'pending': tarea.estado === 'PENDIENTE'}">
+                                {{ tarea.estado }}
+                            </span>
+                            <span class="date" *ngIf="tarea.fecha_vencimiento"><i class="pi pi-calendar"></i> {{ tarea.fecha_vencimiento | date:'dd MMM yyyy' }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="!stats.misTareasRecientes.length" style="padding: 1rem; color: #718096; text-align: center;">
+                    No tienes tareas recientes.
+                </div>
+            </div>
+
+            <div class="task-card mt-4">
+                <div class="card-header">
+                    <h3>Alertas y Prioridades <span class="alert-dot" *ngIf="stats.misAlertas.length"></span></h3>
+                </div>
+                
+                <div class="task-list" *ngIf="stats.misAlertas.length">
+                    <div class="task-item alert-item" *ngFor="let alerta of stats.misAlertas">
+                        <div class="task-info">
+                            <div class="icon-box bg-red"><i class="pi pi-exclamation-triangle"></i></div>
+                            <div class="details">
+                                <span class="title text-red">{{ alerta.titulo }}</span>
+                                <span class="area">{{ alerta.area_nombre }}</span>
+                            </div>
+                        </div>
+                        <div class="task-meta">
+                            <span class="badge high-priority">{{ alerta.prioridad }}</span>
+                            <span class="date" *ngIf="alerta.fecha_vencimiento"><i class="pi pi-clock"></i> {{ alerta.fecha_vencimiento | date:'dd MMM yyyy' }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="!stats.misAlertas.length" style="padding: 1rem; color: #718096; text-align: center;">
+                    No tienes alertas pendientes. ¡Buen trabajo!
+                </div>
+            </div>
+
+        </div>
+
+        <div class="calendar-column">
+            <div class="task-card calendar-card">
+                <div class="card-header">
+                    <h3>Mi Agenda</h3>
+                </div>
+                <div class="calendar-body">
+                    <p-datepicker [(ngModel)]="fechaActual" [inline]="true" styleClass="w-full"></p-datepicker>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

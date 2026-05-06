@@ -1,0 +1,162 @@
+<div class="edit-container">
+  <div class="header-section">
+    <button class="btn-back" (click)="volver()">
+      <i class="pi pi-arrow-left"></i> Volver a la lista
+    </button>
+    <h1><i class="pi pi-user-edit"></i> Editar Perfil de Usuario</h1>
+    <p>Actualiza la información, rol, contrato y permisos de área del miembro del equipo.</p>
+  </div>
+
+  <div *ngIf="cargando" class="loading-overlay">
+    <i class="pi pi-spin pi-spinner"></i>
+    <span>Cargando información del usuario...</span>
+  </div>
+
+  <div *ngIf="!cargando && errorCarga" class="error-carga-card">
+    <i class="pi pi-exclamation-circle"></i>
+    <div>
+      <strong>Error al cargar el usuario</strong>
+      <p>{{ errorCarga }}</p>
+    </div>
+    <button (click)="cargarTodo()" class="btn-retry">
+      <i class="pi pi-refresh"></i> Reintentar
+    </button>
+  </div>
+
+  <div *ngIf="!cargando && !errorCarga" class="form-card">
+
+    <div *ngIf="mensaje" class="alert" [ngClass]="mensaje.tipo">
+      <i class="pi" [ngClass]="mensaje.tipo === 'exito' ? 'pi-check-circle' : 'pi-exclamation-triangle'"></i>
+      <span>{{ mensaje.texto }}</span>
+    </div>
+
+    <form [formGroup]="editarForm" (ngSubmit)="onSubmit()">
+      <div class="form-layout">
+
+        <div class="form-section">
+          <h3><i class="pi pi-id-card"></i> Datos Básicos</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="nombre_completo">Nombre Completo <span class="required">*</span></label>
+              <input id="nombre_completo" type="text" formControlName="nombre_completo"
+                (input)="onInputLetras($event, 'nombre_completo')"
+                [class.is-invalid]="editarForm.get('nombre_completo')?.invalid && editarForm.get('nombre_completo')?.touched">
+              <small class="error-msg" *ngIf="editarForm.get('nombre_completo')?.invalid && editarForm.get('nombre_completo')?.touched" style="color: #e74c3c; font-size: 0.78rem;">
+                Obligatorio y solo letras permitidas.
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="apellido_completo">Apellido Completo</label>
+              <input id="apellido_completo" type="text" formControlName="apellido_completo"
+                     (input)="onInputLetras($event, 'apellido_completo')"
+                     [class.is-invalid]="editarForm.get('apellido_completo')?.invalid && editarForm.get('apellido_completo')?.touched">
+              <small class="error-msg" *ngIf="editarForm.get('apellido_completo')?.invalid && editarForm.get('apellido_completo')?.touched" style="color: #e74c3c; font-size: 0.78rem;">
+                Solo letras permitidas.
+              </small>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="email">Correo Institucional <span class="required">*</span></label>
+              <input id="email" type="email" formControlName="email" readonly class="readonly-input">
+              <small class="info-text"><i class="pi pi-lock"></i> El correo no puede cambiarse.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3><i class="pi pi-cog"></i> Configuración de Cuenta</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="rol_id">Rol en el Sistema <span class="required">*</span></label>
+              <select id="rol_id" formControlName="rol_id">
+                <option [ngValue]="24">Administrador</option>
+                <option [ngValue]="25">Director</option>
+                <option [ngValue]="26">Practicante / Coordinador</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="estado">Estado de Cuenta</label>
+              <select id="estado" formControlName="estado">
+                <option value="ACTIVO">Activo</option>
+                <option value="INACTIVO">Inactivo</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="puesto">Puesto Organizacional</label>
+              <input id="puesto" type="text" formControlName="puesto" placeholder="Ej. Analista, Coordinador"
+                     (input)="onInputLetras($event, 'puesto')"
+                     [class.is-invalid]="editarForm.get('puesto')?.invalid && editarForm.get('puesto')?.touched">
+            </div>
+
+            <div class="form-group">
+              <label for="fecha_fin_contrato">Fecha Fin de Contrato</label>
+              <input id="fecha_fin_contrato" type="date" formControlName="fecha_fin_contrato" [min]="minDate" [max]="maxDate">
+              <small class="info-text">Se desactivará automáticamente al vencerse.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3><i class="pi pi-sitemap"></i> Asignación de Áreas y Sub-áreas</h3>
+
+          <div *ngIf="esAdmin" class="role-info-banner" style="margin-bottom: 15px;">
+            <i class="pi pi-info-circle"></i>
+            <div>
+              <strong>Acceso total habilitado</strong>
+              <p>Como Administrador, este usuario tiene todas las áreas marcadas automáticamente. No se pueden
+                desmarcar.</p>
+            </div>
+          </div>
+
+          <p class="section-desc" *ngIf="!esAdmin">
+            Selecciona las áreas y sub-áreas a las que este usuario tendrá acceso.
+          </p>
+
+          <div *ngIf="todasLasAreas.length === 0" class="empty-areas">
+            <i class="pi pi-info-circle"></i> No se encontraron áreas en el sistema.
+          </div>
+
+          <ng-container *ngFor="let area of todasLasAreas">
+            <div *ngIf="area.subareas && area.subareas.length > 0" class="area-parent-group">
+              <div class="area-parent-header">
+                <i class="pi pi-sitemap"></i>
+                <span>{{ area.nombre }}</span>
+                <span class="badge-count" *ngIf="countSubAreasSelected(area) > 0">
+                  {{ countSubAreasSelected(area) }} asignada(s)
+                </span>
+              </div>
+              <div class="subareas-grid">
+                <div *ngFor="let sub of area.subareas" class="subarea-card" [class.selected]="isAreaSelected(sub.id)"
+                  [class.admin-locked]="esAdmin" (click)="toggleArea(sub.id)">
+                  <i class="pi check-icon" [ngClass]="isAreaSelected(sub.id) ? 'pi-check-circle' : 'pi-circle'"></i>
+                  <span>{{ sub.nombre }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="!area.subareas || area.subareas.length === 0" class="area-parent-group">
+              <div class="subarea-card area-simple" [class.selected]="isAreaSelected(area.id)"
+                [class.admin-locked]="esAdmin" (click)="toggleArea(area.id)">
+                <i class="pi check-icon" [ngClass]="isAreaSelected(area.id) ? 'pi-check-circle' : 'pi-circle'"></i>
+                <span>{{ area.nombre }}</span>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="volver()">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button type="submit" class="btn-submit" [disabled]="enviando || editarForm.invalid">
+          <span *ngIf="!enviando"><i class="pi pi-save"></i> Guardar Cambios</span>
+          <span *ngIf="enviando"><i class="pi pi-spin pi-spinner"></i> Actualizando...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

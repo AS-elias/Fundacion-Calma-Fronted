@@ -1,0 +1,89 @@
+<div class="lista-container">
+  <div class="header-section">
+    <div class="header-text">
+      <h1><i class="pi pi-users"></i> Gestión de Usuarios</h1>
+      <p>Administra las cuentas, roles y accesos del personal en la plataforma Calma. Suspende usuarios en lugar de borrarlos para mantener el historial intacto.</p>
+    </div>
+    <button class="btn-primary" (click)="irARegistro()">
+      <i class="pi pi-plus"></i> Nuevo Usuario
+    </button>
+  </div>
+
+  <!-- Banner de éxito (viene de editar/registro) -->
+  <div *ngIf="mensajeExito" class="alert-exito">
+    <i class="pi pi-check-circle"></i>
+    <span>{{ mensajeExito }}</span>
+  </div>
+
+  <div class="card-table">
+    <div *ngIf="cargando" class="loading-state">
+      <i class="pi pi-spin pi-spinner"></i> Cargando usuarios...
+    </div>
+
+    <div *ngIf="error" class="error-msg">
+      <i class="pi pi-exclamation-triangle"></i> {{ error }}
+    </div>
+
+    <table *ngIf="!cargando && !error" class="custom-table">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Correo Electrónico</th>
+          <th>Rol</th>
+          <th>Fin de Contrato</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="usuarios.length === 0">
+          <td colspan="6" class="empty-state">No hay usuarios registrados aún.</td>
+        </tr>
+        <tr *ngFor="let u of usuarios">
+          <td>
+            <div class="user-cell">
+              <div class="avatar">{{ u.nombre_completo.charAt(0) | uppercase }}</div>
+              <div class="name-info">
+                <strong>{{ u.nombre_completo }} {{ u.apellido_completo || '' }}</strong>
+                <span class="puesto">{{ u.puesto || 'Sin puesto asignado' }}</span>
+              </div>
+            </div>
+          </td>
+          <td>{{ u.email }}</td>
+          <td><span class="badge rol-badge">{{ u.rol?.nombre | uppercase }}</span></td>
+          <td>
+            <span *ngIf="u.fecha_fin_contrato" class="date-text">
+              <i class="pi pi-calendar"></i> {{ u.fecha_fin_contrato | date:'shortDate' }}
+            </span>
+            <span *ngIf="!u.fecha_fin_contrato" class="date-text indefinite">Indefinido</span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="u.estado === 'ACTIVO' ? 'active' : 'inactive'">
+              <span class="dot"></span> {{ u.estado === 'ACTIVO' ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <div class="actions-group">
+              <!-- Botón Editar -->
+              <button 
+                class="btn-icon btn-edit" 
+                title="Editar Usuario"
+                (click)="editarUsuario(u)">
+                <i class="pi pi-pencil"></i>
+              </button>
+
+              <!-- Botón soft delete toggle -->
+              <button 
+                class="btn-icon" 
+                [ngClass]="u.estado === 'ACTIVO' ? 'btn-danger' : 'btn-success'"
+                [title]="u.estado === 'ACTIVO' ? 'Desactivar Usuario' : 'Activar Usuario'"
+                (click)="toggleEstado(u)">
+                <i class="pi" [ngClass]="u.estado === 'ACTIVO' ? 'pi-ban' : 'pi-check-circle'"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
