@@ -1,0 +1,36 @@
+.chat-area {
+  position: relative;
+}
+
+.messages {
+  scrollbar-width: thin;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--surface-400);
+    border-radius: 3px;
+  }
+}
+
+.message-wrapper {
+  &:hover .message-actions {
+    display: flex !important;
+  }
+}
+
+.custom-bubble-sent {
+  border-bottom-right-radius: 4px;
+}
+
+.custom-bubble-received {
+  border-bottom-left-radius: 4px;
+}
+
+.bg-primary-reverse {
+  background-color: var(--primary-800) !important;
+  color: white !important;
+  &:hover {
+    background-color: var(--primary-700) !important;
+  }
+}

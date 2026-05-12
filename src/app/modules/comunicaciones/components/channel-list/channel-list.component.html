@@ -1,0 +1,44 @@
+<div class="channel-list-container flex flex-column h-full w-full">
+  <div class="header p-3 flex justify-content-between align-items-center bg-white border-bottom-1 surface-border">
+    <h3 class="m-0 font-semibold text-color">Mensajes</h3>
+    <button class="p-button p-button-rounded p-button-text p-button-sm" (click)="onCreateChannel()">
+      <i class="pi pi-plus"></i>
+    </button>
+  </div>
+  
+  <div class="search-box p-3">
+    <span class="p-input-icon-left w-full">
+        <i class="pi pi-search"></i>
+        <input type="text" class="p-inputtext p-component p-inputtext-sm w-full" placeholder="Buscar canal..." />
+    </span>
+  </div>
+
+  <div class="channels-scrollable flex-1 overflow-auto p-2">
+    <div *ngIf="channels.length === 0" class="text-center p-3 text-color-secondary">
+      No tienes canales aún.
+    </div>
+    
+    <div *ngFor="let channel of channels" 
+         class="channel-item p-2 border-round cursor-pointer hover:surface-hover flex align-items-center mb-1 transition-colors transition-duration-150"
+         (click)="selectChannel(channel)">
+      <div class="avatar-container mr-3 relative">
+        <img [src]="channel.avatarUrl || 'assets/default-avatar.png'" alt="avatar" class="w-3rem h-3rem border-circle object-cover shadow-1">
+        <span *ngIf="channel.esGrupo" class="group-indicator text-xs font-bold text-white bg-primary border-circle flex align-items-center justify-content-center absolute" style="width: 14px; height: 14px; bottom: 0; right: 0;">
+          <i class="pi pi-users" style="font-size: 8px;"></i>
+        </span>
+      </div>
+      <div class="channel-info flex-1 overflow-hidden">
+        <div class="flex justify-content-between align-items-center mb-1">
+          <span class="font-medium text-color white-space-nowrap overflow-hidden text-overflow-ellipsis">{{ channel.nombre }}</span>
+          <span class="text-xs text-color-secondary ml-2">{{ channel.ultimoMensaje?.creadoAt | date:'shortTime' }}</span>
+        </div>
+        <div class="flex justify-content-between align-items-center">
+          <span class="text-sm text-color-secondary white-space-nowrap overflow-hidden text-overflow-ellipsis">
+            {{ channel.ultimoMensaje?.contenido || 'Sin mensajes' }}
+          </span>
+          <span *ngIf="channel.unreadCount" class="badge bg-primary text-white border-circle flex align-items-center justify-content-center text-xs font-bold w-1rem h-1rem">{{ channel.unreadCount }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

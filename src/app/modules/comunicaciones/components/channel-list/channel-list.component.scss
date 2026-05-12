@@ -1,0 +1,21 @@
+.channel-list-container {
+  background-color: var(--surface-card);
+  border-right: 1px solid var(--surface-border);
+}
+
+.channels-scrollable {
+  scrollbar-width: thin;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--surface-300);
+    border-radius: 3px;
+  }
+}
+
+.channel-item {
+  &.active {
+    background-color: var(--primary-50);
+  }
+}

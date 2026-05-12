@@ -6,6 +6,7 @@ export interface User {
   foto_url?: string | null;
   fotoUrl?: string | null;
   rol: string; // Director, Usuario, etc.
+  area?: string; // Área a la que pertenece el usuario
 }
 
 export interface LoginResponse {

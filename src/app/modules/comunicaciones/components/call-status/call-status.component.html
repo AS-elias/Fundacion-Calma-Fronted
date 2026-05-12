@@ -1,0 +1,57 @@
+<section 
+  class="call-status" 
+  style="padding: 14px; border-bottom: 1px solid #e5e7eb; background: #f8fafc; display: flex; flex-direction: column; gap: 12px;">
+  @if (webRtcService.isCallActive() || webRtcService.isCallIncoming()) {
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+      <div>
+        @if (webRtcService.isCallIncoming()) {
+          <strong>
+            Llamada entrante de {{ webRtcService.incomingCallFromName }}
+          </strong>
+        }
+        @if (webRtcService.isCallActive() && !webRtcService.isCallIncoming()) {
+          <strong>
+            Llamada activa: {{ webRtcService.callType === 'video' ? 'Video' : 'Voz' }}
+          </strong>
+        }
+        <div style="font-size: 13px; color: #6b7280;">
+          {{ webRtcService.isCallIncoming() ? 'Acepta para iniciar la llamada virtual' : 'La sesión de llamada está activa' }}
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        @if (webRtcService.isCallIncoming()) {
+          <button 
+            class="btn-secondary" 
+            (click)="acceptCall()">
+            Aceptar
+          </button>
+        }
+        <button class="btn-secondary" (click)="endCall()">Colgar</button>
+      </div>
+    </div>
+
+    @if (webRtcService.callType === 'video') {
+      <div style="display:flex; gap:12px; flex-wrap: wrap;">
+        <video 
+          #localVideo 
+          autoplay 
+          playsinline 
+          muted 
+          style="width: 180px; height: 120px; background: #000; border-radius: 8px;">
+        </video>
+        <video 
+          #remoteVideo 
+          autoplay 
+          playsinline 
+          style="width: 240px; height: 170px; background: #000; border-radius: 8px;">
+        </video>
+      </div>
+    }
+
+    @if (webRtcService.callType === 'voice') {
+      <div style="font-size: 13px; color: #475569;">
+        Llamada de voz activa. No se muestra video para este tipo de llamada.
+      </div>
+    }
+  }
+</section>
