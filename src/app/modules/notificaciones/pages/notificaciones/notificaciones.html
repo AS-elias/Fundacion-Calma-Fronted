@@ -1,83 +1,184 @@
 <div class="notificaciones-container">
 
   <div class="header">
+    <div class="titulo">
+      <h2>Centro de Notificaciones</h2>
+      <span class="contador">
+        {{ cantidadNoLeidas }} no leídas
+      </span>
+    </div>
 
-    <h2>
-      Centro de Notificaciones
-      <span class="contador">{{ cantidadNoLeidas }}</span>
-    </h2>
-
-    <button
-      pButton
-      label="Nueva Publicación"
-      icon="pi pi-plus"
-      class="p-button-sm">
+    <button class="btn-nueva" (click)="toggleFormulario()">
+      + Nueva Publicación
     </button>
-
   </div>
 
-
   <div class="filtros">
-
-    <button
-      class="filtro"
+    <button class="filtro"
       [class.activo]="filtroSeleccionado === 'todos'"
       (click)="cambiarFiltro('todos')">
       Todos
     </button>
 
-    <button
-      class="filtro"
+    <button class="filtro"
       [class.activo]="filtroSeleccionado === 'comunicado'"
       (click)="cambiarFiltro('comunicado')">
-      Comunicado
+      Comunicados
     </button>
 
-    <button
-      class="filtro"
+    <button class="filtro"
       [class.activo]="filtroSeleccionado === 'alerta'"
       (click)="cambiarFiltro('alerta')">
-      Alerta
+      Alertas
     </button>
-
   </div>
-
 
   <div class="lista-notificaciones">
 
-    <div
-      class="card"
+    <div 
       *ngFor="let n of notificacionesFiltradas"
+      class="card-notificacion"
       [class.leido]="n.leido"
+      (click)="abrirDetalle(n)"
     >
 
+      <div class="barra"></div>
+
       <div class="icono">
-
-        <span *ngIf="n.tipo === 'comunicado'">📢</span>
-        <span *ngIf="n.tipo === 'alerta'">⚠️</span>
-
+        {{ n.tipo === 'alerta' ? '⚠️' : '📢' }}
       </div>
-
 
       <div class="contenido">
-
         <h4>{{ n.titulo }}</h4>
-
         <p>{{ n.mensaje }}</p>
 
-        <span class="fecha">{{ n.fecha }}</span>
+        <span class="fecha">
+          {{ n.creado_at | date:'dd MMM hh:mm a' }}
+        </span>
+
+        <img 
+          *ngIf="n.imagen" 
+          [src]="n.imagen" 
+          class="imagen-notificacion"
+        />
+      </div>
+
+      <div class="acciones">
+
+        <button 
+          class="btn-leido"
+          (click)="toggleLeido(n); $event.stopPropagation()"
+        >
+          {{ n.leido ? 'Deshacer' : 'Marcar leído' }}
+        </button>
+
+        <button 
+          class="btn-eliminar"
+          (click)="abrirConfirmacion(n.id, $event)"
+        >
+          🗑️
+        </button>
 
       </div>
 
+    </div>
 
-      <button
-        class="btn-leido"
-        (click)="toggleLeido(n)">
+  </div>
+</div>
 
-        {{ n.leido ? 'Desmarcar' : 'Marcar leído' }}
 
+<div *ngIf="mostrarFormulario" class="overlay">
+
+  <div class="modal-clean">
+
+    <div class="modal-header">
+      <h3>Nueva publicación</h3>
+      <span class="close" (click)="toggleFormulario()">✖</span>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="row">
+        <div class="form-group small">
+          <label>Tipo</label>
+          <select [(ngModel)]="form.tipo">
+            <option value="comunicado">Comunicado</option>
+            <option value="alerta">Alerta</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Título</label>
+        <input [(ngModel)]="form.titulo" placeholder="Escribe el título..." />
+      </div>
+
+      <div class="form-group">
+        <label>Mensaje</label>
+        <textarea [(ngModel)]="form.mensaje" placeholder="Escribe el mensaje..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Imagen</label>
+
+        <label class="upload-box">
+          <input type="file" (change)="onFileSelected($event)" />
+          <span>📎 Subir archivo</span>
+        </label>
+
+        <small *ngIf="form.imagen">Imagen cargada ✔</small>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn cancel" (click)="toggleFormulario()">Cancelar</button>
+      <button class="btn primary" (click)="guardarNotificacion()">Publicar</button>
+    </div>
+
+  </div>
+
+</div>
+
+<div *ngIf="notificacionSeleccionada" class="modal">
+  <div class="modal-box">
+
+    <h3>{{ notificacionSeleccionada.titulo }}</h3>
+
+    <p>{{ notificacionSeleccionada.mensaje }}</p>
+
+    <img 
+      *ngIf="notificacionSeleccionada.imagen"
+      [src]="notificacionSeleccionada.imagen"
+      class="imagen-notificacion"
+    />
+
+    <span class="fecha">
+      {{ notificacionSeleccionada.creado_at | date:'full' }}
+    </span>
+
+    <div class="acciones-detalle">
+      <button (click)="cerrarModal()">Cerrar</button>
+    </div>
+
+  </div>
+</div>
+
+<div *ngIf="mostrarConfirmacion" class="modal">
+
+  <div class="modal-box confirmacion">
+
+    <h3>¿Eliminar notificación?</h3>
+    <p>Esta acción no se puede deshacer.</p>
+
+    <div class="acciones-confirmacion">
+      <button class="btn-cancelar" (click)="cancelarEliminar()">
+        Cancelar
       </button>
 
+      <button class="btn-confirmar" (click)="confirmarEliminar()">
+        Eliminar
+      </button>
     </div>
 
   </div>

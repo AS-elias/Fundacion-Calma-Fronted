@@ -1,0 +1,272 @@
+@use "sass:color";
+@import url('https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;700&family=Inter:wght@400;500;600;800;900&display=swap');
+
+/* Variables de la Fundación Calma */
+$primary-blue: #0284c7;
+$primary-blue-hover: #0369a1;
+$bg-light: #f9fafb;
+$border-color: #f3f4f6;
+$border-darker: #e5e7eb;
+$text-dark: #111827;
+$text-gray: #6b7280;
+$text-light: #9ca3af;
+
+.contenedor {
+  padding: 32px 48px;
+  background: #ffffff;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+
+  h2 {
+    font-family: 'Inknut Antiqua', serif;
+    font-size: 2.2rem;
+    color: $text-dark;
+    margin-top: 0;
+    margin-bottom: 40px;
+    font-weight: 800;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 32px;
+  }
+
+  .card {
+    background: #ffffff;
+    padding: 32px;
+    border-radius: 16px;
+    border: 1px solid $border-darker;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    &:hover, &:focus {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px -8px rgba(2, 132, 199, 0.25);
+      border-color: $primary-blue;
+      background: #f0f9ff;
+      
+      .icono {
+        background: rgba(2, 132, 199, 0.25);
+        color: $primary-blue-hover;
+      }
+    }
+
+    .icono {
+      font-size: 24px;
+      margin-bottom: 16px;
+      background: rgba(2, 132, 199, 0.15);
+      color: $primary-blue;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      transition: all 0.2s;
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      margin: 0 0 8px 0;
+      font-weight: 700;
+      color: $text-dark;
+    }
+
+    p {
+      font-size: 0.95rem;
+      color: $text-gray;
+      margin: 0;
+      font-weight: 500;
+    }
+  }
+}
+
+/* --- ESTILOS DE LA LISTA INTERNA --- */
+.list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 4px;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: $bg-light; border-radius: 4px; }
+  &::-webkit-scrollbar-thumb { background: $border-darker; border-radius: 4px; }
+
+  .item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: $bg-light;
+    border: 1px solid $border-darker;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #f0f9ff;
+      border-color: $primary-blue;
+    }
+
+    .item-left {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+
+      .icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(2, 132, 199, 0.15);
+        color: $primary-blue;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        &.doc { background: rgba(2, 132, 199, 0.1); color: $primary-blue; }
+      }
+
+      .info {
+        display: flex;
+        flex-direction: column;
+
+        .title { font-size: 0.95rem; font-weight: 700; color: $text-dark; }
+        .doc-link { text-decoration: none; color: $primary-blue; font-size: 0.95rem; font-weight: 600; &:hover { text-decoration: underline; color: $primary-blue-hover; } }
+        .subtitle { font-size: 0.85rem; color: $text-gray; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+      }
+    }
+
+    .delete {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #fee2e2;
+      border: none;
+      color: #ef4444;
+      font-size: 0.85rem;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      &:hover { background: #fca5a5; color: #b91c1c; }
+    }
+  }
+}
+
+/* --- MODAL UNIFICADO --- */
+.overlay, .modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5) !important;
+  backdrop-filter: blur(6px) !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+  font-family: 'Inter', sans-serif;
+
+  .modal-box, .modal-content, .modal-clean {
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    width: 90% !important;
+    max-width: 480px !important;
+    padding: 24px !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid $border-color;
+      padding-bottom: 12px;
+
+      h3 { margin: 0; color: $text-dark; font-size: 1.25rem; font-weight: 700; }
+      .close, .btn-close { 
+        cursor: pointer; 
+        font-size: 1.1rem; 
+        color: $text-gray; 
+        background: $bg-light;
+        border: none;
+        width: 32px; 
+        height: 32px;
+        border-radius: 50%;
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        transition: all 0.2s;
+        &:hover { background: $border-darker; color: $text-dark; } 
+      }
+    }
+
+    p { color: $text-gray; line-height: 1.5; font-size: 0.95rem; }
+
+    .form-group, .form {
+      margin-bottom: 1.5rem;
+      margin-top: 10px;
+      
+      label { display: block; margin-bottom: 0.5rem; color: $text-dark; font-weight: 600; font-size: 0.9rem; }
+      
+      input, textarea, select { 
+        width: 100%; 
+        padding: 0.8rem 1rem; 
+        margin-bottom: 10px;
+        border: 1px solid $border-darker; 
+        border-radius: 8px; 
+        font-family: inherit; 
+        font-size: 0.95rem; 
+        background: #ffffff;
+        transition: all 0.2s; 
+        &:focus { outline: none; border-color: $primary-blue; background: #ffffff; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); } 
+      }
+      
+      textarea { resize: vertical; min-height: 100px; }
+    }
+
+    .modal-footer, .acciones-detalle, .acciones-confirmacion {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid $border-color;
+
+      .btn, button {
+        padding: 0.6rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.2s;
+        &.cancel, &.btn-cancelar { background: $bg-light; color: $text-gray; &:hover { background: $border-darker; color: $text-dark; } }
+        &.primary, &.btn-add { background: $primary-blue; color: white; width: auto; &:hover { background: $primary-blue-hover; box-shadow: 0 4px 6px rgba(2, 132, 199, 0.2); } }
+        &.btn-confirmar, &.delete { display: flex; align-items: center; gap: 6px; background: #ef4444; color: white; &:hover { background: #dc2626; box-shadow: 0 4px 6px rgba(239,68,68,0.2); } }
+      }
+    }
+    
+    .btn-add {
+      width: 100%;
+      padding: 0.8rem;
+      background: $primary-blue;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      &:hover { background: $primary-blue-hover; box-shadow: 0 4px 6px rgba(2, 132, 199, 0.2); }
+    }
+  }
+}
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(15px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

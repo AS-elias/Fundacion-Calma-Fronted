@@ -1,0 +1,402 @@
+@use "sass:color";
+@import url('https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;700&family=Inter:wght@400;500;600;800;900&display=swap');
+
+/* Variables de la Fundación Calma */
+$primary-blue: #0284c7;
+$primary-blue-hover: #0369a1;
+$bg-light: #f9fafb;
+$border-color: #f3f4f6;
+$border-darker: #e5e7eb;
+$text-dark: #111827;
+$text-gray: #6b7280;
+$text-light: #9ca3af;
+$success-color: #10b981;
+
+.contenedor {
+  padding: 30px;
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+  background: #FFFFFF;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  font-family: 'Inter', sans-serif;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid $border-color;
+    padding-bottom: 20px;
+
+    .titulo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      h2 { 
+        margin: 0; 
+        font-size: 2.2rem; 
+        font-weight: 800; 
+        color: $text-dark; 
+        font-family: 'Inknut Antiqua', serif; 
+      }
+    }
+
+    .btn-nueva {
+      background-color: $primary-blue;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      &:hover {
+        background-color: $primary-blue-hover;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(2, 132, 199, 0.4);
+      }
+    }
+  }
+
+  /* SALA PRINCIPAL */
+  .sala-principal {
+    background: linear-gradient(135deg, #f0f9ff 0%, rgba(2, 132, 199, 0.15) 100%);
+    border: 2px solid $primary-blue;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 20px rgba(2, 132, 199, 0.15);
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 12px 32px rgba(2, 132, 199, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .sala-principal-content {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex: 1;
+
+      .sala-icon {
+        font-size: 3.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .sala-info {
+        h3 {
+          margin: 0 0 8px 0;
+          font-size: 1.5rem;
+          font-weight: 800;
+          color: $text-dark;
+          font-family: 'Inknut Antiqua', serif;
+        }
+        p {
+          margin: 0;
+          color: $text-gray;
+          font-size: 0.95rem;
+        }
+      }
+    }
+
+    .btn-entrar {
+      background-color: $primary-blue;
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+
+      i { font-size: 1.1rem; }
+
+      &:hover {
+        background-color: $primary-blue-hover;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(2, 132, 199, 0.4);
+      }
+    }
+  }
+
+  /* SECCIÓN DE SALAS */
+  .salas-section {
+    .section-title {
+      font-size: 1.5rem;
+      margin: 40px 0 24px 0;
+      font-weight: 800;
+      color: $text-dark;
+      font-family: 'Inknut Antiqua', serif;
+      padding-bottom: 16px;
+      border-bottom: 2px solid $border-color;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+  }
+
+  /* TARJETA DE GRUPO */
+  .grupo-card {
+    background: $bg-light;
+    border: 1px solid $border-darker;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 8px 16px rgba(2, 132, 199, 0.12);
+      border-color: $primary-blue;
+    }
+
+    .grupo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 3px solid $primary-blue;
+
+      h4 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: $text-dark;
+        font-family: 'Inknut Antiqua', serif;
+      }
+
+      .sala-count {
+        background: rgba(2, 132, 199, 0.15);
+        color: $primary-blue;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+    }
+
+    .salas-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+
+  /* ITEM SALA */
+  .sala-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid $border-darker;
+    border-radius: 10px;
+    padding: 14px 16px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #f0f9ff;
+      border-color: $primary-blue;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1);
+    }
+
+    .sala-item-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+
+      .sala-item-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(2, 132, 199, 0.15);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $primary-blue;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+      }
+
+      .sala-item-info {
+        h5 {
+          margin: 0;
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: $text-dark;
+        }
+      }
+    }
+
+    .sala-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .btn-delete-small {
+        background-color: #fee2e2;
+        color: #ef4444;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+
+        &:hover {
+          background-color: #fca5a5;
+          color: #b91c1c;
+          transform: scale(1.1);
+        }
+      }
+
+      .btn-entrar-small {
+        background-color: var(--primary-btn);
+        color: white;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+        flex-shrink: 0;
+        font-family: 'Inter', sans-serif;
+
+        &:hover {
+          background-color: var(--primary-hover);
+          box-shadow: 0 4px 10px rgba(78, 179, 228, 0.3);
+          transform: scale(1.1);
+        }
+      }
+    }
+  }
+}
+
+/* --- MODAL UNIFICADO --- */
+.overlay, .modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5) !important;
+  backdrop-filter: blur(6px) !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+  font-family: 'Inter', sans-serif;
+
+  .modal-box, .modal-content, .modal-clean {
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    width: 90% !important;
+    max-width: 480px !important;
+    padding: 24px !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid $border-color;
+      padding-bottom: 12px;
+
+      h3 { margin: 0; color: $text-dark; font-size: 1.25rem; font-weight: 700; font-family: 'Inknut Antiqua', serif; }
+      .close, .btn-close { 
+        cursor: pointer; 
+        font-size: 1.1rem; 
+        color: $text-gray; 
+        background: $bg-light;
+        border: none;
+        width: 32px; 
+        height: 32px;
+        border-radius: 50%;
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        transition: all 0.2s;
+        &:hover { background: $border-darker; color: $text-dark; } 
+      }
+    }
+
+    p { color: $text-gray; line-height: 1.5; font-size: 0.95rem; }
+
+    .form-group, .form {
+      margin-bottom: 1.5rem;
+      margin-top: 10px;
+      
+      label { display: block; margin-bottom: 0.5rem; color: $text-dark; font-weight: 600; font-size: 0.9rem; }
+      
+      input, textarea, select { 
+        width: 100%; 
+        padding: 0.8rem 1rem; 
+        margin-bottom: 10px;
+        border: 1px solid $border-darker; 
+        border-radius: 8px; 
+        font-family: inherit; 
+        font-size: 0.95rem; 
+        background: #ffffff;
+        transition: all 0.2s; 
+        &:focus { outline: none; border-color: $primary-blue; background: #ffffff; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); } 
+      }
+      
+      textarea { resize: vertical; min-height: 100px; }
+    }
+
+    .modal-footer, .acciones-detalle, .acciones-confirmacion {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid $border-color;
+
+      .btn, button {
+        padding: 0.6rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.2s;
+        &.cancel, &.btn-cancelar { background: $bg-light; color: $text-gray; &:hover { background: $border-darker; color: $text-dark; } }
+        &.primary, &.btn-crear { background: $primary-blue; color: white; width: auto; &:hover { background: $primary-blue-hover; box-shadow: 0 4px 6px rgba(2, 132, 199, 0.2); } }
+        &.btn-confirmar { display: flex; align-items: center; gap: 6px; background: #ef4444; color: white; &:hover { background: #dc2626; box-shadow: 0 4px 6px rgba(239,68,68,0.2); } }
+      }
+    }
+  }
+}
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(15px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

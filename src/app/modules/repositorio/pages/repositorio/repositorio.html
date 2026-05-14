@@ -1,0 +1,144 @@
+<div class="contenedor">
+
+  <h2>Repositorio</h2>
+
+  <div class="grid">
+    <div 
+      class="card"
+      *ngFor="let bloque of bloques"
+      (click)="seleccionarBloque(bloque)"
+    >
+      <div class="icono">
+        <i class="pi pi-folder-open" *ngIf="!bloque.titulo.includes('Redes')"></i>
+        <i class="pi pi-share-alt" *ngIf="bloque.titulo.includes('Redes')"></i>
+      </div>
+      <h3>{{ bloque.titulo }}</h3>
+
+      <p *ngIf="!bloque.titulo.includes('Redes')">
+        {{ bloque.documentos.length }} documentos
+      </p>
+
+      <p *ngIf="bloque.titulo.includes('Redes')">
+        {{ bloque.documentos.length }} redes
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal" *ngIf="bloqueSeleccionado">
+
+  <div class="modal-content">
+
+  <div class="modal-header">
+    <h3>{{ bloqueSeleccionado.titulo }}</h3>
+
+    <button class="btn-close" (click)="cerrarModal()">
+      ✕
+    </button>
+  </div>
+
+    <div class="form">
+
+      <ng-container *ngIf="esRedesSociales(); else docsForm">
+
+        <input [(ngModel)]="nuevoNombre" placeholder="Nombre (Instagram...)" />
+        <input [(ngModel)]="nuevoLink" placeholder="https://..." />
+
+        <button class="btn-add" (click)="agregarRedSocial()">
+          + Agregar red
+        </button>
+
+      </ng-container>
+
+      <ng-template #docsForm>
+
+        <input type="file" (change)="onFileSelected($event)" />
+
+        <button class="btn-add" (click)="agregarDocumento()">
+          + Subir documento
+        </button>
+
+      </ng-template>
+
+    </div>
+
+    <div class="list">
+
+      <ng-container *ngIf="esRedesSociales(); else docsList">
+
+        <a 
+          class="item"
+          *ngFor="let red of bloqueSeleccionado.documentos; let i = index"
+          [href]="red.url"
+          target="_blank"
+        >
+
+          <div class="item-left">
+
+            <div class="icon">
+              <i class="fa-brands" [ngClass]="red.icono"></i>
+            </div>
+
+            <div class="info">
+              <span class="title">{{ red.nombre }}</span>
+              <span class="subtitle">{{ red.url }}</span>
+            </div>
+
+          </div>
+
+          <button 
+            class="delete"
+            (click)="abrirConfirmacion('red', i); $event.preventDefault(); $event.stopPropagation();"
+          >
+            <i class="pi pi-trash"></i> Eliminar
+          </button>
+
+        </a>
+
+      </ng-container>
+
+      <ng-template #docsList>
+
+        <div 
+          class="item"
+          *ngFor="let doc of bloqueSeleccionado.documentos; let i = index"
+        >
+
+          <div class="item-left">
+
+            <div class="icon doc"><i class="pi pi-file"></i></div>
+
+            <div class="info">
+              <a [href]="doc.url" target="_blank" class="doc-link">
+                {{ doc.nombre }}
+              </a>
+              <span class="subtitle">Documento</span>
+            </div>
+
+          </div>
+
+          <button class="delete" (click)="abrirConfirmacion('doc', i)">
+            <i class="pi pi-trash"></i> Eliminar
+          </button>
+
+        </div>
+
+      </ng-template>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div class="overlay" *ngIf="mostrarConfirmacion">
+  <div class="modal-box">
+    <h3>¿Eliminar elemento?</h3>
+    <p>Esta acción no se puede deshacer. El elemento se borrará permanentemente.</p>
+    <div class="acciones-confirmacion">
+      <button class="btn-cancelar" (click)="cancelarEliminar()">Cancelar</button>
+      <button class="btn-confirmar" (click)="confirmarEliminar()"><i class="pi pi-trash"></i> Eliminar</button>
+    </div>
+  </div>
+</div>

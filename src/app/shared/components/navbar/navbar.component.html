@@ -1,25 +1,57 @@
-<!-- HEADER GLOBAL -->
 <header class="header">
 
-  <!-- BUSCADOR -->
   <div class="search-bar">
     <i class="pi pi-search"></i>
     <input type="text" placeholder="Buscar Recursos, reportes o personal..." />
   </div>
 
-  <!-- AREA DERECHA -->
   <div class="header-right">
 
-    <!-- MODO OSCURO -->
-    <button class="theme-toggle" (click)="toggleDarkMode()"
-      [attr.aria-label]="isDarkMode() ? 'Modo Claro' : 'Modo Oscuro'">
-      <i class="pi" [class.pi-sun]="isDarkMode()" [class.pi-moon]="!isDarkMode()"></i>
+    <button 
+      class="theme-toggle" 
+      (click)="toggleDarkMode()"
+      [attr.aria-label]="isDarkMode() ? 'Modo Claro' : 'Modo Oscuro'"
+    >
+      <i 
+        class="pi" 
+        [class.pi-sun]="isDarkMode()" 
+        [class.pi-moon]="!isDarkMode()">
+      </i>
     </button>
 
-    <!-- NOTIFICACIONES -->
-    <i class="pi pi-bell notification"></i>
+    <div class="notif-container">
 
-    <!-- USUARIO -->
+      <div class="notification" (click)="toggleDropdown()">
+        <i class="pi pi-bell"></i>
+
+        <span *ngIf="noLeidas() > 0" class="badge">
+          {{ noLeidas() }}
+        </span>
+      </div>
+
+      <div class="dropdown" *ngIf="mostrarDropdown()">
+
+        <h4>Notificaciones</h4>
+
+        <div 
+          class="item"
+          *ngFor="let n of notificaciones()"
+          [class.leida]="n.leido"
+          (click)="marcarLeida(n)"
+        >
+          <strong>{{ n.titulo }}</strong>
+          <p>{{ n.mensaje }}</p>
+        </div>
+
+        
+        <div class="empty" *ngIf="notificaciones().length === 0">
+          No hay notificaciones
+        </div>
+
+      </div>
+
+    </div>
+
     <div class="user-info">
 
       <div class="user-text">

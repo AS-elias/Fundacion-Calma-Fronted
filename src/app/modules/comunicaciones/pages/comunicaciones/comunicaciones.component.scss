@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;700&family=Inter:wght@400;500;600&display=swap');
-
 /* Contenedor Principal */
 .chat-container {
     display: flex;
@@ -9,7 +7,6 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     border: 1px solid #f3f4f6;
     overflow: hidden;
-    font-family: 'Inter', sans-serif;
     margin: 20px;
 }
 
@@ -32,7 +29,6 @@
             margin-bottom: 15px;
 
             h2 {
-                font-family: 'Inknut Antiqua', serif;
                 margin: 0;
                 font-size: 20px;
                 color: #111827;
@@ -80,7 +76,6 @@
                 outline: none;
                 width: 100%;
                 color: #374151;
-                font-family: 'Inter', sans-serif;
             }
         }
     }
@@ -119,16 +114,16 @@
                 color: #ffffff;
                 text-decoration: none;
                 font-weight: 600;
-                background: #0284c7;
+                background: var(--primary-btn);
                 padding: 10px 20px;
                 border-radius: 8px;
                 transition: all 0.3s ease;
-                box-shadow: 0 4px 6px rgba(2, 132, 199, 0.2);
+                box-shadow: 0 4px 6px rgba(78, 179, 228, 0.2);
 
                 &:hover {
-                    background: #0369a1;
+                    background: var(--primary-hover);
                     transform: translateY(-2px);
-                    box-shadow: 0 6px 12px rgba(2, 132, 199, 0.3);
+                    box-shadow: 0 6px 12px rgba(78, 179, 228, 0.3);
                 }
             }
         }
@@ -145,8 +140,8 @@
             }
 
             &.active {
-                background: #eff6ff;
-                border-left: 4px solid #0284c7;
+                background: #f2fbff;
+                border-left: 4px solid var(--primary-btn);
             }
 
             .contact-info {
@@ -313,7 +308,7 @@
                 .sender-name-bubble {
                     font-size: 11px;
                     font-weight: 700;
-                    color: #0ea5e9; /* Azul vibrante */
+                    color: var(--primary-btn);
                     margin-left: 12px;
                     margin-bottom: 2px;
                 }
@@ -381,7 +376,7 @@
                         align-items: center;
                         
                         i.text-blue-500 {
-                            color: #3b82f6 !important;
+                            color: var(--primary-btn) !important;
                         }
                         i.text-500 {
                             color: #9ca3af !important;
@@ -429,7 +424,7 @@
                     align-items: flex-end;
 
                     .bubble {
-                        background: #0284c7;
+                        background: var(--primary-btn);
                         color: #ffffff;
                         border-bottom-right-radius: 4px;
                     }
@@ -565,16 +560,16 @@
             top: -45px;
             left: 20px;
             background: #ffffff;
-            border: 1px solid #bae6fd;
+            border: 1px solid var(--primary-btn);
             padding: 8px 16px;
             border-radius: 20px;
-            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.15);
+            box-shadow: 0 4px 10px rgba(78, 179, 228, 0.15);
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 13px;
             font-weight: 600;
-            color: #0284c7;
+            color: var(--primary-btn);
             z-index: 10;
             animation: slideUpFade 0.3s ease-out;
 
@@ -617,15 +612,14 @@
             padding: 10px 16px;
             border-radius: 20px;
             outline: none;
-            font-family: 'Inter', sans-serif;
             font-size: 14px;
             color: #374151;
             transition: all 0.2s;
 
             &:focus {
                 background: #ffffff;
-                border-color: #0284c7;
-                box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+                border-color: var(--primary-btn);
+                box-shadow: 0 0 0 3px rgba(78, 179, 228, 0.15);
             }
 
             &::placeholder {
@@ -634,7 +628,7 @@
         }
 
         .send-btn {
-            background: #0284c7;
+            background: var(--primary-btn);
             color: white;
             border: none;
             width: 36px;
@@ -648,8 +642,8 @@
             flex-shrink: 0;
 
             &:hover:not(:disabled) {
-                background: #0369a1;
-                box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+                background: var(--primary-hover);
+                box-shadow: 0 4px 12px rgba(78, 179, 228, 0.3);
                 transform: scale(1.05);
             }
 
@@ -706,7 +700,7 @@
 }
 
 .bg-blue {
-    background: #3b82f6;
+    background: var(--primary-btn);
 }
 
 .bg-purple {
@@ -762,7 +756,6 @@
     h3 {
         margin-top: 0;
         margin-bottom: 15px;
-        font-family: 'Inknut Antiqua', serif;
         color: #111827;
     }
     p {
@@ -776,7 +769,6 @@
         border: 1px solid #d1d5db;
         border-radius: 6px;
         margin-bottom: 20px;
-        font-family: 'Inter', sans-serif;
         box-sizing: border-box;
     }
     
@@ -789,11 +781,10 @@
         cursor: pointer;
         font-weight: 500;
         color: #4b5563;
-        font-family: 'Inter', sans-serif;
         transition: all 0.2s;
 
         &.active {
-            background: #0284c7;
+            background: var(--primary-btn);
             color: white;
         }
     }
@@ -861,14 +852,14 @@
             &:hover { background: #e5e7eb; }
         }
         .btn-primary {
-            background: #0284c7;
+            background: var(--primary-btn);
             color: #fff;
             border: none;
             padding: 8px 16px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 500;
-            &:hover:not(:disabled) { background: #0369a1; }
+            &:hover:not(:disabled) { background: var(--primary-hover); }
             &:disabled { opacity: 0.5; cursor: not-allowed; }
         }
     }
@@ -899,7 +890,7 @@
             align-items: center;
             justify-content: center;
             margin-bottom: 24px;
-            color: #3b82f6;
+            color: var(--primary-btn);
 
             i {
                 font-size: 40px;
@@ -907,7 +898,6 @@
         }
 
         h2 {
-            font-family: 'Inknut Antiqua', serif;
             font-size: 24px;
             color: #111827;
             margin-bottom: 12px;
@@ -921,7 +911,7 @@
         }
 
         .btn-start-chat {
-            background: #0284c7;
+            background: var(--primary-btn);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -934,7 +924,7 @@
             transition: background 0.2s;
 
             &:hover {
-                background: #0369a1;
+                background: var(--primary-hover);
             }
         }
     }
