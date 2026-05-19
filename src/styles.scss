@@ -44,21 +44,21 @@
 
 /* --- Tema Oscuro (Dark Mode) --- */
 :root.app-dark {
-  --bg-admin: #121212;
+  --bg-admin: #0b0b0c;
   /* Fondo más oscuro de la página */
-  --surface-ground: #121212;
+  --surface-ground: #0b0b0c;
   /* Fondo del layout principal en dark mode */
-  --surface-section: #1e1e1e;
+  --surface-section: #151517;
   /* Fondo de tarjetas, sidebar y header oscuros */
-  --surface-border: #333333;
+  --surface-border: #2a2a2d;
   /* Bordes oscuros */
-  --text-color: rgba(255, 255, 255, 0.87);
+  --text-color: #e7e7ea;
   /* Texto principal claro */
-  --text-color-secondary: rgba(255, 255, 255, 0.60);
+  --text-color-secondary: #a0a0a8;
   /* Menús oscuros con letras legibles */
-  --text-color-title: #ffffff;
+  --text-color-title: #f8fafc;
   /* Títulos fuertes blancos */
-  --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  --card-shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
 }
 
 body {
@@ -67,6 +67,237 @@ body {
   -webkit-font-smoothing: antialiased;
   font-family: var(--font-layout);
   background-color: var(--bg-admin);
+  color: var(--text-color);
+}
+
+:root.app-dark body,
+:root.app-dark .layout-wrapper,
+:root.app-dark .layout-main,
+:root.app-dark .content-area {
+  background: var(--surface-ground);
+  color: var(--text-color);
+}
+
+:root.app-dark :where(
+  .page-container,
+  .dashboard-container,
+  .user-dashboard-container,
+  .notificaciones-container,
+  .contenedor,
+  .comunidad-container,
+  .container,
+  .analisis-page,
+  .estrategia-page,
+  .chat-container,
+  .registro-container,
+  .edit-container,
+  .lista-container
+) {
+  background: var(--surface-ground) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark :where(
+  .card,
+  .stat-card,
+  .detail-box,
+  .calendar-card,
+  .task-card,
+  .contact-card,
+  .card-table,
+  .card-form,
+  .form-card,
+  .modal-content,
+  .modal-box,
+  .modal-clean,
+  .modal-detalle-box,
+  .modal-notificacion-box,
+  .confirm-card,
+  .task-detail-modal,
+  .task-form-modal,
+  .registro-modal,
+  .social-card,
+  .item,
+  .empty-state,
+  .panel-card,
+  .board,
+  .task-detail__hero,
+  .task-detail__block,
+  .task-detail__meta,
+  .task-detail__links,
+  .chat-sidebar,
+  .chat-main,
+  .login-card
+) {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+  box-shadow: var(--card-shadow);
+}
+
+:root.app-dark :where(
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  .page-title,
+  .title,
+  .doc-link,
+  .header h2,
+  .header-section h1,
+  .header-section h2,
+  .modal-header h3,
+  .modal-detalle-box h3,
+  .modal-notificacion-header h3,
+  .contenido h4,
+  .user-text strong
+) {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark :where(
+  p,
+  small,
+  span,
+  label,
+  .subtitle,
+  .subtitulo,
+  .page-subtitle,
+  .mensaje-resumen,
+  .fecha,
+  .fecha-detalle,
+  .muted,
+  .empty,
+  .contador,
+  .form-group label
+) {
+  color: var(--text-color-secondary);
+}
+
+:root.app-dark :where(
+  input,
+  textarea,
+  select,
+  .search-box,
+  .search-bar,
+  .form,
+  .upload-box label,
+  .mensaje-detalle,
+  .modal-message,
+  .comment-box,
+  .history-panel,
+  .comments-panel,
+  .info-grid input,
+  .info-grid select,
+  .registro-search,
+  .registro-filter,
+  .registro-table__cell-input,
+  .registro-table__cell-select,
+  .task-detail__value,
+  .activity-detail__value,
+  .activity-detail__panel,
+  .activity-detail__link
+) {
+  background: #101012 !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark :where(input, textarea, select)::placeholder {
+  color: #777780 !important;
+}
+
+:root.app-dark :where(
+  table,
+  thead,
+  tbody,
+  tr,
+  th,
+  td,
+  .custom-table,
+  .registro-table
+) {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark :where(thead, th, .registro-table thead) {
+  background: #101012 !important;
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark :where(
+  .btn-close,
+  .close,
+  .btn-cerrar-x,
+  .btn.cancel,
+  .btn-cancelar,
+  .cancel-btn,
+  .task-detail__back,
+  .task-form__cancel,
+  .activity-form__cancel,
+  .filtro,
+  .tab-btn,
+  .page-tab,
+  .icon-btn.ghost,
+  .empty-icon
+) {
+  background: #101012 !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark :where(
+  .modal,
+  .overlay,
+  .modal-detalle,
+  .modal-notificacion,
+  .confirm-overlay,
+  .task-form-overlay,
+  .task-detail-overlay,
+  .registro-overlay
+) {
+  background: rgba(2, 6, 23, 0.72) !important;
+}
+
+:root.app-dark :where(
+  .link-chip,
+  .item-meta span,
+  .modal-icon,
+  .modal-icono,
+  .icono,
+  .item-icon,
+  .upload-icon,
+  .icon.doc,
+  .btn-leido
+) {
+  background: rgba(6, 182, 212, 0.14) !important;
+  color: #67e8f9 !important;
+  border-color: rgba(103, 232, 249, 0.24) !important;
+}
+
+:root.app-dark :where(.delete, .btn-eliminar) {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(248, 113, 113, 0.22) !important;
+  color: #fca5a5 !important;
+}
+
+:root.app-dark :where(.toast-notificacion--success) {
+  background: #052e2a !important;
+  border-color: #0f766e !important;
+  color: #a7f3d0 !important;
+}
+
+:root.app-dark :where(.toast-notificacion--error) {
+  background: #3b1218 !important;
+  border-color: #b91c1c !important;
+  color: #fecaca !important;
+}
+
+:root.app-dark a:not(.btn-nueva):not(.btn-add):not(.btn-download):not(.detalle-link):not(.modal-link) {
+  color: #67e8f9;
 }
 
 

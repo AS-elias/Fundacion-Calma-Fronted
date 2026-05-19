@@ -7,44 +7,75 @@
 
   <div class="header-right">
 
-    <button 
-      class="theme-toggle" 
+    <button
+      class="theme-toggle"
       (click)="toggleDarkMode()"
-      [attr.aria-label]="isDarkMode() ? 'Modo Claro' : 'Modo Oscuro'"
     >
-      <i 
-        class="pi" 
-        [class.pi-sun]="isDarkMode()" 
-        [class.pi-moon]="!isDarkMode()">
-      </i>
+      <i
+        class="pi"
+        [class.pi-sun]="isDarkMode()"
+        [class.pi-moon]="!isDarkMode()"
+      ></i>
     </button>
 
     <div class="notif-container">
 
-      <div class="notification" (click)="toggleDropdown()">
+      <button
+        class="notification"
+        type="button"
+        (click)="toggleDropdown(); $event.stopPropagation()"
+      >
         <i class="pi pi-bell"></i>
 
-        <span *ngIf="noLeidas() > 0" class="badge">
+        <span
+          *ngIf="noLeidas() > 0"
+          class="badge"
+        >
           {{ noLeidas() }}
         </span>
-      </div>
+      </button>
 
-      <div class="dropdown" *ngIf="mostrarDropdown()">
+      <div
+        class="dropdown"
+        *ngIf="mostrarDropdown()"
+        (click)="$event.stopPropagation()"
+      >
 
-        <h4>Notificaciones</h4>
-
-        <div 
-          class="item"
-          *ngFor="let n of notificaciones()"
-          [class.leida]="n.leido"
-          (click)="marcarLeida(n)"
-        >
-          <strong>{{ n.titulo }}</strong>
-          <p>{{ n.mensaje }}</p>
+        <div class="dropdown-header">
+          <h4>Notificaciones</h4>
+          <span>{{ noLeidas() }} pendientes</span>
         </div>
 
-        
-        <div class="empty" *ngIf="notificaciones().length === 0">
+        <button
+          class="item"
+          type="button"
+          *ngFor="let n of notificaciones()"
+          [class.leida]="n.leido"
+          (click)="abrirNotificacion(n)"
+        >
+          <div class="item-icon" [class.sistema]="n.tipo === 'sistema'">
+            {{ n.tipo === 'sistema' ? '!' : 'C' }}
+          </div>
+
+          <div class="item-content">
+            <div class="item-top">
+              <strong>{{ n.titulo }}</strong>
+              <small>{{ etiquetaTipo(n) }}</small>
+            </div>
+
+            <p>{{ resumenMensaje(n) }}</p>
+
+            <div class="item-meta">
+              <span *ngIf="enlaceNotificacion(n)">Con enlace</span>
+              <span *ngIf="firmaNotificacion(n)">Atte. {{ firmaNotificacion(n) }}</span>
+            </div>
+          </div>
+        </button>
+
+        <div
+          class="empty"
+          *ngIf="notificaciones().length === 0"
+        >
           No hay notificaciones
         </div>
 
@@ -52,7 +83,7 @@
 
     </div>
 
-    <div class="user-info">
+    <button class="user-info" type="button" (click)="irAPerfil()" title="Ver mi perfil">
 
       <div class="user-text">
         <strong>{{ nombreUsuario() }}</strong>
@@ -60,11 +91,144 @@
       </div>
 
       <div class="avatar">
-        {{ inicialesUsuario() }}
+        <img *ngIf="fotoUsuario(); else inicialesTpl" [src]="fotoUsuario()!" alt="Foto de perfil" />
+        <ng-template #inicialesTpl>{{ inicialesUsuario() }}</ng-template>
       </div>
 
-    </div>
+    </button>
 
   </div>
 
 </header>
+
+<div
+  *ngIf="notificacionSeleccionada"
+  class="modal-detalle modal-notificacion"
+  (click)="cerrarDetalleNotificacion()"
+>
+  <div
+    class="modal-detalle-box modal-notificacion-box"
+    (click)="$event.stopPropagation()"
+  >
+
+    <div class="modal-detalle-header modal-notificacion-header">
+      <div class="modal-title-group">
+        <div class="modal-icono">
+          {{ notificacionSeleccionada.tipo === 'sistema' ? '!' : 'C' }}
+        </div>
+
+        <div>
+          <span class="modal-eyebrow">{{ etiquetaTipo(notificacionSeleccionada) }}</span>
+          <h3>{{ notificacionSeleccionada.titulo }}</h3>
+        </div>
+      </div>
+
+      <button
+        class="btn-cerrar-x"
+        type="button"
+        (click)="cerrarDetalleNotificacion()"
+      >
+        x
+      </button>
+    </div>
+
+    <div
+      class="detalle-layout modal-notificacion-body"
+      [class.con-imagen]="notificacionSeleccionada.imagen"
+    >
+      <div class="detalle-contenido modal-copy">
+        <div *ngIf="esSistema(notificacionSeleccionada)" class="sistema-detalle">
+          <div class="sistema-detalle__item">
+            <span>Apartado</span>
+            <strong>{{ apartadoSistema(notificacionSeleccionada) }}</strong>
+          </div>
+
+          <div class="sistema-detalle__item">
+            <span>Accion</span>
+            <strong>{{ accionSistema(notificacionSeleccionada) }}</strong>
+          </div>
+
+          <div class="sistema-detalle__item" *ngIf="usuarioSistema(notificacionSeleccionada); else origenSistemaTpl">
+            <span>Usuario</span>
+            <strong>{{ usuarioSistema(notificacionSeleccionada) }}</strong>
+          </div>
+
+          <ng-template #origenSistemaTpl>
+            <div class="sistema-detalle__item">
+              <span>Origen</span>
+              <strong>{{ origenSistema(notificacionSeleccionada) }}</strong>
+            </div>
+          </ng-template>
+        </div>
+
+        <div
+          *ngIf="esSistema(notificacionSeleccionada); else mensajeComunicado"
+          class="sistema-info"
+        >
+          <div class="sistema-resumen">
+            <span>Resumen</span>
+            <p>{{ mensajePrincipal(notificacionSeleccionada) }}</p>
+          </div>
+
+          <div
+            *ngIf="cambiosSistema(notificacionSeleccionada).length"
+            class="sistema-cambios"
+          >
+            <span>Cambios realizados</span>
+            <div
+              *ngFor="let cambio of cambiosSistema(notificacionSeleccionada)"
+              class="sistema-cambio"
+            >
+              {{ cambio }}
+            </div>
+          </div>
+        </div>
+
+        <ng-template #mensajeComunicado>
+          <div class="mensaje-detalle modal-message">
+            {{ mensajePrincipal(notificacionSeleccionada) }}
+          </div>
+        </ng-template>
+
+        <a
+          *ngIf="enlaceNotificacion(notificacionSeleccionada)"
+          [href]="enlaceNotificacion(notificacionSeleccionada)!"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="detalle-link modal-link"
+        >
+          Abrir enlace
+        </a>
+
+        <div
+          *ngIf="!esSistema(notificacionSeleccionada) && firmaNotificacion(notificacionSeleccionada)"
+          class="modal-signature"
+        >
+          Atte. {{ firmaNotificacion(notificacionSeleccionada) }}
+        </div>
+
+        <button
+          *ngIf="esSistema(notificacionSeleccionada) && rutaSistema(notificacionSeleccionada)"
+          class="detalle-link modal-link sistema-accion"
+          type="button"
+          (click)="navegarSistema(notificacionSeleccionada)"
+        >
+          {{ textoBotonSistema(notificacionSeleccionada) }}
+        </button>
+      </div>
+
+      <div *ngIf="notificacionSeleccionada.imagen" class="imagen-modal-frame">
+        <img
+          [src]="notificacionSeleccionada.imagen"
+          class="imagen-modal"
+          alt="Imagen"
+        />
+      </div>
+    </div>
+
+    <span class="fecha-detalle">
+      {{ notificacionSeleccionada.creado_at | date:'dd MMMM yyyy - hh:mm a' }}
+    </span>
+
+  </div>
+</div>

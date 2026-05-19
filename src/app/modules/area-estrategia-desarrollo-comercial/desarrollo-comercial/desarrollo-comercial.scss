@@ -1582,11 +1582,13 @@
 
 .history-panel li {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   margin-bottom: 8px;
   font-size: 13px;
   color: #444;
+  line-height: 1.45;
+  white-space: pre-line;
 }
 
 

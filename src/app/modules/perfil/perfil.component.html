@@ -1,0 +1,141 @@
+<section class="perfil-page">
+  <div class="perfil-card" *ngIf="!cargando; else cargandoTpl">
+    <div class="perfil-hero">
+      <div class="perfil-main">
+        <div class="perfil-photo">
+          <img *ngIf="fotoPerfil; else inicialesTpl" [src]="fotoPerfil" alt="Foto de perfil" />
+          <ng-template #inicialesTpl>{{ iniciales }}</ng-template>
+        </div>
+
+        <div class="perfil-title">
+          <span>{{ rol }}</span>
+          <h1>{{ usuario?.nombre_completo }} {{ usuario?.apellido_completo }}</h1>
+          <p>{{ usuario?.puesto || 'Sin puesto registrado' }}</p>
+        </div>
+      </div>
+
+      <button class="edit-button" type="button" (click)="activarEdicion()" *ngIf="!editando" title="Editar perfil">
+        <i class="pi pi-pencil"></i>
+      </button>
+    </div>
+
+    <div class="perfil-alert" [class.error]="mensaje.tipo === 'error'" *ngIf="mensaje">
+      {{ mensaje.texto }}
+    </div>
+
+    <ng-container *ngIf="!editando; else editarTpl">
+      <div class="perfil-content">
+        <div class="section-title">
+          <div>
+            <h2>Informacion personal</h2>
+            <p>Datos visibles dentro de la plataforma.</p>
+          </div>
+        </div>
+
+        <div class="perfil-grid">
+          <div class="info-item info-item--wide">
+            <i class="pi pi-lock"></i>
+            <span>Correo institucional</span>
+            <strong>{{ usuario?.email }}</strong>
+            <small>No se puede modificar desde el perfil.</small>
+          </div>
+
+          <div class="info-item">
+            <i class="pi pi-phone"></i>
+            <span>Telefono</span>
+            <strong>{{ usuario?.telefono || 'Sin telefono' }}</strong>
+          </div>
+
+          <div class="info-item">
+            <i class="pi pi-briefcase"></i>
+            <span>Puesto</span>
+            <strong>{{ usuario?.puesto || 'Sin puesto' }}</strong>
+          </div>
+
+          <div class="info-item">
+            <i class="pi pi-check-circle"></i>
+            <span>Estado</span>
+            <strong>{{ usuario?.estado || 'ACTIVO' }}</strong>
+          </div>
+
+          <div class="info-item">
+            <i class="pi pi-id-card"></i>
+            <span>Rol</span>
+            <strong>{{ rol }}</strong>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #editarTpl>
+      <div class="section-title edit-title">
+        <div>
+          <h2>Editar perfil</h2>
+          <p>Actualiza tus datos personales. El correo permanece protegido.</p>
+        </div>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="perfil-form">
+        <div class="photo-editor form-panel">
+          <div class="photo-preview">
+            <img *ngIf="fotoPerfil; else inicialesEditarTpl" [src]="fotoPerfil" alt="Foto de perfil" />
+            <ng-template #inicialesEditarTpl>{{ iniciales }}</ng-template>
+          </div>
+          <div>
+            <strong>Foto de perfil</strong>
+            <p>Usa una imagen clara para que tu equipo pueda reconocerte.</p>
+            <label class="photo-upload">
+              <i class="pi pi-camera"></i>
+              Cambiar foto
+              <input type="file" accept="image/*" (change)="seleccionarFoto($event)" />
+            </label>
+          </div>
+        </div>
+
+        <div class="locked-email form-panel">
+          <i class="pi pi-lock"></i>
+          <div>
+            <span>Correo institucional</span>
+            <strong>{{ usuario?.email }}</strong>
+            <p>Este dato esta asociado al acceso y no se puede cambiar.</p>
+          </div>
+        </div>
+
+        <label>
+          Nombre
+          <input formControlName="nombre_completo" type="text" />
+        </label>
+
+        <label>
+          Apellido
+          <input formControlName="apellido_completo" type="text" />
+        </label>
+
+        <label>
+          Telefono
+          <input formControlName="telefono" type="tel" />
+        </label>
+
+        <label>
+          Puesto
+          <input formControlName="puesto" type="text" />
+        </label>
+
+        <p class="perfil-error" *ngIf="form.invalid && form.touched">
+          Revisa los campos. Usa solo letras en nombre, apellido y puesto; numeros en telefono.
+        </p>
+
+        <div class="perfil-actions">
+          <button class="secondary-button" type="button" (click)="cancelarEdicion()">Cancelar</button>
+          <button class="primary-button" type="submit" [disabled]="guardando">
+            {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+        </div>
+      </form>
+    </ng-template>
+  </div>
+
+  <ng-template #cargandoTpl>
+    <div class="perfil-card perfil-loading">Cargando perfil...</div>
+  </ng-template>
+</section>

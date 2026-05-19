@@ -100,6 +100,12 @@ export const routes: Routes = [
       {
         path: 'repositorio',
         component: Repositorio
+      },
+      {
+        path: 'perfil',
+        loadComponent: () =>
+          import('./modules/perfil/perfil.component')
+            .then(m => m.PerfilComponent)
       }
     ],
   },

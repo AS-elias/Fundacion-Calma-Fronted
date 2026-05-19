@@ -742,18 +742,17 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
 
   agregarComentario() {
     if (!this.convenioSeleccionado || !this.nuevoComentario.trim()) return;
-    const stamp = this.formatearFecha(new Date());
     const comentario = this.nuevoComentario.trim();
-    const textoLocal = `${this.usuarioActual} · ${stamp} · ${comentario}`;
     const id = this.idConvenio(this.convenioSeleccionado);
 
     this.conveniosService.addComentario(id, comentario).subscribe({
       next: (resp) => {
+        const textoComentario = resp ? this.formatearComentario(resp) : comentario;
         this.convenioSeleccionado = {
           ...this.convenioSeleccionado!,
           comentarios: [
             ...(this.convenioSeleccionado?.comentarios || []),
-            { id: resp?.id, texto: textoLocal },
+            { id: resp?.id, texto: textoComentario },
           ],
         };
 
@@ -847,10 +846,21 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
 
     this.conveniosService.updateConvenio(payload).subscribe({
       next: (resp) => {
+        const comentariosPrevios = this.convenioSeleccionado?.comentarios
+          ? this.convenioSeleccionado.comentarios.map((comentario) => ({ ...comentario }))
+          : [];
+        const historialPrevio = this.convenioSeleccionado?.historial
+          ? [...this.convenioSeleccionado.historial]
+          : [];
         const actualizado = resp?.convenio
           ? this.normalizarConvenio(this.mapFromDto(resp.convenio))
           : this.normalizarConvenio(payload as Convenio);
         const cambios = this.obtenerCamposActualizados(this.snapshotEdicion, actualizado);
+        actualizado.comentarios = comentariosPrevios;
+        actualizado.historial = this.combinarHistorial([
+          ...(actualizado.historial || []),
+          ...historialPrevio,
+        ]);
         if (this.convenioSeleccionado?.archivoAdjunto?.nombre) {
           actualizado.archivoAdjunto = { ...this.convenioSeleccionado.archivoAdjunto };
         }
@@ -864,13 +874,15 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
         this.convenioSeleccionado = actualizado;
         this.snapshotEdicion = this.clonarConvenio(actualizado);
         this.persistirConvenios();
-        if (cambios.length) {
+        const actualizadoId = this.idConvenio(actualizado);
+        if (cambios.length && !/^\d+$/.test(actualizadoId)) {
           this.registrarEventoHistorialLocal(
-            this.idConvenio(actualizado),
+            actualizadoId,
             `Información actualizada: ${cambios.join(', ')}`,
           );
         }
-        this.hidratarHistorial(this.idConvenio(actualizado));
+        this.hidratarComentarios(actualizadoId);
+        this.hidratarHistorial(actualizadoId);
         this.mostrarNotificacion(
           'success',
           resp?.mensaje ?? resp?.message ?? 'Se guardó los cambios exitosamente.',
@@ -1146,7 +1158,9 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
   }
 
   private formatearEventoHistorial(evento: ConvenioHistorialDto): string {
-    const descripcion = (evento.descripcion ?? evento.accion ?? 'Sin descripción').trim();
+    const descripcion = this.limpiarEncabezadoHistorial(
+      evento.descripcion ?? evento.accion ?? 'Sin descripción',
+    );
     const fechaRaw = evento.fechaCreacion ?? evento.createdAt ?? evento.fecha;
     if (!fechaRaw) return descripcion;
 
@@ -1154,6 +1168,15 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
     if (Number.isNaN(fecha.getTime())) return descripcion;
 
     return `${descripcion} · ${this.formatearFecha(fecha)}`;
+  }
+
+  private limpiarEncabezadoHistorial(descripcion: string): string {
+    const texto = descripcion.trim();
+
+    return texto
+      .replace(/^Convenio actualizado:\s*.+?\.\s*/i, '')
+      .replace(/^Convenio actualizado:\s*.+?\s*\n/i, '')
+      .trim();
   }
 
   private registrarEventoHistorialLocal(convenioId: string, descripcion: string) {
@@ -1470,7 +1493,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
         ...this.convenioSeleccionado,
         comentarios: comentarios.map((comentario) => ({
           id: comentario.id,
-          texto: comentario.comentario,
+          texto: this.formatearComentario(comentario),
         })),
       };
 
@@ -1479,6 +1502,31 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
       );
       this.persistirConvenios();
     });
+  }
+
+  private formatearComentario(comentario: {
+    comentario: string;
+    usuarioNombre?: string | null;
+    fechaCreacion?: string;
+    createdAt?: string;
+    fecha?: string;
+  }): string {
+    const partes: string[] = [];
+    const usuario = comentario.usuarioNombre?.trim();
+    const fechaRaw = comentario.fechaCreacion ?? comentario.createdAt ?? comentario.fecha;
+
+    if (usuario) {
+      partes.push(usuario);
+    }
+
+    if (fechaRaw) {
+      const fecha = new Date(fechaRaw);
+      partes.push(Number.isNaN(fecha.getTime()) ? fechaRaw : this.formatearFecha(fecha));
+    }
+
+    partes.push(comentario.comentario);
+
+    return partes.join(' · ');
   }
 
   private hidratarHistorial(convenioId: string) {

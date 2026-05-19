@@ -43,11 +43,16 @@ export class EstrategiaComercialService {
   }
 
   updateActividad(id: string | number, payload: any): Observable<any> {
-    return this.update(`${this.apiUrl}/estrategia-actividades/${id}`, payload, 'actividad');
+    return this.update(
+      `${this.apiUrl}/estrategia-actividades/${id}`,
+      payload,
+      'actividad',
+      this.usuarioParamsNombre(),
+    );
   }
 
   deleteActividad(id: string | number): Observable<void> {
-    return this.delete(`${this.apiUrl}/estrategia-actividades/${id}`);
+    return this.delete(`${this.apiUrl}/estrategia-actividades/${id}`, this.usuarioParamsNombre());
   }
 
   getActividadEnlaces(): Observable<any[]> {
@@ -132,19 +137,33 @@ export class EstrategiaComercialService {
       );
   }
 
-  private update(url: string, payload: any, key: string): Observable<any> {
+  private update(
+    url: string,
+    payload: any,
+    key: string,
+    params?: Record<string, string>,
+  ): Observable<any> {
     return this.http
-      .put<ApiMutationResponse<any>>(url, payload, { headers: this.authService.getAuthHeaders() })
+      .put<ApiMutationResponse<any>>(url, payload, {
+        headers: this.authService.getAuthHeaders(),
+        params,
+      })
       .pipe(
         map((response) => this.normalizarMutacion(response, key)),
         catchError((error) => throwError(() => error)),
       );
   }
 
-  private delete(url: string): Observable<void> {
+  private delete(url: string, params?: Record<string, string>): Observable<void> {
     return this.http
-      .delete<void>(url, { headers: this.authService.getAuthHeaders() })
+      .delete<void>(url, { headers: this.authService.getAuthHeaders(), params })
       .pipe(catchError((error) => throwError(() => error)));
+  }
+
+  private usuarioParamsNombre(): Record<string, string> | undefined {
+    const user = this.authService.getCurrentUser();
+    const nombre = [user?.nombre, (user as any)?.apellido].filter(Boolean).join(' ').trim();
+    return nombre ? { usuarioNombre: nombre } : undefined;
   }
 
   private normalizarListado(response: ApiListResponse<any>): any[] {
