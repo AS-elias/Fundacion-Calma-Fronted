@@ -1,24 +1,26 @@
 @use "sass:color";
 @import url('https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;700&family=Inter:wght@400;500;600;800;900&display=swap');
 
-/* Variables de la Fundación Calma */
-$primary-blue: #0284c7;
-$primary-blue-hover: #0369a1;
+/* Variables */
+$primary-celeste: #4eb3e4;
+$primary-celeste-hover: #3a9bc9;
 $bg-light: #f9fafb;
 $border-color: #f3f4f6;
 $border-darker: #e5e7eb;
 $text-dark: #111827;
 $text-gray: #6b7280;
 $text-light: #9ca3af;
-$success-color: #10b981;
 
 .contenedor {
   padding: 30px;
-  height: calc(100vh - 100px);
+  min-height: calc(100vh - 100px);
   overflow-y: auto;
-  background: #FFFFFF;
+  background: #ffffff;
   width: 100%;
   box-sizing: border-box;
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  margin: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   font-family: 'Inter', sans-serif;
 
@@ -27,8 +29,9 @@ $success-color: #10b981;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-    border-bottom: 2px solid $border-color;
+    border-bottom: 1px solid $border-color;
     padding-bottom: 20px;
+    gap: 20px;
 
     .titulo {
       display: flex;
@@ -37,7 +40,7 @@ $success-color: #10b981;
 
       h2 { 
         margin: 0; 
-        font-size: 2.2rem; 
+        font-size: 26px; 
         font-weight: 800; 
         color: $text-dark; 
         font-family: 'Inknut Antiqua', serif; 
@@ -45,64 +48,66 @@ $success-color: #10b981;
     }
 
     .btn-nueva {
-      background-color: $primary-blue;
+      background: $primary-celeste;
       color: white;
       border: none;
-      padding: 12px 24px;
-      border-radius: 10px;
+      padding: 10px 18px;
+      border-radius: 8px;
       cursor: pointer;
-      font-weight: 700;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(78, 179, 228, 0.2);
       font-family: 'Inter', sans-serif;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      white-space: nowrap;
       
       &:hover {
-        background-color: $primary-blue-hover;
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(2, 132, 199, 0.4);
+        background: $primary-celeste-hover;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(78, 179, 228, 0.3);
       }
     }
   }
 
   /* SALA PRINCIPAL */
   .sala-principal {
-    background: linear-gradient(135deg, #f0f9ff 0%, rgba(2, 132, 199, 0.15) 100%);
-    border: 2px solid $primary-blue;
-    border-radius: 16px;
-    padding: 32px;
+    background: linear-gradient(135deg, rgba(78, 179, 228, 0.08) 0%, rgba(78, 179, 228, 0.03) 100%);
+    border: 2px solid $primary-celeste;
+    border-radius: 14px;
+    padding: 28px;
     margin-bottom: 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 8px 20px rgba(2, 132, 199, 0.15);
-    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(78, 179, 228, 0.1);
+    transition: all 0.2s ease;
 
     &:hover {
-      box-shadow: 0 12px 32px rgba(2, 132, 199, 0.25);
+      box-shadow: 0 8px 20px rgba(78, 179, 228, 0.15);
       transform: translateY(-2px);
     }
 
     .sala-principal-content {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 20px;
       flex: 1;
 
       .sala-icon {
-        font-size: 3.5rem;
+        font-size: 48px;
         display: flex;
         align-items: center;
         justify-content: center;
+        line-height: 1;
       }
 
       .sala-info {
         h3 {
-          margin: 0 0 8px 0;
-          font-size: 1.5rem;
+          margin: 0 0 6px 0;
+          font-size: 20px;
           font-weight: 800;
           color: $text-dark;
           font-family: 'Inknut Antiqua', serif;
@@ -110,34 +115,34 @@ $success-color: #10b981;
         p {
           margin: 0;
           color: $text-gray;
-          font-size: 0.95rem;
+          font-size: 14px;
         }
       }
     }
 
     .btn-entrar {
-      background-color: $primary-blue;
+      background: $primary-celeste;
       color: white;
       border: none;
-      padding: 14px 32px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 1rem;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(78, 179, 228, 0.2);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       white-space: nowrap;
       font-family: 'Inter', sans-serif;
 
-      i { font-size: 1.1rem; }
+      i { font-size: 16px; }
 
       &:hover {
-        background-color: $primary-blue-hover;
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(2, 132, 199, 0.4);
+        background: $primary-celeste-hover;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(78, 179, 228, 0.3);
       }
     }
   }
@@ -145,18 +150,18 @@ $success-color: #10b981;
   /* SECCIÓN DE SALAS */
   .salas-section {
     .section-title {
-      font-size: 1.5rem;
+      font-size: 20px;
       margin: 40px 0 24px 0;
       font-weight: 800;
       color: $text-dark;
       font-family: 'Inknut Antiqua', serif;
       padding-bottom: 16px;
-      border-bottom: 2px solid $border-color;
+      border-bottom: 1px solid $border-color;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
       gap: 24px;
       margin-bottom: 40px;
     }
@@ -164,16 +169,17 @@ $success-color: #10b981;
 
   /* TARJETA DE GRUPO */
   .grupo-card {
-    background: $bg-light;
+    background: white;
     border: 1px solid $border-darker;
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     transition: all 0.2s ease;
 
     &:hover {
-      box-shadow: 0 8px 16px rgba(2, 132, 199, 0.12);
-      border-color: $primary-blue;
+      box-shadow: 0 8px 20px rgba(78, 179, 228, 0.12);
+      border-color: $primary-celeste;
+      transform: translateY(-2px);
     }
 
     .grupo-header {
@@ -182,23 +188,23 @@ $success-color: #10b981;
       align-items: center;
       margin-bottom: 20px;
       padding-bottom: 16px;
-      border-bottom: 3px solid $primary-blue;
+      border-bottom: 2px solid $primary-celeste;
 
       h4 {
         margin: 0;
-        font-size: 1.25rem;
-        font-weight: 800;
+        font-size: 16px;
+        font-weight: 700;
         color: $text-dark;
         font-family: 'Inknut Antiqua', serif;
       }
 
       .sala-count {
-        background: rgba(2, 132, 199, 0.15);
-        color: $primary-blue;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 700;
+        background: rgba(78, 179, 228, 0.15);
+        color: $primary-celeste;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
         white-space: nowrap;
       }
     }
@@ -215,16 +221,16 @@ $success-color: #10b981;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #ffffff;
+    background: $bg-light;
     border: 1px solid $border-darker;
     border-radius: 10px;
-    padding: 14px 16px;
+    padding: 12px 16px;
     transition: all 0.2s ease;
 
     &:hover {
-      background: #f0f9ff;
-      border-color: $primary-blue;
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1);
+      background: rgba(78, 179, 228, 0.05);
+      border-color: $primary-celeste;
+      box-shadow: 0 4px 12px rgba(78, 179, 228, 0.1);
     }
 
     .sala-item-content {
@@ -232,26 +238,30 @@ $success-color: #10b981;
       align-items: center;
       gap: 12px;
       flex: 1;
+      min-width: 0;
 
       .sala-item-icon {
         width: 40px;
         height: 40px;
-        background: rgba(2, 132, 199, 0.15);
-        border-radius: 10px;
+        background: rgba(78, 179, 228, 0.15);
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: $primary-blue;
-        font-size: 1.2rem;
+        color: $primary-celeste;
+        font-size: 18px;
         flex-shrink: 0;
       }
 
       .sala-item-info {
         h5 {
           margin: 0;
-          font-size: 0.95rem;
-          font-weight: 700;
+          font-size: 14px;
+          font-weight: 600;
           color: $text-dark;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
       }
     }
@@ -260,48 +270,48 @@ $success-color: #10b981;
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-shrink: 0;
 
       .btn-delete-small {
-        background-color: #fee2e2;
+        background: #fee2e2;
         color: #ef4444;
         border: none;
         width: 36px;
         height: 36px;
-        border-radius: 8px;
+        border-radius: 6px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: all 0.2s ease;
-        font-size: 1rem;
+        font-size: 16px;
 
         &:hover {
-          background-color: #fca5a5;
+          background: #fca5a5;
           color: #b91c1c;
-          transform: scale(1.1);
+          transform: scale(1.05);
         }
       }
 
       .btn-entrar-small {
-        background-color: var(--primary-btn);
+        background: $primary-celeste;
         color: white;
         border: none;
         width: 36px;
         height: 36px;
-        border-radius: 8px;
+        border-radius: 6px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: all 0.2s ease;
-        font-size: 1rem;
+        font-size: 16px;
         flex-shrink: 0;
-        font-family: 'Inter', sans-serif;
 
         &:hover {
-          background-color: var(--primary-hover);
-          box-shadow: 0 4px 10px rgba(78, 179, 228, 0.3);
-          transform: scale(1.1);
+          background: $primary-celeste-hover;
+          box-shadow: 0 2px 8px rgba(78, 179, 228, 0.3);
+          transform: scale(1.05);
         }
       }
     }
@@ -325,7 +335,7 @@ $success-color: #10b981;
     background: #ffffff !important;
     border-radius: 16px !important;
     width: 90% !important;
-    max-width: 480px !important;
+    max-width: 500px !important;
     padding: 24px !important;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
     animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -334,14 +344,22 @@ $success-color: #10b981;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
       border-bottom: 1px solid $border-color;
-      padding-bottom: 12px;
 
-      h3 { margin: 0; color: $text-dark; font-size: 1.25rem; font-weight: 700; font-family: 'Inknut Antiqua', serif; }
-      .close, .btn-close { 
+      h3 { 
+        margin: 0; 
+        color: $text-dark; 
+        font-size: 18px; 
+        font-weight: 700; 
+        font-family: 'Inknut Antiqua', serif; 
+      }
+
+      .close { 
         cursor: pointer; 
-        font-size: 1.1rem; 
+        font-size: 18px; 
+        font-weight: bold;
         color: $text-gray; 
         background: $bg-light;
         border: none;
@@ -352,32 +370,58 @@ $success-color: #10b981;
         align-items: center; 
         justify-content: center;
         transition: all 0.2s;
-        &:hover { background: $border-darker; color: $text-dark; } 
+
+        &:hover { 
+          background: $border-darker; 
+          color: $text-dark; 
+        } 
       }
     }
 
-    p { color: $text-gray; line-height: 1.5; font-size: 0.95rem; }
+    p { color: $text-gray; line-height: 1.5; font-size: 14px; margin: 0 0 16px 0; }
 
     .form-group, .form {
-      margin-bottom: 1.5rem;
-      margin-top: 10px;
+      margin-bottom: 18px;
       
-      label { display: block; margin-bottom: 0.5rem; color: $text-dark; font-weight: 600; font-size: 0.9rem; }
+      label { 
+        display: block; 
+        margin-bottom: 6px; 
+        color: $text-dark; 
+        font-weight: 600; 
+        font-size: 13px; 
+      }
       
       input, textarea, select { 
         width: 100%; 
-        padding: 0.8rem 1rem; 
-        margin-bottom: 10px;
+        padding: 10px 12px; 
+        margin-bottom: 0;
         border: 1px solid $border-darker; 
         border-radius: 8px; 
-        font-family: inherit; 
-        font-size: 0.95rem; 
+        font-family: 'Inter', sans-serif; 
+        font-size: 14px; 
         background: #ffffff;
         transition: all 0.2s; 
-        &:focus { outline: none; border-color: $primary-blue; background: #ffffff; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); } 
+
+        &:focus { 
+          outline: none; 
+          border-color: $primary-celeste; 
+          background: #ffffff; 
+          box-shadow: 0 0 0 3px rgba(78, 179, 228, 0.1); 
+        }
+
+        &::placeholder {
+          color: $text-light;
+        }
       }
       
-      textarea { resize: vertical; min-height: 100px; }
+      textarea { 
+        resize: vertical; 
+        min-height: 100px; 
+      }
+
+      select {
+        cursor: pointer;
+      }
     }
 
     .modal-footer, .acciones-detalle, .acciones-confirmacion {
@@ -389,14 +433,68 @@ $success-color: #10b981;
       border-top: 1px solid $border-color;
 
       .btn, button {
-        padding: 0.6rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.2s;
-        &.cancel, &.btn-cancelar { background: $bg-light; color: $text-gray; &:hover { background: $border-darker; color: $text-dark; } }
-        &.primary, &.btn-crear { background: $primary-blue; color: white; width: auto; &:hover { background: $primary-blue-hover; box-shadow: 0 4px 6px rgba(2, 132, 199, 0.2); } }
-        &.btn-confirmar { display: flex; align-items: center; gap: 6px; background: #ef4444; color: white; &:hover { background: #dc2626; box-shadow: 0 4px 6px rgba(239,68,68,0.2); } }
+        padding: 10px 16px; 
+        border-radius: 8px; 
+        border: none; 
+        cursor: pointer; 
+        font-weight: 600; 
+        font-size: 14px; 
+        transition: all 0.2s;
+
+        &.cancel, &.btn-cancelar { 
+          background: $bg-light; 
+          color: $text-gray; 
+
+          &:hover { 
+            background: $border-darker; 
+            color: $text-dark; 
+          } 
+        }
+
+        &.primary, &.btn-crear { 
+          background: $primary-celeste; 
+          color: white; 
+          width: auto; 
+
+          &:hover { 
+            background: $primary-celeste-hover; 
+            box-shadow: 0 4px 12px rgba(78, 179, 228, 0.3); 
+          } 
+        }
+
+        &.btn-confirmar { 
+          display: flex; 
+          align-items: center; 
+          gap: 6px; 
+          background: #ef4444; 
+          color: white; 
+
+          &:hover { 
+            background: #dc2626; 
+            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2); 
+          } 
+        }
       }
     }
   }
 }
 
-@keyframes slideUp { from { opacity: 0; transform: translateY(15px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { 
+  from { 
+    opacity: 0; 
+    transform: translateY(15px) scale(0.98); 
+  } 
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  } 
+}
+
+@keyframes fadeIn { 
+  from { 
+    opacity: 0; 
+  } 
+  to { 
+    opacity: 1; 
+  } 
+}
