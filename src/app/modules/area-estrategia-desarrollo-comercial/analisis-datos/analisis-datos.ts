@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of, switchMap } from 'rxjs';
+import { AuthService } from '../../auth/services/auth.service';
 import { AnalisisDatosService } from './analisis-datos.service';
 
 type CategoriaPanel = 'estrategico' | 'comercial' | 'espacios' | 'comunicacion';
@@ -352,7 +353,10 @@ export class AnalisisDatos implements OnInit {
     },
   ];
 
-  constructor(private analisisService: AnalisisDatosService) {}
+  constructor(
+    private analisisService: AnalisisDatosService,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit(): void {
     this.cargarDatosBackend();
@@ -1358,15 +1362,17 @@ export class AnalisisDatos implements OnInit {
   }
 
   private toTareaPayload(tarea: TareaDato): any {
+    const currentUser = this.authService.getCurrentUser();
+    const creadorId = currentUser?.id ? Number(currentUser.id) : undefined;
+
     return {
-      area_id: 24,
       categoria: this.obtenerCategoriaTarea(),
       titulo: tarea.titulo,
       subtitulo: tarea.descripcion,
       descripcion: tarea.descripcion,
       estado: this.toEstadoTareaApi(tarea.estado),
       fecha_limite: tarea.fechaLimite || null,
-      creador_id: 22,
+      ...(creadorId ? { creador_id: creadorId } : {}),
       enlaces: (tarea.enlaces ?? []).map((enlace) => ({
         nombre: enlace.nombre,
         url: enlace.url,

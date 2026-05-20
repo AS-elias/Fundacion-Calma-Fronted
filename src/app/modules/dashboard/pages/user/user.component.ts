@@ -30,4 +30,13 @@ export class UserComponent implements OnInit {
       }
     });
   }
+
+  /**
+   * Limpia los textos provenientes del backend eliminando fragmentos como "(id=1)"
+   */
+  limpiarTexto(texto: string): string {
+    if (!texto) return '';
+    // Remueve fragmentos como " (id=1)"
+    return texto.replace(/\s*\(id=\d+\)/g, '');
+  }
 }

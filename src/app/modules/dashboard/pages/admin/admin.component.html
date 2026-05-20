@@ -53,8 +53,8 @@
                         </div>
                         <div style="flex: 1;">
                             <p style="margin: 0; font-size: 0.9rem; color: #374151; line-height: 1.4;">
-                                <strong>{{ act.usuario }}</strong> {{ act.accion }} <br>
-                                <span style="color: #1a56db;">"{{ act.entidad }}"</span>
+                                <strong>{{ act.usuario || 'Sistema' }}</strong> {{ limpiarTexto(act.detalle || act.mensaje || act.accion || 'realizó una actividad') }} <br>
+                                <span style="color: #1a56db;" *ngIf="act.entidad">"{{ limpiarTexto(act.entidad) }}"</span>
                             </p>
                             <span style="font-size: 0.75rem; color: #9ca3af; display: block; margin-top: 4px;">
                                 {{ act.fecha | date:'dd MMM yyyy, HH:mm' }}
@@ -147,8 +147,8 @@
                         </div>
                         <div style="flex: 1;">
                             <p style="margin: 0; font-size: 0.9rem; color: #374151; line-height: 1.4;">
-                                <strong>{{ act.usuario }}</strong> {{ act.accion }} <br>
-                                <span style="color: #1a56db;">"{{ act.entidad }}"</span>
+                                <strong>{{ act.usuario || 'Sistema' }}</strong> {{ limpiarTexto(act.detalle || act.mensaje || act.accion || 'realizó una actividad') }} <br>
+                                <span style="color: #1a56db;" *ngIf="act.entidad">"{{ limpiarTexto(act.entidad) }}"</span>
                             </p>
                             <span style="font-size: 0.75rem; color: #9ca3af;">{{ act.fecha | date:'dd MMM yyyy, HH:mm' }}</span>
                         </div>
