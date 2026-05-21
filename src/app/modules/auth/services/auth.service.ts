@@ -28,6 +28,29 @@ export class AuthService {
     );
   }
 
+  changePassword(email: string, tempPassword: string, newPassword: string): Observable<LoginResponse> {
+    const body = { email, tempPassword, newPassword };
+    return this.http.post<LoginResponse>(`${this.apiUrl}/change-password`, body).pipe(
+      tap(respuesta => {
+        if (respuesta.access_token && respuesta.usuario) {
+          localStorage.setItem(this.tokenKey, respuesta.access_token);
+          localStorage.setItem(this.userKey, JSON.stringify(respuesta.usuario));
+          console.log(`✅ Contraseña cambiada y sesión iniciada para: ${respuesta.usuario.nombre}`);
+        }
+      })
+    );
+  }
+
+  forgotPassword(email: string): Observable<{ mensaje: string }> {
+    const body = { email };
+    return this.http.post<{ mensaje: string }>(`${this.apiUrl}/forgot-password`, body);
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<{ mensaje: string }> {
+    const body = { token, newPassword };
+    return this.http.post<{ mensaje: string }>(`${this.apiUrl}/reset-password`, body);
+  }
+
   logout(): void {
     console.log('👋 Cerrando sesión...');
     localStorage.removeItem(this.tokenKey);

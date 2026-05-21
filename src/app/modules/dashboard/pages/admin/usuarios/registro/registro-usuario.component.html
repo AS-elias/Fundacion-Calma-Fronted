@@ -52,14 +52,15 @@
 
         <!-- Email -->
         <div class="form-group full-width">
-          <label for="email">Correo Institucional <span class="required">*</span></label>
+          <label for="email">Correo Institucional (Generado Automáticamente) <span class="required">*</span></label>
           <div class="input-icon">
             <i class="pi pi-envelope"></i>
-            <input id="email" type="email" formControlName="email" placeholder="juan.perez@fundacioncalma.org"
+            <input id="email" type="email" formControlName="email" placeholder="Se generará a partir del nombre" readonly
+                   style="background-color: #f3f4f6; color: #6b7280; cursor: not-allowed;"
                    [class.is-invalid]="registroForm.get('email')?.invalid && registroForm.get('email')?.touched">
           </div>
           <small class="error-msg" *ngIf="registroForm.get('email')?.invalid && registroForm.get('email')?.touched">
-            Ingresa un correo válido.
+            Ingresa un nombre y apellido válidos para generar el correo.
           </small>
         </div>
 
@@ -87,35 +88,59 @@
           </small>
         </div>
 
-        <!-- Sub-área Asignada (Si hay subareas) -->
-        <div class="form-group" *ngIf="subareasDisponibles.length > 0 && registroForm.get('rol')?.value !== 'admin'">
-          <label for="subarea_id">Sub-área Específica</label>
-          <select id="subarea_id" formControlName="subarea_id">
-            <option [ngValue]="null">Ninguna (Solo área principal)</option>
+        <!-- Sub-área Asignada (Si hay subareas y NO es admin ni director) -->
+        <div class="form-group" *ngIf="subareasDisponibles.length > 0 && registroForm.get('rol')?.value === 'usuario'">
+          <label for="subarea_id">Sub-área Específica <span class="required">*</span></label>
+          <select id="subarea_id" formControlName="subarea_id" [class.is-invalid]="registroForm.get('subarea_id')?.invalid && registroForm.get('subarea_id')?.touched">
+            <option [ngValue]="null" disabled selected>Seleccione una sub-área</option>
             <option *ngFor="let sub of subareasDisponibles" [value]="sub.id">
               {{ sub.nombre }}
             </option>
           </select>
-          <small class="info-text">Puedes asignarle una sub-área opcionalmente.</small>
+          <small class="error-msg" *ngIf="registroForm.get('subarea_id')?.invalid && registroForm.get('subarea_id')?.touched">
+            Seleccionar una sub-área es obligatorio.
+          </small>
         </div>
 
-        <!-- Puesto Organizacional -->
-        <div class="form-group">
+        <!-- Puesto Organizacional (Solo visible para usuarios/practicantes) -->
+        <div class="form-group" *ngIf="registroForm.get('rol')?.value === 'usuario'">
           <label for="puesto">Puesto Organizacional</label>
           <input id="puesto" type="text" formControlName="puesto" placeholder="Ej. Analista de Datos, Gerente"
                  (input)="onInputLetras($event, 'puesto')">
           <small class="info-text">Cargo que se mostrará en su perfil y directorio (solo letras).</small>
         </div>
 
-        <!-- Fecha Fin de Contrato -->
+        <!-- Fecha de Ingreso -->
         <div class="form-group">
-          <label for="fecha_fin_contrato">Fecha Fin de Contrato</label>
+          <label for="fecha_ingreso">Fecha de Ingreso <span class="required">*</span></label>
           <div class="input-icon">
             <i class="pi pi-calendar"></i>
+            <input id="fecha_ingreso" type="date" formControlName="fecha_ingreso" 
+                   [min]="minDate" [max]="maxDate" [class.is-invalid]="registroForm.get('fecha_ingreso')?.invalid && registroForm.get('fecha_ingreso')?.touched">
+          </div>
+        </div>
+
+        <!-- Duración del Contrato -->
+        <div class="form-group">
+          <label for="duracion_meses">Duración del Contrato (Opcional)</label>
+          <select id="duracion_meses" formControlName="duracion_meses">
+            <option [ngValue]="null">Personalizado / Indefinido</option>
+            <option value="3">3 Meses</option>
+            <option value="6">6 Meses</option>
+            <option value="12">12 Meses</option>
+          </select>
+          <small class="info-text">Selecciona los meses para calcular automáticamente la fecha de fin.</small>
+        </div>
+
+        <!-- Fecha Fin de Contrato -->
+        <div class="form-group">
+          <label for="fecha_fin_contrato">Fecha Fin Calculada / Manual</label>
+          <div class="input-icon">
+            <i class="pi pi-calendar-times"></i>
             <input id="fecha_fin_contrato" type="date" formControlName="fecha_fin_contrato" 
                    [min]="minDate" [max]="maxDate">
           </div>
-          <small class="info-text">El usuario se desactivará automáticamente luego de esta fecha. Déjalo vacío si es indefinido.</small>
+          <small class="info-text">Se desactivará el acceso luego de esta fecha. Si es indefinido, déjalo en blanco.</small>
         </div>
       </div>
 

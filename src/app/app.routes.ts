@@ -20,6 +20,18 @@ export const routes: Routes = [
 
   { path: 'login', component: LoginComponent },
   { path: 'logout', component: LogoutComponent },
+  { 
+    path: 'change-password', 
+    loadComponent: () => import('./modules/auth/pages/change-password/change-password.component').then(m => m.ChangePasswordComponent) 
+  },
+  {
+    path: 'recuperar-password',
+    loadComponent: () => import('./modules/auth/pages/recuperar-password/recuperar-password.component').then(m => m.RecuperarPasswordComponent)
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./modules/auth/pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
+  },
 
   {
     path: '',
@@ -65,7 +77,7 @@ export const routes: Routes = [
             loadChildren: () =>
               import('./modules/area-estrategia-desarrollo-comercial/comercial.routes')
                 .then((m) => m.COMERCIAL_ROUTES),
-            canActivate: [adminGuard],
+            canActivate: [authGuard],
           },
           {
             path: '',

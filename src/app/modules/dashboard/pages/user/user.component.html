@@ -10,37 +10,45 @@
     </div>
 
     <div *ngIf="!cargando && stats" class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon bg-blue"><i class="pi pi-briefcase"></i></div>
-            <div class="stat-data">
-                <span class="label">Proyectos Realizados</span>
-                <span class="number">{{ stats.misProyectos }}</span>
-            </div>
-        </div>
+        <ng-container *ngIf="stats.misProyectos !== undefined && stats.misProyectos !== null">
+          <div class="stat-card">
+              <div class="stat-icon bg-blue"><i class="pi pi-briefcase"></i></div>
+              <div class="stat-data">
+                  <span class="label">Proyectos Realizados</span>
+                  <span class="number">{{ stats.misProyectos }}</span>
+              </div>
+          </div>
+        </ng-container>
 
-        <div class="stat-card">
-            <div class="stat-icon bg-yellow"><i class="pi pi-map"></i></div>
-            <div class="stat-data">
-                <span class="label">Convenios Vigentes</span>
-                <span class="number">{{ stats.misConvenios }}</span>
-            </div>
-        </div>
+        <ng-container *ngIf="stats.misConvenios !== undefined && stats.misConvenios !== null">
+          <div class="stat-card">
+              <div class="stat-icon bg-yellow"><i class="pi pi-map"></i></div>
+              <div class="stat-data">
+                  <span class="label">Convenios Vigentes</span>
+                  <span class="number">{{ stats.misConvenios }}</span>
+              </div>
+          </div>
+        </ng-container>
 
-        <div class="stat-card">
-            <div class="stat-icon bg-purple"><i class="pi pi-users"></i></div>
-            <div class="stat-data">
-                <span class="label">Desempeño de Equipo</span>
-                <span class="number">{{ stats.desempenoEquipoArea | number:'1.0-0' }}%</span>
-            </div>
-        </div>
+        <ng-container *ngIf="stats.desempenoEquipo !== undefined && stats.desempenoEquipo !== null">
+          <div class="stat-card">
+              <div class="stat-icon bg-purple"><i class="pi pi-users"></i></div>
+              <div class="stat-data">
+                  <span class="label">Desempeño de Equipo</span>
+                  <span class="number">{{ stats.desempenoEquipo | number:'1.0-0' }}%</span>
+              </div>
+          </div>
+        </ng-container>
 
-        <div class="stat-card">
-            <div class="stat-icon bg-green"><i class="pi pi-star-fill"></i></div>
-            <div class="stat-data">
-                <span class="label">Desempeño Personal</span>
-                <span class="number">{{ stats.desempenoPersonal | number:'1.0-0' }}%</span>
+        <ng-container *ngIf="stats.desempenoPersonal !== undefined && stats.desempenoPersonal !== null">
+            <div class="stat-card">
+                <div class="stat-icon bg-green"><i class="pi pi-star-fill"></i></div>
+                <div class="stat-data">
+                    <span class="label">Desempeño Personal</span>
+                    <span class="number">{{ stats.desempenoPersonal | number:'1.0-0' }}%</span>
+                </div>
             </div>
-        </div>
+        </ng-container>
     </div>
 
     <div class="main-content-grid">

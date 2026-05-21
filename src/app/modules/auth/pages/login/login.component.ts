@@ -6,10 +6,12 @@ import { Router } from '@angular/router'
 import { FormsModule } from '@angular/forms'; 
 import { AuthService } from '../../services/auth.service';
 
+import { RouterModule } from '@angular/router';
+
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, InputTextModule, PasswordModule, FormsModule],
+  imports: [CommonModule, InputTextModule, PasswordModule, FormsModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -33,6 +35,14 @@ export class LoginComponent {
       next: (respuesta) => {
         console.log("✅ Respuesta del backend:", respuesta);
         
+        if (respuesta.requirePasswordChange) {
+          console.log("⚠️ Se requiere cambio de contraseña.");
+          this.router.navigate(['/change-password'], {
+            state: { email: this.email, tempPassword: this.password }
+          });
+          return;
+        }
+
         const rol = respuesta.usuario?.rol;
         console.log("🎯 Rol detectado:", rol);
         

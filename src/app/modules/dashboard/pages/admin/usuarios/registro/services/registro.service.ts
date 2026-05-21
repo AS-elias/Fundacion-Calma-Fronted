@@ -28,21 +28,18 @@ export class RegistroService {
   }
 
   asignarAreaUsuario(userId: number, areaId: number, subareaId?: number): Observable<any> {
-    const permisos = [{
-      area_id: Number(areaId),
+    const permisos = [];
+    
+    // Si se seleccionó una subárea específica, SOLO le damos permiso a esa.
+    // Si no, le damos permiso al área principal completa.
+    const areaAsignar = subareaId ? Number(subareaId) : Number(areaId);
+
+    permisos.push({
+      area_id: areaAsignar,
       puede_publicar: true,
       puede_editar: true,
       permitir_subareas: true
-    }];
-    
-    if (subareaId) {
-      permisos.push({
-        area_id: Number(subareaId),
-        puede_publicar: true,
-        puede_editar: true,
-        permitir_subareas: true
-      });
-    }
+    });
 
     return this.http.post<any>(`${this.areasUrl}/usuarios/${userId}/areas`, permisos, { headers: this.getAuthHeaders() });
   }

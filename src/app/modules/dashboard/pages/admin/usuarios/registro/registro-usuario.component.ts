@@ -35,20 +35,39 @@ export class RegistroUsuarioComponent implements OnInit {
       area_id: [null, Validators.required], // Por defecto requerido para usuario/director
       subarea_id: [null],
       puesto: [''],
+      fecha_ingreso: [new Date().toISOString().split('T')[0], Validators.required],
+      duracion_meses: [null],
       fecha_fin_contrato: ['']
     });
+
+    this.registroForm.get('duracion_meses')?.valueChanges.subscribe(() => this.calcularFechaFin());
+    this.registroForm.get('fecha_ingreso')?.valueChanges.subscribe(() => this.calcularFechaFin());
 
     this.registroForm.get('rol')?.valueChanges.subscribe(rol => {
       const areaControl = this.registroForm.get('area_id');
       const subareaControl = this.registroForm.get('subarea_id');
+      const puestoControl = this.registroForm.get('puesto');
+
       if (rol === 'admin') {
         areaControl?.clearValidators();
         areaControl?.setValue(null);
+        subareaControl?.clearValidators();
         subareaControl?.setValue(null);
-      } else {
+        puestoControl?.setValue('');
+      } else if (rol === 'director') {
         areaControl?.setValidators(Validators.required);
+        subareaControl?.clearValidators();
+        subareaControl?.setValue(null);
+        puestoControl?.setValue('');
+      } else {
+        // usuario (practicante)
+        areaControl?.setValidators(Validators.required);
+        subareaControl?.setValidators(Validators.required);
       }
+
       areaControl?.updateValueAndValidity();
+      subareaControl?.updateValueAndValidity();
+      puestoControl?.updateValueAndValidity();
     });
 
     this.registroForm.get('area_id')?.valueChanges.subscribe(areaId => {
@@ -97,7 +116,70 @@ export class RegistroUsuarioComponent implements OnInit {
     
     if (valorOriginal !== valorLimpio) {
       input.value = valorLimpio;
-      this.registroForm.get(controlName)?.setValue(valorLimpio);
+      this.registroForm.get(controlName)?.setValue(valorLimpio, { emitEvent: false });
+    }
+
+    if (controlName === 'nombre' || controlName === 'apellido') {
+      this.generarCorreo();
+    }
+  }
+
+  generarCorreo(): void {
+    const nombre = this.registroForm.get('nombre')?.value?.trim().toLowerCase() || '';
+    const apellido = this.registroForm.get('apellido')?.value?.trim().toLowerCase() || '';
+
+    if (nombre || apellido) {
+      // Removemos acentos para el correo
+      const quitarAcentos = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      
+      const primerNombre = quitarAcentos(nombre).split(' ')[0] || '';
+      const primerApellido = quitarAcentos(apellido).split(' ')[0] || '';
+      
+      let correo = '';
+      if (primerNombre.length >= 2) {
+        correo += primerNombre.substring(0, 2);
+      } else if (primerNombre.length === 1) {
+        correo += primerNombre;
+      }
+
+      if (correo && primerApellido) {
+        correo += '.' + primerApellido;
+      } else if (primerApellido) {
+        correo += primerApellido;
+      }
+
+      if (correo) {
+        correo += '.fcalma@gmail.com';
+        this.registroForm.get('email')?.setValue(correo);
+      } else {
+        this.registroForm.get('email')?.setValue('');
+      }
+    } else {
+      this.registroForm.get('email')?.setValue('');
+    }
+  }
+
+  calcularFechaFin(): void {
+    const meses = this.registroForm.get('duracion_meses')?.value;
+    const ingresoStr = this.registroForm.get('fecha_ingreso')?.value;
+
+    if (meses && ingresoStr) {
+      // Usar Date pero corrigiendo la zona horaria asumiendo que es YYYY-MM-DD local
+      const partes = ingresoStr.split('-');
+      if (partes.length === 3) {
+        const año = parseInt(partes[0], 10);
+        const mes = parseInt(partes[1], 10) - 1; // 0-indexed
+        const dia = parseInt(partes[2], 10);
+        const fecha = new Date(año, mes, dia);
+        fecha.setMonth(fecha.getMonth() + Number(meses));
+        
+        // Formatear de vuelta a YYYY-MM-DD
+        const outAño = fecha.getFullYear();
+        const outMes = String(fecha.getMonth() + 1).padStart(2, '0');
+        const outDia = String(fecha.getDate()).padStart(2, '0');
+        
+        this.registroForm.get('fecha_fin_contrato')?.setValue(`${outAño}-${outMes}-${outDia}`, { emitEvent: false });
+      }
     }
   }
 
@@ -141,6 +223,8 @@ export class RegistroUsuarioComponent implements OnInit {
       rol: rolFinal,
       rol_id: rolIdMap[formulario.rol] ?? 26,
       puesto: formulario.puesto?.trim() || '',
+      fecha_ingreso: formulario.fecha_ingreso || '',
+      duracion_meses: formulario.duracion_meses ? Number(formulario.duracion_meses) : null,
       fecha_fin_contrato: formulario.fecha_fin_contrato || '',
       estado: 'ACTIVO'
     } as any;
