@@ -193,10 +193,9 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
           this.communicationService.joinChannel({ canalId: c.id, usuarioId: this.currentUserId });
         });
 
-        const contactoId = this.chatManagement.restaurarContactoActivoDesdeLocalStorage();
-        if (!contactoId && this.chatManagement.contactos().length > 0) {
-          this.chatManagement.seleccionarPrimerContacto();
-        }
+        // ELIMINADO: Ya no restauramos el último chat para evitar el "Chat Fantasma" al volver de otro módulo.
+        // const contactoId = this.chatManagement.restaurarContactoActivoDesdeLocalStorage();
+        // this.chatManagement.seleccionarPrimerContacto(); // <- ELIMINADO PARA EVITAR AUTO-SELECCIÓN
 
         this.tryOpenPendingChat();
         this.cdr.detectChanges();
@@ -321,6 +320,9 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
         }
 
         if (this.chatManagement.contactoActivo()?.id === canal.id) {
+          // FORZAR ACTUALIZACIÓN REACTIVA
+          this.chatManagement.contactoActivo.set({...canal} as ContactoChat);
+          
           this.communicationService.readMessage({ 
             canalId: canal.id, 
             mensajeId: data.id || 0, 
@@ -360,11 +362,18 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
         const canal = this.chatManagement.contactos().find((c: ContactoChat) => c.id === data.canalId);
         if (canal) {
           if (data.mensajeId) {
-            const msj = canal.mensajes.find((m: any) => m.id === data.mensajeId);
-            if (msj) msj.leido = true;
+            canal.mensajes = canal.mensajes.map((m: any) => 
+              m.id === data.mensajeId ? { ...m, leido: true } : m
+            );
           } else {
-            canal.mensajes.forEach((m: any) => m.leido = true);
+            canal.mensajes = canal.mensajes.map((m: any) => ({ ...m, leido: true }));
           }
+          
+          // Si el canal actualizado es el activo, forzar actualización
+          if (this.chatManagement.contactoActivo()?.id === canal.id) {
+            this.chatManagement.contactoActivo.set({...canal} as ContactoChat);
+          }
+          
           this.cdr.detectChanges();
         }
       } catch (error) {}
@@ -374,7 +383,12 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
       try {
         const canal = this.chatManagement.contactos().find((c: ContactoChat) => c.id === data.canalId);
         if (canal) {
-          canal.mensajes.forEach((m: any) => m.leido = true);
+          canal.mensajes = canal.mensajes.map((m: any) => ({ ...m, leido: true }));
+          
+          if (this.chatManagement.contactoActivo()?.id === canal.id) {
+            this.chatManagement.contactoActivo.set({...canal} as ContactoChat);
+          }
+
           this.cdr.detectChanges();
         }
       } catch (error) {}
@@ -462,6 +476,14 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     this.chatManagement.mostrarInfoContacto.set(true);
   }
 
+  cerrarChatActual(): void {
+    this.chatManagement.cerrarChat();
+    this.chatManagement.nuevoMensaje.set('');
+    this.mostrarEmojis.set(false);
+    this.cancelarEdicion();
+    this.cdr.detectChanges();
+  }
+
   cerrarInfoContacto(): void {
     this.chatManagement.mostrarInfoContacto.set(false);
   }
@@ -510,6 +532,15 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
 
     // Agregar a la UI localmente
     canalActivo.mensajes = [...canalActivo.mensajes, nuevoMsg];
+    
+    // FORZAR ACTUALIZACIÓN REACTIVA EN AMBAS REFERENCIAS
+    const canalCopia = {...canalActivo} as ContactoChat;
+    const nuevosContactos = this.chatManagement.contactos().map(c => 
+      c.id === canalCopia.id ? canalCopia : c
+    );
+    this.chatManagement.contactos.set(nuevosContactos);
+    this.chatManagement.contactoActivo.set(canalCopia);
+    
     this.chatManagement.nuevoMensaje.set('');
     this.cdr.detectChanges();
     setTimeout(() => this.scrollToBottom(), 50);
@@ -849,10 +880,21 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
 
   filtrarUsuarios(): void {
     const texto = this.buscarUsuario.toLowerCase();
+    
+    // Filtramos primero a los que ya son miembros del grupo actual si estamos agregando/editando
+    let usuariosDisponibles = this.usuariosSistema;
+    if (this.esModoAgregarMiembro() || this.esModoEditarGrupo()) {
+      const participantesIds = this.chatManagement.contactoActivo()?.participantes?.map((p: any) => {
+        return Number(p.usuarioId) || Number(p.usuario?.id) || Number(p.id);
+      }) || [];
+      
+      usuariosDisponibles = usuariosDisponibles.filter(u => !participantesIds.includes(Number(u.id)));
+    }
+
     if (texto.trim() === '') {
-      this.usuariosBuscados = this.usuariosSistema;
+      this.usuariosBuscados = usuariosDisponibles;
     } else {
-      this.usuariosBuscados = this.usuariosSistema.filter((u: any) => {
+      this.usuariosBuscados = usuariosDisponibles.filter((u: any) => {
         const nombreCompleto = (u.nombre_completo || '').toLowerCase();
         const nombre = (u.nombre || '').toLowerCase();
         const apellido = (u.apellido_completo || u.apellido || '').toLowerCase();

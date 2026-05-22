@@ -61,8 +61,15 @@
                 </div>
                 <div class="details">
                     <span class="name">{{ chatManagement.contactoActivo()!.nombre }}</span>
-                    <span class="status" *ngIf="chatManagement.contactoActivo()!.enLinea"><span class="dot"></span> En línea</span>
-                    <span class="status offline" *ngIf="!chatManagement.contactoActivo()!.enLinea">Desconectado</span>
+                    <!-- Estado para Chats Directos -->
+                    <span class="status" *ngIf="!chatManagement.contactoActivo()!.esGrupo && chatManagement.contactoActivo()!.enLinea"><span class="dot"></span> En línea</span>
+                    <span class="status offline" *ngIf="!chatManagement.contactoActivo()!.esGrupo && !chatManagement.contactoActivo()!.enLinea">Desconectado</span>
+                    
+                    <!-- Estado para Grupos -->
+                    <span class="status group-status" *ngIf="chatManagement.contactoActivo()!.esGrupo">
+                        <i class="pi pi-users" style="font-size: 0.8rem; margin-right: 4px;"></i>
+                        {{ chatManagement.contactoActivo()!.participantes?.length || 0 }} participantes
+                    </span>
                 </div>
             </div>
             <div class="actions">
@@ -71,6 +78,9 @@
                 </button>
                 <button class="icon-btn" (click)="verInfoContacto()" title="Ver información">
                     <i class="pi pi-info-circle"></i>
+                </button>
+                <button class="icon-btn" (click)="cerrarChatActual()" title="Cerrar chat">
+                    <i class="pi pi-times"></i>
                 </button>
             </div>
         </header>
@@ -81,8 +91,9 @@
                 <app-empty-chat *ngIf="chatManagement.contactoActivo()!.mensajes.length === 0"></app-empty-chat>
 
                 <div *ngFor="let msj of chatManagement.contactoActivo()!.mensajes; let i = index" class="message" [ngClass]="msj.enviadoPorMi ? 'sent' : 'received'">
-                    <div class="avatar-small" [ngClass]="chatManagement.contactoActivo()!.colorBg" *ngIf="!msj.enviadoPorMi">
-                        {{ chatManagement.contactoActivo()!.iniciales }}
+                    <div class="avatar-small" [ngClass]="chatManagement.contactoActivo()!.esGrupo ? '' : chatManagement.contactoActivo()!.colorBg" *ngIf="!msj.enviadoPorMi" style="background-color: var(--primary-color);">
+                        <img *ngIf="$any(msj).remitenteAvatarUrl" [src]="$any(msj).remitenteAvatarUrl" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        <span *ngIf="!$any(msj).remitenteAvatarUrl">{{ $any(msj).remitenteIniciales || chatManagement.contactoActivo()!.iniciales }}</span>
                     </div>
 
                     <div class="message-content">
@@ -229,7 +240,9 @@
                         <img [src]="fotoGrupoBase64()" alt="Vista previa" />
                     </div>
                     <div class="photo-actions">
-                        <button class="btn-cancel" (click)="fotoGrupoInput.click()"><i class="pi pi-camera"></i> {{ fotoGrupoBase64() ? 'Cambiar foto' : 'Subir foto' }}</button>
+                        <button class="btn-cancel" (click)="fotoGrupoInput.click()" style="color: var(--primary-color); border-color: var(--primary-color);">
+                            <i class="pi pi-camera"></i> {{ fotoGrupoBase64() ? 'Cambiar foto' : 'Subir foto' }}
+                        </button>
                         <button class="btn-cancel text-red-500" *ngIf="fotoGrupoBase64()" (click)="fotoGrupoBase64.set(null)"><i class="pi pi-trash"></i></button>
                     </div>
                     <input type="file" #fotoGrupoInput accept="image/*" style="display: none;" (change)="onFotoGrupoSelected($event)" />

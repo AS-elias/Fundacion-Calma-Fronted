@@ -89,10 +89,54 @@
                     <h3>Mi Agenda</h3>
                 </div>
                 <div class="calendar-body">
-                    <p-datepicker [(ngModel)]="fechaActual" [inline]="true" styleClass="w-full"></p-datepicker>
+                    <p-datepicker [(ngModel)]="fechaActual" [inline]="true" styleClass="w-full" (onSelect)="onDateSelect($event)">
+                        <ng-template pTemplate="date" let-date>
+                            <div style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                                <span>{{ date.day }}</span>
+                                <div style="position: absolute; bottom: 2px; display: flex; gap: 2px;">
+                                    <span *ngIf="hasVencimiento(date)" style="width: 4px; height: 4px; background-color: #ef4444; border-radius: 50%;"></span>
+                                    <span *ngIf="hasEvent(date)" style="width: 4px; height: 4px; background-color: var(--calma-primary, #048abf); border-radius: 50%;"></span>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </p-datepicker>
                 </div>
             </div>
         </div>
 
+        <!-- Dialogo de Actividades y Vencimientos -->
+        <p-dialog [(visible)]="mostrarDialogoDia" [header]="'Eventos del ' + (fechaActual | date:'dd/MM/yyyy')" [modal]="true" [style]="{width: '30vw', minWidth: '300px'}" [draggable]="false" [resizable]="false">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                
+                <div *ngIf="vencimientosDelDiaSeleccionado.length > 0">
+                    <h5 style="margin: 0 0 10px 0; color: #b91c1c; font-size: 0.9rem;">
+                        <i class="pi pi-exclamation-triangle mr-1"></i> Vencimientos Límite
+                    </h5>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div *ngFor="let item of vencimientosDelDiaSeleccionado" style="background: #fef2f2; padding: 10px; border-radius: 6px; border-left: 3px solid #ef4444;">
+                            <div style="font-weight: 600; font-size: 0.85rem; color: #7f1d1d;">{{ limpiarTexto(item.titulo || item.nombre || 'Vencimiento sin título') }}</div>
+                            <div style="font-size: 0.75rem; color: #991b1b; margin-top: 2px;">{{ item.descripcion || item.estado || 'Fecha límite' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="actividadesDelDiaSeleccionado.length > 0">
+                    <h5 style="margin: 0 0 10px 0; color: var(--calma-primary, #048abf); font-size: 0.9rem;">
+                        <i class="pi pi-check-circle mr-1"></i> Actividades Realizadas
+                    </h5>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div *ngFor="let act of actividadesDelDiaSeleccionado" style="background: #f8fafc; padding: 10px; border-radius: 6px; border-left: 3px solid var(--calma-primary, #048abf);">
+                            <div style="font-weight: 600; font-size: 0.85rem; color: #1e293b;">{{ limpiarTexto(act.entidad || act.titulo || 'Actividad general') }}</div>
+                            <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;"><strong>{{ act.usuario || 'Sistema' }}</strong> {{ limpiarTexto(act.detalle || act.mensaje || act.accion || 'realizó una acción') }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="vencimientosDelDiaSeleccionado.length === 0 && actividadesDelDiaSeleccionado.length === 0">
+                    <p style="text-align: center; color: #64748b; font-style: italic; font-size: 0.85rem;">No hay eventos registrados en esta fecha.</p>
+                </div>
+
+            </div>
+        </p-dialog>
     </div>
 </div>

@@ -1,10 +1,12 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ChartModule } from 'primeng/chart';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { DashboardService, AdminDashboardStats, UserDashboardStats } from '../../services/dashboard.service';
+import { DashboardSocketService } from '../../services/dashboard-socket.service';
 import { AuthService } from '../../../auth/services/auth.service';
+import { Subscription } from 'rxjs';
 
 interface DirectorUserEvaluation {
   id?: number | string;
@@ -26,7 +28,7 @@ interface DirectorUserEvaluation {
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.scss']
 })
-export class AdminComponent implements OnInit {
+export class AdminComponent implements OnInit, OnDestroy {
   stats: AdminDashboardStats | null = null;
   userStats: UserDashboardStats | null = null;
   cargando = true;
@@ -42,13 +44,15 @@ export class AdminComponent implements OnInit {
   usuarioSeleccionadoParaEvaluar: DirectorUserEvaluation | null = null;
 
   private dashboardService = inject(DashboardService);
+  private dashboardSocket = inject(DashboardSocketService);
   private authService = inject(AuthService);
-  
+  private cdr = inject(ChangeDetectorRef);
+  private socketSub?: Subscription;
+
   // Método público para usar en la plantilla
   isDirector(): boolean {
     return this.authService.isDirector();
   }
-  private cdr = inject(ChangeDetectorRef);
 
   // Configuración de las gráficas
   tareasChartData: any;
@@ -61,7 +65,15 @@ export class AdminComponent implements OnInit {
   ngOnInit(): void {
     this.initChartOptions();
     this.esAdmin = this.authService.isAdmin();
+    
+    this.loadDashboardData();
 
+    this.socketSub = this.dashboardSocket.dashboardUpdated$.subscribe(() => {
+      this.loadDashboardData();
+    });
+  }
+
+  loadDashboardData() {
     this.dashboardService.getStatsForCurrentUser().subscribe({
       next: (data) => {
         if (this.esAdmin) {
@@ -665,5 +677,12 @@ export class AdminComponent implements OnInit {
     // Esta expresión regular busca un espacio opcional seguido de "(id=" un número y ")"
     // y lo reemplaza por una cadena vacía.
     return texto.replace(/\s*\(id=\d+\)/g, '');
+  }
+
+  ngOnDestroy(): void {
+    if (this.socketSub) {
+      this.socketSub.unsubscribe();
+    }
+    this.dashboardSocket.disconnect();
   }
 }

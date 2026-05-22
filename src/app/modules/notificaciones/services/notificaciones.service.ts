@@ -34,6 +34,7 @@ export class NotificacionesService {
 
   listar(): Observable<Notificacion[]> {
     return this.http.get<Notificacion[]>(this.apiUrl, {
+      headers: this.authService.getAuthHeaders(),
       params: this.usuarioParams(),
     }).pipe(
       map((notificaciones) =>
@@ -59,7 +60,7 @@ export class NotificacionesService {
     return this.http.patch(
       `${this.apiUrl}/${id}/leido`,
       { leido, usuarioId: this.usuarioId() },
-      { params: this.usuarioParams() },
+      { headers: this.authService.getAuthHeaders(), params: this.usuarioParams() },
     );
   }
 
@@ -67,7 +68,7 @@ export class NotificacionesService {
     return this.http.patch<Notificacion>(
       `${this.apiUrl}/${id}/favorito`,
       { favorito, usuarioId: this.usuarioId() },
-      { params: this.usuarioParams() },
+      { headers: this.authService.getAuthHeaders(), params: this.usuarioParams() },
     );
   }
 
@@ -75,12 +76,13 @@ export class NotificacionesService {
     return this.http.patch<Notificacion>(
       `${this.apiUrl}/${id}/archivado`,
       { archivado, usuarioId: this.usuarioId() },
-      { params: this.usuarioParams() },
+      { headers: this.authService.getAuthHeaders(), params: this.usuarioParams() },
     );
   }
 
   eliminar(id: number) {
     return this.http.delete(`${this.apiUrl}/${id}`, {
+      headers: this.authService.getAuthHeaders(),
       params: this.usuarioParams(),
     });
   }

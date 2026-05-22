@@ -44,7 +44,7 @@ export class ChatManagementService {
       iniciales: this.generarIniciales(canal.nombre || 'SN'),
       colorBg: this.generarColorDeterminista(idNumero),
       enLinea: false,
-      mensajesSinLeer: 0,
+      mensajesSinLeer: canal.mensajesSinLeer || canal.unreadCount || canal.mensajesNoLeidos || canal.unreadMessages || 0,
       mensajes: [],
       esGrupo: canal.esGrupo || false,
       participantes: canal.participantes || [],
@@ -142,6 +142,21 @@ export class ChatManagementService {
       }
     }
 
+    // Extraer Avatar del Remitente
+    let remitenteAvatarUrl = undefined;
+    if (msg.remitente && (msg.remitente.avatarUrl || msg.remitente.fotoUrl || msg.remitente.foto)) remitenteAvatarUrl = msg.remitente.avatarUrl || msg.remitente.fotoUrl || msg.remitente.foto;
+    else if (msg.usuario && (msg.usuario.avatarUrl || msg.usuario.fotoUrl || msg.usuario.foto)) remitenteAvatarUrl = msg.usuario.avatarUrl || msg.usuario.fotoUrl || msg.usuario.foto;
+    else if (msg.sender && (msg.sender.avatarUrl || msg.sender.fotoUrl || msg.sender.foto)) remitenteAvatarUrl = msg.sender.avatarUrl || msg.sender.fotoUrl || msg.sender.foto;
+    else if (msg.autor && (msg.autor.avatarUrl || msg.autor.fotoUrl || msg.autor.foto)) remitenteAvatarUrl = msg.autor.avatarUrl || msg.autor.fotoUrl || msg.autor.foto;
+
+    if (!remitenteAvatarUrl && remitenteId && participantes.length > 0) {
+      const part = participantes.find((p: any) => Number(p.id) === Number(remitenteId) || Number(p.usuarioId) === Number(remitenteId));
+      if (part) {
+        const infoPart = part.usuario || part;
+        remitenteAvatarUrl = infoPart.avatarUrl || infoPart.fotoUrl || infoPart.foto;
+      }
+    }
+
     // Formatear la hora a algo bonito como "14:30" o "02:30 PM"
     let horaFormateada = '';
     try {
@@ -161,7 +176,9 @@ export class ChatManagementService {
       archivoUrl: msg.archivoUrl || msg.fileUrl,
       leido: msg.leido || msg.read || false,
       editado: msg.editado || msg.edited || msg.isEdited || false,
-      remitenteNombre: remitenteNombre
+      remitenteNombre: remitenteNombre,
+      remitenteAvatarUrl: remitenteAvatarUrl,
+      remitenteIniciales: this.generarIniciales(remitenteNombre)
     };
     return mappedMsg as Mensaje;
   }
@@ -198,10 +215,29 @@ export class ChatManagementService {
    * Selecciona un contacto activo
    */
   seleccionarContacto(contacto: ContactoChat): void {
-    this.contactoActivo.set(contacto);
-    localStorage.setItem('activeChannelId', String(contacto.id));
-    // Resetear contador de mensajes sin leer
-    contacto.mensajesSinLeer = 0;
+    const nuevosContactos = this.contactos().map(c => {
+      if (c.id === contacto.id) {
+        return { ...c, mensajesSinLeer: 0 };
+      }
+      return c;
+    });
+    this.contactos.set(nuevosContactos);
+    
+    // Asignar el objeto actualizado al activo para mantener referencias sincronizadas
+    const contactoActualizado = nuevosContactos.find(c => c.id === contacto.id);
+    if (contactoActualizado) {
+      this.contactoActivo.set(contactoActualizado);
+    } else {
+      this.contactoActivo.set(contacto);
+    }
+  }
+
+  /**
+   * Cierra el chat activo (deselecciona)
+   */
+  cerrarChat(): void {
+    this.contactoActivo.set(undefined);
+    localStorage.removeItem('activeChannelId');
   }
 
   /**
@@ -218,10 +254,13 @@ export class ChatManagementService {
    * Incrementa el contador de mensajes sin leer
    */
   incrementarMensajesSinLeer(contactoId: number): void {
-    const contacto = this.contactos().find(c => c.id === contactoId);
-    if (contacto) {
-      contacto.mensajesSinLeer++;
-    }
+    const nuevosContactos = this.contactos().map(c => {
+      if (c.id === contactoId) {
+        return { ...c, mensajesSinLeer: c.mensajesSinLeer + 1 };
+      }
+      return c;
+    });
+    this.contactos.set(nuevosContactos);
   }
 
   /**
