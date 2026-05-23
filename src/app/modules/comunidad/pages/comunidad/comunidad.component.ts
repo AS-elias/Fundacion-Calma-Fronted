@@ -75,6 +75,16 @@ export class ComunidadComponent implements OnInit, OnDestroy {
       socket.on('userOffline', (data: any) => {
         if (data?.userId) this.actualizarEstadoUsuario(data.userId, false);
       });
+
+      // Recibir lista de todos los usuarios online al conectar
+      socket.on('onlineUsers', (data: any[]) => {
+        if (Array.isArray(data)) {
+          data.forEach(uid => this.actualizarEstadoUsuario(uid, true));
+        }
+      });
+
+      // Pedir lista actual de conectados
+      socket.emit('getOnlineUsers');
     }).catch(err => console.error('Error conectando sockets en comunidad:', err));
   }
 

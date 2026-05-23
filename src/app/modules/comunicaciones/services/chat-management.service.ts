@@ -1,11 +1,14 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Mensaje, ContactoChat } from '../models/chat.model';
+import { CommunicationService } from '../../../core/services/communication.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChatManagementService {
   
+  private commService = inject(CommunicationService);
+
   // Señales para gestionar estado del chat
   contactos = signal<ContactoChat[]>([]);
   contactoActivo = signal<ContactoChat | undefined>(undefined);
@@ -27,7 +30,7 @@ export class ChatManagementService {
   /**
    * Mapea un canal (del backend) a un contacto (del frontend)
    */
-  mapChannelToContacto(canal: any): ContactoChat {
+  mapChannelToContacto(canal: any, currentUserId: number): ContactoChat {
     // ✅ VALIDATION: Asegurar que el ID es un número válido
     const canalId = canal.canalId || canal.id || canal.channelId || canal.channel_id;
     const idNumero = Number(canalId);
@@ -38,6 +41,12 @@ export class ChatManagementService {
     
     console.log('🗂️ Mapeando canal:', { canalId: idNumero, nombre: canal.nombre });
     
+    // 🔥 FIX: Si el backend envía el último mensaje, lo mapeamos para que se vea en el sidebar
+    const mensajesIniciales = [];
+    if (canal.ultimoMensaje) {
+      mensajesIniciales.push(this.mapMessageToMensaje(canal.ultimoMensaje, currentUserId, canal.participantes || []));
+    }
+    
     return {
       id: idNumero,
       nombre: canal.nombre || 'Sin nombre',
@@ -45,7 +54,7 @@ export class ChatManagementService {
       colorBg: this.generarColorDeterminista(idNumero),
       enLinea: false,
       mensajesSinLeer: canal.mensajesSinLeer || canal.unreadCount || canal.mensajesNoLeidos || canal.unreadMessages || 0,
-      mensajes: [],
+      mensajes: mensajesIniciales,
       esGrupo: canal.esGrupo || false,
       participantes: canal.participantes || [],
       avatarUrl: canal.avatarUrl || canal.imagenUrl || canal.foto || canal.avatarBase64 || undefined
@@ -157,20 +166,34 @@ export class ChatManagementService {
       }
     }
 
-    // Formatear la hora a algo bonito como "14:30" o "02:30 PM"
+    // Formatear la hora correctamente buscando todos los campos posibles del backend
     let horaFormateada = '';
+    let fechaISO = '';
     try {
-      const rawDate = msg.createdAt || msg.fecha || msg.timestamp || new Date().toISOString();
-      horaFormateada = new Date(rawDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      // Busca en todos los campos posibles que puede enviar el backend
+      const rawDate = msg.createdAt || msg.creadoAt || msg.creado_at || msg.created_at ||
+                      msg.fecha || msg.timestamp || msg.date || msg.sentAt || msg.enviadoAt || null;
+      if (rawDate) {
+        const d = new Date(rawDate);
+        fechaISO = d.toISOString();
+        horaFormateada = d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', hour12: true });
+      } else {
+        // Fallback: hora actual (mensajes enviados localmente antes de confirmar)
+        const now = new Date();
+        fechaISO = now.toISOString();
+        horaFormateada = now.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', hour12: true });
+      }
     } catch(e) {
       horaFormateada = '00:00';
+      fechaISO = new Date().toISOString();
     }
 
     const mappedMsg: any = {
       id: msg.id || msg.mensajeId || 0,
       texto: msg.content || msg.texto || msg.contenido || '',
       hora: horaFormateada,
-      timestampReal: msg.createdAt || msg.fecha || msg.timestamp || new Date().toISOString(),
+      fechaISO: fechaISO,
+      timestampReal: fechaISO,
       enviadoPorMi: esDeEste,
       tipo: msg.tipo || 'text',
       archivoUrl: msg.archivoUrl || msg.fileUrl,
@@ -178,15 +201,38 @@ export class ChatManagementService {
       editado: msg.editado || msg.edited || msg.isEdited || false,
       remitenteNombre: remitenteNombre,
       remitenteAvatarUrl: remitenteAvatarUrl,
-      remitenteIniciales: this.generarIniciales(remitenteNombre)
+      remitenteIniciales: this.generarIniciales(remitenteNombre),
+      reacciones: msg.reacciones || []
     };
     return mappedMsg as Mensaje;
   }
 
   /**
-   * Genera iniciales a partir de un nombre
+   * Formatea una fecha ISO en etiqueta estilo WhatsApp: Hoy, Ayer, o la fecha
    */
-  private generarIniciales(nombre: string): string {
+  formatearEtiquetaDia(fechaISO: string): string {
+    if (!fechaISO) return '';
+    const fecha = new Date(fechaISO);
+    const hoy = new Date();
+    const ayer = new Date(); ayer.setDate(ayer.getDate() - 1);
+
+    const mismoAnio = fecha.getFullYear() === hoy.getFullYear();
+    const mismoMes = fecha.getMonth() === hoy.getMonth();
+    const mismoDia = fecha.getDate() === hoy.getDate();
+    const ayerMes = fecha.getMonth() === ayer.getMonth();
+    const ayerDia = fecha.getDate() === ayer.getDate();
+    const ayerAnio = fecha.getFullYear() === ayer.getFullYear();
+
+    if (mismoAnio && mismoMes && mismoDia) return 'Hoy';
+    if (mismoAnio && ayerMes && ayerDia && ayerAnio) return 'Ayer';
+    return fecha.toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+
+  /**
+   * Genera iniciales basadas en el nombre del canal o contacto
+   */
+  public generarIniciales(nombre: string): string {
+    if (!nombre) return 'UN';
     return nombre
       .split(' ')
       .slice(0, 2)
@@ -223,6 +269,11 @@ export class ChatManagementService {
     });
     this.contactos.set(nuevosContactos);
     
+    // Limpiar el contador global para este canal
+    const mapaGlobal = new Map(this.commService.mensajesSinLeerGlobal());
+    mapaGlobal.delete(contacto.id);
+    this.commService.mensajesSinLeerGlobal.set(mapaGlobal);
+    
     // Asignar el objeto actualizado al activo para mantener referencias sincronizadas
     const contactoActualizado = nuevosContactos.find(c => c.id === contacto.id);
     if (contactoActualizado) {
@@ -254,20 +305,43 @@ export class ChatManagementService {
    * Incrementa el contador de mensajes sin leer
    */
   incrementarMensajesSinLeer(contactoId: number): void {
-    const nuevosContactos = this.contactos().map(c => {
-      if (c.id === contactoId) {
-        return { ...c, mensajesSinLeer: c.mensajesSinLeer + 1 };
-      }
-      return c;
-    });
+    const lista = this.contactos();
+    const idx = lista.findIndex(c => c.id === contactoId);
+    if (idx === -1) return;
+
+    // Actualizar contador y mover al tope (estilo WhatsApp)
+    const actualizado = { ...lista[idx], mensajesSinLeer: (lista[idx].mensajesSinLeer || 0) + 1 };
+    const nuevosContactos = [
+      actualizado,
+      ...lista.filter((_, i) => i !== idx)
+    ];
     this.contactos.set(nuevosContactos);
+  }
+
+  /**
+   * Mueve un canal al tope de la lista (cuando yo envío un mensaje)
+   */
+  subirContactoAlTope(contactoId: number): void {
+    const lista = this.contactos();
+    const idx = lista.findIndex(c => c.id === contactoId);
+    if (idx <= 0) return; // Ya está arriba o no existe
+    const reordenados = [
+      lista[idx],
+      ...lista.filter((_, i) => i !== idx)
+    ];
+    this.contactos.set(reordenados);
+    // Mantener referencia del activo sincronizada
+    const activo = this.contactoActivo();
+    if (activo?.id === contactoId) {
+      this.contactoActivo.set(reordenados[0]);
+    }
   }
 
   /**
    * Busca un contacto que tenga al usuario específico como participante
    */
   buscarContactoConParticipante(contactos: ContactoChat[], usuarioId: number): ContactoChat | undefined {
-    return contactos.find(c => this.contactoTieneParticipante(c, usuarioId));
+    return contactos.find(c => !c.esGrupo && this.contactoTieneParticipante(c, usuarioId));
   }
 
   /**
@@ -346,16 +420,37 @@ export class ChatManagementService {
 
       if (!esParticipante) {
         console.log(`Canal ${canal.canalId || canal.id} filtrado: usuario ${currentUserId} no es participante`);
+        return false;
       }
 
-      return esParticipante;
+      // 🔥 SIMULACIÓN ESTILO WHATSAPP: Ocultar chats directos vacíos (0 mensajes)
+      // a menos que sea el chat actualmente abierto. Así simulamos la eliminación del chat.
+      const esChatDirecto = canal.esGrupo === false || canal.es_grupo === false;
+      const tieneMensajes = canal.ultimoMensaje != null || (canal.mensajes && canal.mensajes.length > 0);
+      const isActivo = this.contactoActivo()?.id === (canal.canalId || canal.id);
+
+      if (esChatDirecto && !tieneMensajes && !isActivo) {
+        return false; // Se oculta de la lista
+      }
+
+      return true;
     });
 
     console.log(`Canales filtrados para usuario ${currentUserId}:`, canalesFiltrados.length, 'de', canales.length);
     
     const contactosMapeados = canalesFiltrados.map(canal => {
-      const contacto = this.mapChannelToContacto(canal);
+      const contacto = this.mapChannelToContacto(canal, currentUserId);
       
+      // RECUPERAR MENSAJES PREVIOS SI EXISTEN PARA EVITAR QUE SE BORREN
+      const contactoExistente = this.contactos().find(c => c.id === contacto.id);
+      if (contactoExistente && contactoExistente.mensajes && contactoExistente.mensajes.length > 0) {
+        contacto.mensajes = [...contactoExistente.mensajes];
+        // También preservamos la cantidad de mensajes sin leer si es mayor al que viene del servidor
+        if (contactoExistente.mensajesSinLeer > contacto.mensajesSinLeer) {
+          contacto.mensajesSinLeer = contactoExistente.mensajesSinLeer;
+        }
+      }
+
       // Calcular estado en línea inicial para chats directos
       if (!contacto.esGrupo && contacto.participantes) {
         const otro = contacto.participantes.find((p: any) => Number(p.id) !== currentUserId && Number(p.usuarioId) !== currentUserId);
@@ -369,6 +464,13 @@ export class ChatManagementService {
           if (infoOtro.avatarUrl || infoOtro.fotoUrl) (contacto as any).avatarUrl = infoOtro.avatarUrl || infoOtro.fotoUrl;
         }
       }
+
+      // 🔔 Absorber conteos del contador global (mensajes recibidos mientras el usuario estaba fuera)
+      const mapaGlobal = this.commService.mensajesSinLeerGlobal();
+      if (mapaGlobal.has(contacto.id)) {
+        contacto.mensajesSinLeer = (contacto.mensajesSinLeer || 0) + (mapaGlobal.get(contacto.id) || 0);
+      }
+
       return contacto;
     });
     this.contactos.set(contactosMapeados);

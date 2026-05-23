@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, inject, signal, computed, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -54,7 +54,27 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
   // Parámetros de chat directo desde Comunidad
   pendingChatContactoId: number = 0;
   pendingChatContactoNombre: string = '';
-  mensajeEnEdicion = signal<any>(null); // Estado para controlar edición
+  mensajeEnEdicion = signal<any>(null);
+  menuMensajeActivo = signal<string | number | null>(null);
+  menuReaccionActivo = signal<string | number | null>(null); // ID del mensaje con picker de reacción abierto
+  
+  // Función para obtener la URL de Twemoji de cualquier caracter emoji
+  getTwemojiUrl(emojiChar: string): string {
+    if (!emojiChar) return '';
+    // Extraer el codepoint exacto para Twemoji (maneja emojis compuestos)
+    let codePoint = '';
+    for (let i = 0; i < emojiChar.length; i++) {
+      const hex = emojiChar.codePointAt(i)?.toString(16);
+      if (hex && hex !== 'fe0f') { // Ignorar el selector de variación
+        codePoint += (codePoint ? '-' : '') + hex;
+      }
+      if (emojiChar.codePointAt(i)! > 0xffff) i++; // Saltar el surrogate pair
+    }
+    return `https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/svg/${codePoint}.svg`;
+  }
+
+  // Usamos Twemoji para las reacciones rápidas
+  readonly REACCIONES_RAPIDAS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 
   // Referencia al contenedor de mensajes en el HTML para el auto-scroll
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
@@ -91,6 +111,38 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
 
   // ===== ACCESO DIRECTO A SERVICIOS (Sin getters redundantes) =====
   // Usar directamente en templates: chatManagement.contacto() en lugar de getter
+
+  @HostListener('document:keydown.escape')
+  handleEscapeKey() {
+    if (this.dialogVisible()) {
+      this.dialogVisible.set(false);
+      return;
+    }
+    if (this.chatManagement.mostrarModalNuevoChat()) {
+      this.cerrarModalNuevoChat();
+      return;
+    }
+    if (this.mostrarEmojis()) {
+      this.mostrarEmojis.set(false);
+      return;
+    }
+    if (this.menuReaccionActivo() !== null) {
+      this.cerrarMenuReaccion();
+      return;
+    }
+    if (this.menuMensajeActivo() !== null) {
+      this.cerrarMenuMensaje();
+      return;
+    }
+    if (this.chatManagement.mostrarInfoContacto()) {
+      this.cerrarInfoContacto();
+      return;
+    }
+    if (this.chatManagement.contactoActivo()) {
+      this.cerrarChatActual();
+      return;
+    }
+  }
 
   ngOnInit() {
     try {
@@ -177,6 +229,11 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     socket.off('messageRead');
     socket.off('messagesRead');
 
+    // ⚠️ IMPORTANTE: Re-adjuntar el listener global de CommunicationService
+    // El socket.off('newMessage') anterior lo eliminó. Hay que restaurarlo para que
+    // el contador global del sidebar siga funcionando mientras se está en esta pantalla.
+    this.communicationService.reattachGlobalListeners();
+
     // Recibir lista de canales - CON VALIDACIÓN
     socket.on('userChannels', (data: unknown[]) => {
       try {
@@ -219,30 +276,36 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     });
 
     // Usuarios en línea - CON VALIDACIÓN
-    socket.on('userOnline', (data: UserEvent) => {
+    socket.on('userOnline', (data: any) => {
       try {
-        if (!data?.userId || typeof data.userId !== 'number') {
+        const uid = data?.userId || data?.usuarioId;
+        const userIdNum = Number(uid);
+        if (!userIdNum) {
           console.warn('⚠️ userOnline: userId inválido', data);
           return;
         }
-        console.log('✅ Usuario en línea:', data.userId);
-        this.onlineUsers.addOnlineUser(data.userId);
-        this.onlineUsers.updateUserStatusInContactos(this.chatManagement.contactos(), data.userId, true);
+        console.log('✅ Usuario en línea:', userIdNum);
+        this.onlineUsers.addOnlineUser(userIdNum);
+        const nuevosContactos = this.onlineUsers.updateUserStatusInContactos(this.chatManagement.contactos(), userIdNum, true);
+        this.chatManagement.contactos.set(nuevosContactos);
         this.cdr.detectChanges();
       } catch (error) {
         console.error('❌ Error procesando userOnline:', error);
       }
     });
 
-    socket.on('userOffline', (data: UserEvent) => {
+    socket.on('userOffline', (data: any) => {
       try {
-        if (!data?.userId || typeof data.userId !== 'number') {
+        const uid = data?.userId || data?.usuarioId;
+        const userIdNum = Number(uid);
+        if (!userIdNum) {
           console.warn('⚠️ userOffline: userId inválido', data);
           return;
         }
-        console.log('✅ Usuario fuera de línea:', data.userId);
-        this.onlineUsers.removeOnlineUser(data.userId);
-        this.onlineUsers.updateUserStatusInContactos(this.chatManagement.contactos(), data.userId, false);
+        console.log('💤 Usuario desconectado:', userIdNum);
+        this.onlineUsers.removeOnlineUser(userIdNum);
+        const nuevosContactos = this.onlineUsers.updateUserStatusInContactos(this.chatManagement.contactos(), userIdNum, false);
+        this.chatManagement.contactos.set(nuevosContactos);
         this.cdr.detectChanges();
       } catch (error) {
         console.error('❌ Error procesando userOffline:', error);
@@ -261,6 +324,8 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
 
         let messagesArray = Array.isArray(data) ? data : (data?.messages || []);
         const receivedCanalId = Array.isArray(data) ? null : data?.canalId;
+        
+        console.log("🔍 DEBUG: Primer mensaje recibido del backend:", messagesArray[0]);
 
         if (receivedCanalId && receivedCanalId !== this.chatManagement.contactoActivo()?.id) {
           console.warn(`⚠️ Mensajes para canal ${receivedCanalId}, pero el activo es ${this.chatManagement.contactoActivo()?.id}`);
@@ -296,9 +361,12 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
         const canal = this.chatManagement.contactos().find((c: ContactoChat) => c.id === data.canalId);
         
         if (!canal) {
-          console.warn('⚠️ Canal no encontrado:', data.canalId);
+          console.warn('⚠️ Canal no encontrado en lista local:', data.canalId, '- Contador global activo.');
           return;
         }
+
+        // Ya NO limpiamos el contador global aquí, a menos que el chat sea el activo actual.
+        // El global listener ya agregó +1. El sidebar lo necesita si el usuario sale de la pantalla.
 
         const nuevoMsg = this.chatManagement.mapMessageToMensaje(data, this.currentUserId, canal.participantes);
         
@@ -314,14 +382,42 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
           // Actualizamos de forma inmutable para garantizar que Angular detecte el cambio en OnPush
           canal.mensajes = [...canal.mensajes, nuevoMsg];
           this.chatManagement.guardarMensajesLocalStorage(canal.id, data);
+          
+          // SINCRONIZAR ARRAY PRINCIPAL
+          const nuevosContactos = this.chatManagement.contactos().map(c => 
+            c.id === canal.id ? {...canal} as ContactoChat : c
+          );
+          this.chatManagement.contactos.set(nuevosContactos);
+          
           console.log('✅ MENSAJE AGREGADO AL HISTORIAL');
         } else {
-          console.log('🔄 MENSAJE DUPLICADO - NO AGREGADO');
+          console.log('🔄 MENSAJE DUPLICADO - NO AGREGADO. Actualizando ID real.');
+          // Buscar el mensaje temporal enviado localmente para actualizar su ID con el del servidor
+          const msgLocal = canal.mensajes.find((m: any) => 
+            m.texto === nuevoMsg.texto && m.enviadoPorMi === true && (m.id > 1000000000000 || typeof m.id === 'string')
+          );
+          if (msgLocal && data.id) {
+            (msgLocal as any).id = data.id; // Asignar el ID real de la base de datos
+            console.log('✅ ID DE MENSAJE LOCAL ACTUALIZADO A:', data.id);
+          }
         }
 
         if (this.chatManagement.contactoActivo()?.id === canal.id) {
-          // FORZAR ACTUALIZACIÓN REACTIVA
-          this.chatManagement.contactoActivo.set({...canal} as ContactoChat);
+          // Si el chat está activo, el usuario lo está leyendo. Limpiar global map para este canal.
+          const mapaGlobal = new Map(this.communicationService.mensajesSinLeerGlobal());
+          mapaGlobal.delete(canal.id);
+          this.communicationService.mensajesSinLeerGlobal.set(mapaGlobal);
+
+          // FORZAR ACTUALIZACIÓN REACTIVA Y SUBIR AL TOPE
+          const canalActualizado = {...canal} as ContactoChat;
+          this.chatManagement.contactoActivo.set(canalActualizado);
+          // Subir al tope también cuando es el chat abierto
+          const listaActual = this.chatManagement.contactos();
+          const reordenados = [
+            canalActualizado,
+            ...listaActual.filter(c => c.id !== canalActualizado.id)
+          ];
+          this.chatManagement.contactos.set(reordenados);
           
           this.communicationService.readMessage({ 
             canalId: canal.id, 
@@ -330,6 +426,7 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
           });
           setTimeout(() => this.scrollToBottom(), 50); // Hacemos scroll si llega mensaje en nuestro chat actual
         } else {
+          // Incrementar el badge del sidebar para este canal (ya sube al tope internamente)
           this.chatManagement.incrementarMensajesSinLeer(canal.id);
         }
         this.cdr.detectChanges();
@@ -348,11 +445,39 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
           if (msj) {
             msj.texto = data.contenido;
             (msj as any).editado = true;
+            
+            // Forzar reactividad para Angular OnPush
+            if (this.chatManagement.contactoActivo()?.id === canal.id) {
+              this.chatManagement.contactoActivo.set({...canal} as ContactoChat);
+            }
             this.cdr.detectChanges();
           }
         }
       } catch (error) {
         console.error('❌ Error procesando messageEdited:', error);
+      }
+    });
+
+    // Evento de mensaje eliminado para todos
+    socket.on('messageDeleted', (data: any) => {
+      try {
+        console.log("🚫 messageDeleted recibido:", data);
+        const canal = this.chatManagement.contactos().find((c: ContactoChat) => c.id === data.canalId);
+        if (canal && data.mensajeId) {
+          const msj = canal.mensajes.find((m: any) => m.id === data.mensajeId);
+          if (msj) {
+            msj.texto = '🚫 Este mensaje fue eliminado';
+            (msj as any).eliminado = true;
+            
+            // Forzar reactividad
+            if (this.chatManagement.contactoActivo()?.id === canal.id) {
+              this.chatManagement.contactoActivo.set({...canal} as ContactoChat);
+            }
+            this.cdr.detectChanges();
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error procesando messageDeleted:', error);
       }
     });
 
@@ -393,6 +518,54 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
         }
       } catch (error) {}
     });
+
+    // Evento de reacción a mensaje
+    socket.on('messageReacted', (data: any) => {
+      try {
+        console.log("👍 messageReacted recibido:", data);
+        
+        let canalConMensaje: ContactoChat | undefined;
+        let msjEncontrado: any;
+
+        if (data.canalId) {
+          canalConMensaje = this.chatManagement.contactos().find((c: ContactoChat) => c.id === data.canalId);
+          if (canalConMensaje) msjEncontrado = canalConMensaje.mensajes.find((m: any) => m.id === data.mensajeId);
+        } else {
+          // Si el backend omite el canalId, buscamos en todos los canales cargados
+          for (const c of this.chatManagement.contactos()) {
+            const m = c.mensajes.find((m: any) => m.id === data.mensajeId);
+            if (m) {
+              canalConMensaje = c;
+              msjEncontrado = m;
+              break;
+            }
+          }
+        }
+
+        if (canalConMensaje && msjEncontrado) {
+          if (!msjEncontrado.reacciones) msjEncontrado.reacciones = [];
+          
+          const existing = msjEncontrado.reacciones.find((r: any) => r.emoji === data.emoji);
+          if (existing) {
+            existing.count = data.count; // Actualizar con el count del servidor
+          } else if (data.count > 0) {
+            msjEncontrado.reacciones.push({ emoji: data.emoji, count: data.count });
+          }
+          
+          // Eliminar reacciones con conteo 0
+          msjEncontrado.reacciones = msjEncontrado.reacciones.filter((r: any) => r.count > 0);
+          
+          // Forzar reactividad si estamos en el canal activo
+          if (this.chatManagement.contactoActivo()?.id === canalConMensaje.id) {
+            this.chatManagement.contactoActivo.set({...canalConMensaje} as ContactoChat);
+            this.cdr.detectChanges();
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error procesando messageReacted:', error);
+      }
+    });
+
   }
 
   private async tryOpenPendingChat() {
@@ -412,10 +585,9 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     // Crear nuevo canal
     if (this.communicationService.getSocket()) {
       try {
-        console.log('📤 Creando canal directo desde comunidad...');
+        console.log('🚀 Creando canal directo desde comunidad...');
         
-        // ✅ FIRE-AND-FORGET: No esperar respuesta
-        this.communicationService.createChannel({
+        const nuevoCanal = await this.communicationService.createChannel({
           nombre: this.pendingChatContactoNombre || 'Chat directo',
           descripcion: 'Chat directo desde Comunidad',
           creadorId: this.currentUserId,
@@ -423,12 +595,28 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
           esGrupo: false
         });
 
-        // Backend enviará userChannels cuando el canal esté listo
-        console.log('✅ Solicitud de creación enviada...');
+        console.log('✅ Canal creado/recuperado:', nuevoCanal);
+        
+        // Mapear el canal devuelto para seleccionarlo de inmediato
+        const contactoMapeado = this.chatManagement.mapChannelToContacto(nuevoCanal, this.currentUserId);
+        
+        // Actualizamos información de la otra persona
+        if (contactoMapeado.participantes) {
+           const otro = contactoMapeado.participantes.find((p: any) => Number(p.usuarioId) !== this.currentUserId);
+           if (otro) {
+              contactoMapeado.nombre = otro.nombre || this.pendingChatContactoNombre || 'Usuario';
+              contactoMapeado.iniciales = this.chatManagement.generarIniciales(contactoMapeado.nombre);
+              if (otro.avatar) (contactoMapeado as any).avatarUrl = otro.avatar;
+           }
+        }
+
+        this.chatManagement.seleccionarContacto(contactoMapeado);
+        
       } catch (error) {
-        console.warn('Error emitiendo creación de canal:', error);
+        console.warn('❌ Error creando canal:', error);
       } finally {
         this.clearPendingChat();
+        this.cdr.detectChanges();
       }
     }
   }
@@ -468,6 +656,14 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     this.mostrarEmojis.set(false); // Cerrar panel de emojis si estaba abierto
     this.cancelarEdicion(); // Limpiar el estado de edición
     this.communicationService.getRecentMessages({ canalId: contacto.id, limit: 50 });
+    
+    // MARCAR TODOS LOS MENSAJES COMO LEÍDOS AL ENTRAR AL CHAT
+    this.communicationService.readMessage({ 
+      canalId: contacto.id, 
+      mensajeId: 0, 
+      usuarioId: this.currentUserId 
+    });
+
     setTimeout(() => this.scrollToBottom(), 50);
     this.cdr.detectChanges();
   }
@@ -517,12 +713,15 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
 
     // ✅ OPTIMISTIC UPDATE: Mostrar el mensaje localmente de inmediato
     const tempId = Date.now(); // ID temporal hasta que recargue
-    const horaFormateada = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const now = new Date();
+    const horaFormateada = now.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const fechaISO = now.toISOString();
     const nuevoMsg: any = {
       id: tempId,
       texto: mensaje,
       hora: horaFormateada,
-      timestampReal: new Date().toISOString(),
+      fechaISO: fechaISO,
+      timestampReal: fechaISO,
       enviadoPorMi: true,
       tipo: 'text',
       archivoUrl: undefined,
@@ -533,11 +732,13 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     // Agregar a la UI localmente
     canalActivo.mensajes = [...canalActivo.mensajes, nuevoMsg];
     
-    // FORZAR ACTUALIZACIÓN REACTIVA EN AMBAS REFERENCIAS
+    // FORZAR ACTUALIZACIÓN REACTIVA Y SUBIR AL TOPE (estilo WhatsApp)
     const canalCopia = {...canalActivo} as ContactoChat;
-    const nuevosContactos = this.chatManagement.contactos().map(c => 
-      c.id === canalCopia.id ? canalCopia : c
-    );
+    const listaActual = this.chatManagement.contactos();
+    const nuevosContactos = [
+      canalCopia,
+      ...listaActual.filter(c => c.id !== canalCopia.id)
+    ];
     this.chatManagement.contactos.set(nuevosContactos);
     this.chatManagement.contactoActivo.set(canalCopia);
     
@@ -568,6 +769,95 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
   cancelarEdicion(): void {
     this.mensajeEnEdicion.set(null);
     this.chatManagement.nuevoMensaje.set('');
+  }
+
+  // ===== Menú de Mensajes =====
+
+  esAdminActual(): boolean {
+    const canalActivo = this.chatManagement.contactoActivo();
+    if (!canalActivo || !canalActivo.esGrupo) return false;
+    const yo = canalActivo.participantes?.find((p: any) => 
+      Number(p.id) === this.currentUserId || Number(p.usuarioId) === this.currentUserId
+    );
+    return yo ? !!yo.esAdmin : false;
+  }
+
+  toggleMenuMensaje(msjId: string | number): void {
+    if (this.menuMensajeActivo() === msjId) {
+      this.menuMensajeActivo.set(null);
+    } else {
+      this.menuMensajeActivo.set(msjId);
+    }
+  }
+
+  cerrarMenuMensaje(): void {
+    this.menuMensajeActivo.set(null);
+  }
+
+  toggleMenuReaccion(msjId: string | number): void {
+    this.menuMensajeActivo.set(null); // cerrar el otro menu si estaba abierto
+    this.menuReaccionActivo.set(this.menuReaccionActivo() === msjId ? null : msjId);
+  }
+
+  cerrarMenuReaccion(): void {
+    this.menuReaccionActivo.set(null);
+  }
+
+  reaccionar(msj: any, emoji: string): void {
+    const canalActivo = this.chatManagement.contactoActivo();
+    if (!canalActivo) return;
+
+    // Emitir al backend inmediatamente (el backend es la fuente de la verdad para el toggle)
+    this.communicationService.getSocket()?.emit('reactToMessage', {
+      mensajeId: msj.id,
+      canalId: canalActivo.id,
+      usuarioId: this.currentUserId,
+      emoji
+    });
+
+    this.cerrarMenuReaccion();
+  }
+
+  eliminarParaMi(msj: any): void {
+    this.pedirConfirmacion('¿Seguro que deseas eliminar este mensaje solo para ti?', () => {
+      // Ocultar localmente
+      const canalActivo = this.chatManagement.contactoActivo();
+      if (canalActivo) {
+        canalActivo.mensajes = canalActivo.mensajes.filter((m: any) => m.id !== msj.id);
+        this.chatManagement.contactoActivo.set({...canalActivo} as ContactoChat);
+        this.cdr.detectChanges();
+        
+        // Emitir al backend
+        this.communicationService.getSocket()?.emit('deleteMessageForMe', { 
+          mensajeId: msj.id,
+          canalId: canalActivo.id,
+          usuarioId: this.currentUserId
+        });
+      }
+    });
+    this.cerrarMenuMensaje();
+  }
+
+  eliminarParaTodos(msj: any): void {
+    if (!msj.enviadoPorMi && !this.esAdminActual()) return;
+    this.pedirConfirmacion('¿Seguro que deseas eliminar este mensaje para todos?', () => {
+      const canalActivo = this.chatManagement.contactoActivo();
+      if (canalActivo) {
+        // Optimistic update
+        msj.texto = '🚫 Este mensaje fue eliminado';
+        msj.eliminado = true;
+        this.chatManagement.contactoActivo.set({...canalActivo} as ContactoChat);
+        this.cdr.detectChanges();
+        
+        // Emitir al backend
+        this.communicationService.getSocket()?.emit('deleteMessageForAll', { 
+          mensajeId: msj.id,
+          canalId: canalActivo.id,
+          usuarioId: this.currentUserId
+        });
+      }
+    });
+    this.cerrarMenuMensaje();
   }
 
   private cargarDatosFalsos(): void {
