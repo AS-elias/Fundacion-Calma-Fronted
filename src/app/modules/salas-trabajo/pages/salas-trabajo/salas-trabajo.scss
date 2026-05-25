@@ -1,0 +1,643 @@
+@use "sass:color";
+@import url('https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;700&family=Inter:wght@400;500;600;800;900&display=swap');
+
+/* Variables */
+$primary-celeste: #4eb3e4;
+$primary-celeste-hover: #3a9bc9;
+$bg-light: #f9fafb;
+$border-color: #f3f4f6;
+$border-darker: #e5e7eb;
+$text-dark: #111827;
+$text-gray: #6b7280;
+$text-light: #9ca3af;
+
+.contenedor {
+  padding: 30px;
+  min-height: calc(100vh - 100px);
+  overflow-y: auto;
+  background: var(--surface-section) ;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  margin: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  font-family: 'Inter', sans-serif;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 1px solid $border-color;
+    padding-bottom: 20px;
+    gap: 20px;
+
+    .titulo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      h2 { 
+        margin: 0; 
+        font-size: 26px; 
+        font-weight: 800; 
+        color: $text-dark; 
+        font-family: 'Inknut Antiqua', serif; 
+      }
+    }
+
+    .btn-nueva {
+      background: $primary-celeste;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(78, 179, 228, 0.2);
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      
+      &:hover {
+        background: $primary-celeste-hover;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(78, 179, 228, 0.3);
+      }
+    }
+  }
+
+  /* SALA PRINCIPAL */
+  .sala-principal {
+    background: linear-gradient(135deg, rgba(78, 179, 228, 0.08) 0%, rgba(78, 179, 228, 0.03) 100%);
+    border: 2px solid $primary-celeste;
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(78, 179, 228, 0.1);
+    transition: all 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 8px 20px rgba(78, 179, 228, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .sala-principal-content {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex: 1;
+
+      .sala-icon {
+        font-size: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+      }
+
+      .sala-info {
+        h3 {
+          margin: 0 0 6px 0;
+          font-size: 20px;
+          font-weight: 800;
+          color: $text-dark;
+          font-family: 'Inknut Antiqua', serif;
+        }
+        p {
+          margin: 0;
+          color: $text-gray;
+          font-size: 14px;
+        }
+      }
+    }
+
+    .btn-entrar {
+      background: $primary-celeste;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(78, 179, 228, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+
+      i { font-size: 16px; }
+
+      &:hover {
+        background: $primary-celeste-hover;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(78, 179, 228, 0.3);
+      }
+    }
+
+    .btn-edit-general {
+      background: rgba(78, 179, 228, 0.15);
+      color: $primary-celeste;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+
+      &:hover {
+        background: $primary-celeste;
+        color: white;
+        transform: translateY(-2px);
+      }
+    }
+  }
+
+  /* SECCIÓN DE SALAS */
+  .salas-section {
+    .section-title {
+      font-size: 20px;
+      margin: 40px 0 24px 0;
+      font-weight: 800;
+      color: $text-dark;
+      font-family: 'Inknut Antiqua', serif;
+      padding-bottom: 16px;
+      border-bottom: 1px solid $border-color;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+  }
+
+  /* TARJETA DE GRUPO */
+  .grupo-card {
+    background: var(--surface-section);
+    border: 1px solid $border-darker;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 8px 20px rgba(78, 179, 228, 0.12);
+      border-color: $primary-celeste;
+      transform: translateY(-2px);
+    }
+
+    .grupo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid $primary-celeste;
+
+      h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: $text-dark;
+        font-family: 'Inknut Antiqua', serif;
+      }
+
+      .sala-count {
+        background: rgba(78, 179, 228, 0.15);
+        color: $primary-celeste;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+    }
+
+    .salas-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+
+  /* ITEM SALA */
+  .sala-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: $bg-light;
+    border: 1px solid $border-darker;
+    border-radius: 10px;
+    padding: 12px 16px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(78, 179, 228, 0.05);
+      border-color: $primary-celeste;
+      box-shadow: 0 4px 12px rgba(78, 179, 228, 0.1);
+    }
+
+    .sala-item-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+
+      .sala-item-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(78, 179, 228, 0.15);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $primary-celeste;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+
+      .sala-item-info {
+        min-width: 0;
+        h5 {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 600;
+          color: $text-dark;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+    }
+
+    .sala-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+
+      .btn-edit-small {
+        background: rgba(78, 179, 228, 0.15);
+        color: $primary-celeste;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        font-size: 16px;
+
+        &:hover {
+          background: rgba(78, 179, 228, 0.25);
+          color: $primary-celeste-hover;
+          transform: scale(1.05);
+        }
+      }
+
+      .btn-delete-small {
+        background: #fee2e2;
+        color: #ef4444;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        font-size: 16px;
+
+        &:hover {
+          background: #fca5a5;
+          color: #b91c1c;
+          transform: scale(1.05);
+        }
+      }
+
+      .btn-entrar-small {
+        background: $primary-celeste;
+        color: white;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        font-size: 16px;
+        flex-shrink: 0;
+
+        &:hover {
+          background: $primary-celeste-hover;
+          box-shadow: 0 2px 8px rgba(78, 179, 228, 0.3);
+          transform: scale(1.05);
+        }
+      }
+    }
+  }
+}
+
+/* --- MODAL UNIFICADO --- */
+.overlay, .modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5) !important;
+  backdrop-filter: blur(6px) !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+  font-family: 'Inter', sans-serif;
+
+  .modal-box, .modal-content, .modal-clean {
+    background: var(--surface-section) !important;
+    border-radius: 16px !important;
+    width: 90% !important;
+    max-width: 500px !important;
+    padding: 24px !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid $border-color;
+
+      h3 { 
+        margin: 0; 
+        color: $text-dark; 
+        font-size: 18px; 
+        font-weight: 700; 
+        font-family: 'Inknut Antiqua', serif; 
+      }
+
+      .close { 
+        cursor: pointer; 
+        font-size: 18px; 
+        font-weight: bold;
+        color: $text-gray; 
+        background: $bg-light;
+        border: none;
+        width: 32px; 
+        height: 32px;
+        border-radius: 50%;
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        transition: all 0.2s;
+
+        &:hover { 
+          background: $border-darker; 
+          color: $text-dark; 
+        } 
+      }
+    }
+
+    p { color: $text-gray; line-height: 1.5; font-size: 14px; margin: 0 0 16px 0; }
+
+    .form-group, .form {
+      margin-bottom: 18px;
+      
+      label { 
+        display: block; 
+        margin-bottom: 6px; 
+        color: $text-dark; 
+        font-weight: 600; 
+        font-size: 13px; 
+      }
+      
+      input, textarea, select { 
+        width: 100%; 
+        padding: 10px 12px; 
+        margin-bottom: 0;
+        border: 1px solid $border-darker; 
+        border-radius: 8px; 
+        font-family: 'Inter', sans-serif; 
+        font-size: 14px; 
+        background: var(--surface-section) ;
+        transition: all 0.2s; 
+
+        &:focus { 
+          outline: none; 
+          border-color: $primary-celeste; 
+          background: var(--surface-section) ; 
+          box-shadow: 0 0 0 3px rgba(78, 179, 228, 0.1); 
+        }
+
+        &::placeholder {
+          color: $text-light;
+        }
+      }
+      
+      textarea { 
+        resize: vertical; 
+        min-height: 100px; 
+      }
+
+      select {
+        cursor: pointer;
+      }
+    }
+
+    .modal-footer, .acciones-detalle, .acciones-confirmacion {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid $border-color;
+
+      .btn, button {
+        padding: 10px 16px; 
+        border-radius: 8px; 
+        border: none; 
+        cursor: pointer; 
+        font-weight: 600; 
+        font-size: 14px; 
+        transition: all 0.2s;
+
+        &.cancel, &.btn-cancelar { 
+          background: $bg-light; 
+          color: $text-gray; 
+
+          &:hover { 
+            background: $border-darker; 
+            color: $text-dark; 
+          } 
+        }
+
+        &.primary, &.btn-crear { 
+          background: $primary-celeste; 
+          color: white; 
+          width: auto; 
+
+          &:hover { 
+            background: $primary-celeste-hover; 
+            box-shadow: 0 4px 12px rgba(78, 179, 228, 0.3); 
+          } 
+        }
+
+        &.btn-confirmar { 
+          display: flex; 
+          align-items: center; 
+          gap: 6px; 
+          background: #ef4444; 
+          color: white; 
+
+          &:hover { 
+            background: #dc2626; 
+            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2); 
+          } 
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideUp { 
+  from { 
+    opacity: 0; 
+    transform: translateY(15px) scale(0.98); 
+  } 
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  } 
+}
+
+@keyframes fadeIn { 
+  from { 
+    opacity: 0; 
+  } 
+  to { 
+    opacity: 1; 
+  } 
+}
+/* =====================================================
+   DARK MODE OVERRIDES
+   ===================================================== */
+:host-context(.app-dark) {
+  .contenedor {
+    background: var(--surface-ground) !important;
+    color: var(--text-color) !important;
+  }
+
+  .contenedor h1, .contenedor h2, .contenedor h3, .contenedor h4, .contenedor h5 {
+    color: var(--text-color-title) !important;
+  }
+
+  .contenedor p, .contenedor span:not(.badge):not(.chip), .contenedor label {
+    color: var(--text-color) !important;
+  }
+
+  /* Fondos claros usados en salas */
+  .sala-header, .sala-body, .sala-panel,
+  .room-header, .room-body, .room-footer,
+  .member-row, .member-item, .members-list,
+  .add-member-form, .invite-section,
+  .sala-info, .room-info, .sala-links,
+  .sala-resources, .agenda-panel,
+  .kanban-section, .section-panel {
+    background: var(--surface-section) !important;
+    border-color: var(--surface-border) !important;
+    color: var(--text-color) !important;
+  }
+
+  /* bg-light elementos (#f9fafb) */
+  .filter-bar, .toolbar-row, .action-bar,
+  .search-wrapper, .list-wrapper {
+    background: var(--surface-section) !important;
+    color: var(--text-color) !important;
+  }
+
+  /* Textos dark (#111827 / #2c3e50) */
+  .sala-title, .room-title, .member-name,
+  .item-title, .list-title {
+    color: var(--text-color-title) !important;
+  }
+
+  /* Textos gray (#6b7280 / #7f8c8d) */
+  .sala-meta, .room-meta, .member-role,
+  .item-meta, .helper-text, .sub-text {
+    color: var(--text-color-secondary) !important;
+  }
+
+  /* Tooltip/title visible sin hover */
+  [title] { color: var(--text-color) !important; }
+}
+
+  /* Nombres de Salas (Nuevas correcciones) */
+  .sala-item { 
+    background: var(--surface-section) !important; 
+    color: var(--text-color) !important; 
+  }
+  .sala-item-info h5 { 
+    color: var(--text-color-title) !important; 
+  }
+  .grupo-header h4 { 
+    color: var(--text-color-title) !important; 
+  }
+:host-context(.app-dark) {
+  .sala-item { 
+    background: var(--surface-section) !important; 
+    color: var(--text-color) !important; 
+  }
+  .sala-item-info h5 { 
+    color: var(--text-color-title) !important; 
+  }
+  .grupo-header h4 { 
+    color: var(--text-color-title) !important; 
+  }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .contenedor {
+    padding: 15px;
+    margin: 10px;
+  }
+  .contenedor .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .sala-principal {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  .sala-principal .sala-principal-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  .salas-section .grid {
+    grid-template-columns: 1fr;
+  }
+}
+

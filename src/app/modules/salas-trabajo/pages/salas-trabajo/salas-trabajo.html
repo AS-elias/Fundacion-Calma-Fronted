@@ -1,1 +1,133 @@
-<p>salas-trabajo works!</p>
+<div class="contenedor">
+
+  <div class="header">
+    <div class="titulo">
+      <h2>Salas de Trabajo</h2>
+    </div>
+    <button class="btn-nueva" *ngIf="puedeModificarSalas" (click)="abrirModalAgregar()">
+      <i class="pi pi-plus"></i> Nueva Sala
+    </button>
+  </div>
+
+  <!-- Sala General Principal -->
+  <div class="sala-principal" *ngIf="salaGeneral">
+    <div class="sala-principal-content">
+      <div class="sala-icon">🌐</div>
+      <div class="sala-info">
+        <h3>{{ salaGeneral.nombre }}</h3>
+        <p>Sala principal de la Fundación Calma - Conecta con todos</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn-edit-general" *ngIf="puedeModificarSalas" (click)="abrirModalEditar(salaGeneral)" title="Editar sala general">
+        <i class="pi pi-pencil"></i>
+      </button>
+      <button class="btn-entrar" (click)="entrar(salaGeneral.link)">
+        <i class="pi pi-arrow-right"></i> Entrar
+      </button>
+    </div>
+  </div>
+
+  <!-- Salas por Equipos -->
+  <div class="salas-section" *ngIf="grupos.length > 0">
+    <h3 class="section-title">Salas de Equipos</h3>
+    
+    <div class="grid">
+      <div class="grupo-card" *ngFor="let grupo of grupos; let i = index">
+        <div class="grupo-header">
+          <h4>{{ grupo.area }}</h4>
+          <span class="sala-count">{{ grupo.salas.length }} sala{{ grupo.salas.length !== 1 ? 's' : '' }}</span>
+        </div>
+        
+        <div class="salas-list">
+          <div class="sala-item" *ngFor="let sala of grupo.salas; let j = index">
+            <div class="sala-item-content">
+              <div class="sala-item-icon">
+                <i class="pi pi-video"></i>
+              </div>
+              <div class="sala-item-info">
+                <h5>{{ sala.nombre }}</h5>
+              </div>
+            </div>
+            <div class="sala-item-actions">
+              <ng-container *ngIf="puedeModificarSalas">
+                <button class="btn-edit-small" (click)="abrirModalEditar(sala)" title="Editar sala">
+                  <i class="pi pi-pencil"></i>
+                </button>
+                <button class="btn-delete-small" (click)="abrirConfirmacionEliminar(i, j)" title="Eliminar sala">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </ng-container>
+              <button class="btn-entrar-small" (click)="entrar(sala.link)" title="Entrar a la sala">
+                <i class="pi pi-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+<!-- Modal Crear/Editar Nueva Sala -->
+<div class="overlay" *ngIf="mostrarModalAgregar">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>{{ modoEdicion ? 'Editar Sala' : 'Crear Nueva Sala' }}</h3>
+      <button class="close" (click)="cerrarModalAgregar()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+    
+    <div class="form">
+      <div class="form-group">
+        <label for="nombreSala">Nombre de la Sala *</label>
+        <input type="text" id="nombreSala" [(ngModel)]="nuevaSala.nombre" placeholder="Ej: Sala de Estrategia" />
+      </div>
+      <div class="form-group" *ngIf="!nuevaSala.es_general">
+        <label for="areaSala">Área del Equipo *</label>
+        <select id="areaSala" [(ngModel)]="nuevaSala.area" *ngIf="!mostrarInputArea" (change)="verificarArea($event)">
+          <option value="">Selecciona un área</option>
+          <option *ngFor="let area of areasSugeridas" [value]="area">{{ area }}</option>
+          <option value="OTRA">Otra área (Escribir nueva...)</option>
+        </select>
+        
+        <div *ngIf="mostrarInputArea" style="display: flex; gap: 8px;">
+          <input type="text" [(ngModel)]="nuevaSala.area" placeholder="Escribe el nombre de la nueva área..." style="flex: 1;" />
+          <button class="btn-cancelar" (click)="cancelarNuevaArea()" title="Volver a la lista" style="padding: 10px; margin: 0; display: flex; align-items: center; justify-content: center; height: 100%;">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="linkSala">Link de la Sala *</label>
+        <input type="url" id="linkSala" [(ngModel)]="nuevaSala.link" placeholder="https://meet.google.com/..." />
+      </div>
+
+      <div class="form-group">
+        <label for="descripcionSala">Descripción</label>
+        <textarea id="descripcionSala" [(ngModel)]="nuevaSala.descripcion" placeholder="Describe el propósito de esta sala..."></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalAgregar()">Cancelar</button>
+      <button class="btn-crear primary" (click)="guardarSala()">{{ modoEdicion ? 'Guardar Cambios' : 'Crear Sala' }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar Eliminación -->
+<div class="overlay" *ngIf="mostrarConfirmacionEliminar">
+  <div class="modal-box">
+    <h3>¿Eliminar sala?</h3>
+    <p>Esta acción no se puede deshacer. La sala se borrará permanentemente del grupo.</p>
+    <div class="acciones-confirmacion">
+      <button class="btn-cancelar" (click)="cerrarConfirmacionEliminar()">Cancelar</button>
+      <button class="btn-confirmar" (click)="confirmarEliminar()"><i class="pi pi-trash"></i> Eliminar</button>
+    </div>
+  </div>
+</div>

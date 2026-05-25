@@ -10,8 +10,8 @@
     </div>
 
     <!-- Vista Admin completa -->
-    <ng-container *ngIf="!cargando && esAdmin">
-        <div *ngIf="stats" class="stats-grid">
+    <ng-container *ngIf="!cargando && esAdmin && stats">
+        <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon users"><i class="pi pi-users"></i></div>
                 <div class="stat-data">
@@ -26,26 +26,19 @@
                     <span class="number text-yellow">{{ stats.conveniosVigentes }}</span>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon docs"><i class="pi pi-chart-line"></i></div>
-                <div class="stat-data">
-                    <span class="label">Desempeño del Equipo</span>
-                    <span class="number text-green">{{ stats.desempenoEquipo | number:'1.0-0' }}%</span>
-                </div>
-            </div>
+            <!-- El desempeño del equipo no se muestra en la vista Admin según nueva especificación -->
         </div>
 
-        <!-- Grid 2 Columnas: Izquierda (Actividad) | Derecha (Gráficos) -->
         <div class="charts-grid">
 
             <!-- BLOQUE 1: Actividad Reciente (50% Izquierda) -->
             <div class="detail-box">
                 <h3>Actividad Reciente</h3>
-                <div class="placeholder-chart" *ngIf="!stats?.actividadReciente?.length">
+                <div class="placeholder-chart" *ngIf="!stats.actividadReciente.length">
                     <span>No hay actividad reciente registrada.</span>
                 </div>
-                <div class="recent-activity-list" *ngIf="stats?.actividadReciente?.length" style="padding-right: 5px;">
-                    <div class="activity-item" *ngFor="let act of stats?.actividadReciente"
+                <div class="recent-activity-list" *ngIf="stats.actividadReciente.length" style="padding-right: 5px;">
+                    <div class="activity-item" *ngFor="let act of stats.actividadReciente"
                         style="margin-bottom: 0.8rem; padding-bottom: 0.8rem; border-bottom: 1px solid #f3f4f6; display: flex; gap: 0.8rem; align-items: flex-start;">
                         <div class="icon-circle"
                             style="background: #e0f2fe; color: #0284c7; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
@@ -53,8 +46,8 @@
                         </div>
                         <div style="flex: 1;">
                             <p style="margin: 0; font-size: 0.9rem; color: #374151; line-height: 1.4;">
-                                <strong>{{ act.usuario }}</strong> {{ act.accion }} <br>
-                                <span style="color: #1a56db;">"{{ act.entidad }}"</span>
+                                <strong>{{ act.usuario || 'Sistema' }}</strong> {{ limpiarTexto(act.detalle || act.mensaje || act.accion || 'realizó una actividad') }} <br>
+                                <span style="color: #1a56db;" *ngIf="act.entidad">"{{ limpiarTexto(act.entidad) }}"</span>
                             </p>
                             <span style="font-size: 0.75rem; color: #9ca3af; display: block; margin-top: 4px;">
                                 {{ act.fecha | date:'dd MMM yyyy, HH:mm' }}
@@ -101,6 +94,88 @@
             <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Estadísticas de tu gestión asignada.</p>
         </div>
 
+        <ng-container *ngIf="usuariosParaEvaluar.length; else noPendingEvaluations">
+            <div style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #eef2ff; border-radius: 8px; background: #ffffff;">
+                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h3 style="margin:0">Evaluaciones semanales pendientes</h3>
+                        <p style="margin:0; color:#6b7280; font-size:0.9rem;">Revisa y califica cada usuario que tiene una evaluación pendiente.</p>
+                    </div>
+                </div>
+                <div class="pending-list" style="margin-top:1rem;">
+                    <div *ngFor="let usuario of usuariosParaEvaluar" class="pending-card">
+                        <div class="pending-card-main">
+                            <div class="pending-card-title">{{ usuario.nombre }}</div>
+                            <div class="pending-card-role">{{ usuario.puesto || 'Sin puesto asignado' }}</div>
+                            <div class="pending-card-info">
+                                <span>Última calificación: <strong>{{ usuario.rating ? usuario.rating + '★' : 'Pendiente' }}</strong></span>
+                                <span *ngIf="usuario.comentario">• {{ usuario.comentario }}</span>
+                            </div>
+                        </div>
+                        <button class="p-button p-button-secondary evaluate-button" type="button" (click)="abrirEncuesta(usuario)">Evaluar</button>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+
+        <ng-template #noPendingEvaluations>
+            <div style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #eef2ff; border-radius: 8px; background: #fff9eb;">
+                <h3 style="margin:0; color:#92400e;">No hay usuarios pendientes de evaluación</h3>
+                <p style="margin:0.6rem 0 0; color:#7c4d0a; font-size:0.9rem;">Si tienes usuarios a evaluar, revisa que el backend arroje el listado de pendientes para este director.</p>
+            </div>
+        </ng-template>
+
+
+        <p-dialog 
+            [(visible)]="mostrarEncuestaDirector" 
+            [modal]="true" 
+            [header]="'Enviar evaluación semanal'" 
+            [style]="{width: '500px'}" 
+            [closable]="true" 
+            (onHide)="mostrarEncuestaDirector=false; usuarioSeleccionadoParaEvaluar = null;"
+            [draggable]="false"
+            [resizable]="false">
+            
+            <p style="color: #6b7280; font-size: 0.95rem; margin-top: 0; margin-bottom: 1.5rem;">
+                Evaluar a <strong>{{ usuarioSeleccionadoParaEvaluar?.nombre || 'un usuario' }}</strong> directamente al backend.
+            </p>
+
+            <div class="rating-row" style="margin-bottom: 1.5rem;">
+                <span class="rating-label" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Selecciona tu calificación</span>
+                <div class="rating-buttons" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button *ngFor="let s of [1,2,3,4,5]" type="button" 
+                        class="rating-chip p-button" 
+                        [ngClass]="{'selected': evaluacionDirector.rating >= s}" 
+                        (click)="setRating(s)">
+                        {{ s }} ★
+                    </button>
+                </div>
+            </div>
+
+            <textarea 
+                rows="4" 
+                [(ngModel)]="evaluacionDirector.comentario" 
+                placeholder="Comentario (opcional)" 
+                class="modal-textarea" 
+                style="width: 100%; border: 1px solid #dcdfe6; border-radius: 6px; padding: 10px; font-family: inherit; resize: vertical;">
+            </textarea>
+
+            <div *ngIf="mensajeEvaluacion" class="modal-message" 
+                 [ngStyle]="{'color': mensajeEvaluacion.tipo === 'error' ? '#dc2626' : '#16a34a', 'background': mensajeEvaluacion.tipo === 'error' ? '#fef2f2' : '#f0fdf4', 'padding': '10px', 'border-radius': '6px', 'margin-top': '10px'}">
+                <i class="pi" [ngClass]="{'pi-exclamation-circle': mensajeEvaluacion.tipo === 'error', 'pi-check-circle': mensajeEvaluacion.tipo === 'exito'}" style="margin-right: 5px;"></i>
+                {{ mensajeEvaluacion.texto }}
+            </div>
+
+            <ng-template pTemplate="footer">
+                <button class="p-button p-button-text" (click)="mostrarEncuestaDirector=false; usuarioSeleccionadoParaEvaluar = null;">Cancelar</button>
+                <button class="p-button p-button-primary" [disabled]="enviandoEvaluacion" (click)="enviarEvaluacion()">
+                    <i class="pi pi-check" *ngIf="!enviandoEvaluacion" style="margin-right: 5px;"></i>
+                    <i class="pi pi-spin pi-spinner" *ngIf="enviandoEvaluacion" style="margin-right: 5px;"></i>
+                    Enviar evaluación
+                </button>
+            </ng-template>
+        </p-dialog>
+
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon users"><i class="pi pi-briefcase"></i></div>
@@ -116,20 +191,24 @@
                     <span class="number text-yellow">{{ userStats.misConvenios }}</span>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon docs"><i class="pi pi-chart-line"></i></div>
-                <div class="stat-data">
-                    <span class="label">Desempeño Equipo</span>
-                    <span class="number text-green">{{ userStats.desempenoEquipoArea }}%</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon docs"><i class="pi pi-star"></i></div>
-                <div class="stat-data">
-                    <span class="label">Tu Desempeño</span>
-                    <span class="number text-green">{{ userStats.desempenoPersonal }}%</span>
-                </div>
-            </div>
+            <ng-container *ngIf="userStats.desempenoEquipo !== undefined && userStats.desempenoEquipo !== null">
+              <div class="stat-card">
+                  <div class="stat-icon docs"><i class="pi pi-chart-line"></i></div>
+                  <div class="stat-data">
+                      <span class="label">Desempeño Equipo</span>
+                      <span class="number text-green">{{ userStats.desempenoEquipo | number:'1.0-0' }}%</span>
+                  </div>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="userStats.desempenoPersonal !== undefined && userStats.desempenoPersonal !== null">
+              <div class="stat-card">
+                  <div class="stat-icon docs"><i class="pi pi-star"></i></div>
+                  <div class="stat-data">
+                      <span class="label">Tu Desempeño</span>
+                      <span class="number text-green">{{ userStats.desempenoPersonal | number:'1.0-0' }}%</span>
+                  </div>
+              </div>
+            </ng-container>
         </div>
 
         <div class="charts-grid">
@@ -147,8 +226,8 @@
                         </div>
                         <div style="flex: 1;">
                             <p style="margin: 0; font-size: 0.9rem; color: #374151; line-height: 1.4;">
-                                <strong>{{ act.usuario }}</strong> {{ act.accion }} <br>
-                                <span style="color: #1a56db;">"{{ act.entidad }}"</span>
+                                <strong>{{ act.usuario || 'Sistema' }}</strong> {{ limpiarTexto(act.detalle || act.mensaje || act.accion || 'realizó una actividad') }} <br>
+                                <span style="color: #1a56db;" *ngIf="act.entidad">"{{ limpiarTexto(act.entidad) }}"</span>
                             </p>
                             <span style="font-size: 0.75rem; color: #9ca3af;">{{ act.fecha | date:'dd MMM yyyy, HH:mm' }}</span>
                         </div>
@@ -175,10 +254,18 @@
             <!-- BLOQUE 4: Desempeño -->
             <div class="detail-box">
                 <h3>Desempeño del Área</h3>
-                <div class="chart-container" style="position: relative; height: 230px; width: 100%;">
-                    <p-chart type="bar" [data]="desempenoChartData" [options]="barOptions" height="230px"></p-chart>
-                </div>
+                <ng-container *ngIf="userStats.desempenoEquipo !== undefined && userStats.desempenoEquipo !== null; else noDesempenoEquipo">
+                  <div class="chart-container" style="position: relative; height: 230px; width: 100%;">
+                      <p-chart type="bar" [data]="desempenoChartData" [options]="barOptions" height="230px"></p-chart>
+                  </div>
+                </ng-container>
+                <ng-template #noDesempenoEquipo>
+                  <div style="padding: 1rem; color: #718096; text-align: center;">
+                    El backend no envió desempeño de equipo, por eso no hay métrica disponible.
+                  </div>
+                </ng-template>
             </div>
         </div>
     </ng-container>
+
 </div>

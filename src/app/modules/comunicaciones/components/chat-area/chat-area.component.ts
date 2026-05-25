@@ -24,6 +24,20 @@ export class ChatAreaComponent implements AfterViewChecked {
   newMessageContent = '';
   showEmojiPicker = false;
   
+  // Typing indicator simulation
+  isTyping = false;
+  typingTimeout: any;
+
+  onInputType() {
+    this.isTyping = true;
+    if (this.typingTimeout) clearTimeout(this.typingTimeout);
+    
+    // Si deja de escribir por 1.5s, quitar el indicador
+    this.typingTimeout = setTimeout(() => {
+      this.isTyping = false;
+    }, 1500);
+  }
+  
   ngAfterViewChecked() {
     this.scrollToBottom();
   }

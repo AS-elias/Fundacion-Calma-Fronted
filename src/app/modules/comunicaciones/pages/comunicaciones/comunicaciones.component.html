@@ -1,6 +1,6 @@
 <div class="chat-container">
 
-    <aside class="chat-sidebar">
+    <aside class="chat-sidebar" [class.mobile-hidden]="chatManagement.contactoActivo()">
         <div class="sidebar-header">
             <div class="sidebar-title">
                 <h2>Comunicaciones</h2>
@@ -55,14 +55,24 @@
 
         <header class="chat-header">
             <div class="user-info">
+                <button class="icon-btn back-btn mobile-only" (click)="cerrarChatActual()" title="Volver">
+                    <i class="pi pi-arrow-left"></i>
+                </button>
                 <div class="avatar" [ngClass]="chatManagement.contactoActivo()!.colorBg">
                     <img *ngIf="$any(chatManagement.contactoActivo()).avatarUrl" [src]="$any(chatManagement.contactoActivo()).avatarUrl" class="avatar-img">
                     <span *ngIf="!$any(chatManagement.contactoActivo()).avatarUrl">{{ chatManagement.contactoActivo()!.iniciales }}</span>
                 </div>
                 <div class="details">
                     <span class="name">{{ chatManagement.contactoActivo()!.nombre }}</span>
-                    <span class="status" *ngIf="chatManagement.contactoActivo()!.enLinea"><span class="dot"></span> En línea</span>
-                    <span class="status offline" *ngIf="!chatManagement.contactoActivo()!.enLinea">Desconectado</span>
+                    <!-- Estado para Chats Directos -->
+                    <span class="status" *ngIf="!chatManagement.contactoActivo()!.esGrupo && chatManagement.contactoActivo()!.enLinea"><span class="dot"></span> En línea</span>
+                    <span class="status offline" *ngIf="!chatManagement.contactoActivo()!.esGrupo && !chatManagement.contactoActivo()!.enLinea">Desconectado</span>
+                    
+                    <!-- Estado para Grupos -->
+                    <span class="status group-status" *ngIf="chatManagement.contactoActivo()!.esGrupo">
+                        <i class="pi pi-users" style="font-size: 0.8rem; margin-right: 4px;"></i>
+                        {{ chatManagement.contactoActivo()!.participantes?.length || 0 }} participantes
+                    </span>
                 </div>
             </div>
             <div class="actions">
@@ -71,6 +81,9 @@
                 </button>
                 <button class="icon-btn" (click)="verInfoContacto()" title="Ver información">
                     <i class="pi pi-info-circle"></i>
+                </button>
+                <button class="icon-btn" (click)="cerrarChatActual()" title="Cerrar chat">
+                    <i class="pi pi-times"></i>
                 </button>
             </div>
         </header>
@@ -81,41 +94,131 @@
                 <app-empty-chat *ngIf="chatManagement.contactoActivo()!.mensajes.length === 0"></app-empty-chat>
 
                 <div *ngFor="let msj of chatManagement.contactoActivo()!.mensajes; let i = index" class="message" [ngClass]="msj.enviadoPorMi ? 'sent' : 'received'">
-                    <div class="avatar-small" [ngClass]="chatManagement.contactoActivo()!.colorBg" *ngIf="!msj.enviadoPorMi">
-                        {{ chatManagement.contactoActivo()!.iniciales }}
+
+                    <!-- Separador de fecha estilo WhatsApp -->
+                    <div class="date-separator"
+                         *ngIf="i === 0 || chatManagement.formatearEtiquetaDia($any(chatManagement.contactoActivo()!.mensajes[i-1]).fechaISO) !== chatManagement.formatearEtiquetaDia($any(msj).fechaISO)">
+                        <span>{{ chatManagement.formatearEtiquetaDia($any(msj).fechaISO) }}</span>
                     </div>
 
-                    <div class="message-content">
-                        <!-- Nombre del remitente (Solo en grupos y mensajes recibidos) -->
-                        <span class="sender-name-bubble" *ngIf="chatManagement.contactoActivo()?.esGrupo && !msj.enviadoPorMi">
-                            {{ $any(msj).remitenteNombre || 'Usuario' }}
-                        </span>
+                    <!-- Avatar -->
+                    <div class="avatar-small" *ngIf="!msj.enviadoPorMi" style="background-color: #4eb3e4; color: white;">
+                        <img *ngIf="$any(msj).remitenteAvatarUrl" [src]="$any(msj).remitenteAvatarUrl" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                        <span *ngIf="!$any(msj).remitenteAvatarUrl">{{ $any(msj).remitenteIniciales || chatManagement.contactoActivo()!.iniciales }}</span>
+                    </div>
 
-                        <div class="bubble">
-                            <!-- Soporte para archivos -->
-                            <div *ngIf="msj.tipo === 'file' || msj.tipo === 'image'" class="file-wrapper">
-                               <a *ngIf="msj.tipo === 'file'" [href]="msj.archivoUrl" download="archivo_adjunto" target="_blank" class="file-link">
-                                 <i class="pi pi-file"></i> 
-                                 <span>Archivo Adjunto</span>
-                                 <i class="pi pi-download"></i>
-                               </a>
-                               <a *ngIf="msj.tipo === 'image'" [href]="msj.archivoUrl" target="_blank" class="image-link" style="display:block; overflow:hidden; border-radius:12px; margin-bottom:5px;">
-                                 <img [src]="msj.archivoUrl" alt="Imagen enviada" style="max-width:200px; height:auto; object-fit:cover; display:block;">
-                               </a>
+                    <!-- Zona del mensaje -->
+                    <div class="message-row">
+
+                        <!-- El nombre se muestra dentro de la burbuja (sender-tag) para evitar duplicados -->
+
+                        <!-- Fila: acciones + burbuja -->
+                        <div class="bubble-row">
+
+                            <!-- Acciones izquierda (solo mensajes enviados) -->
+                            <div class="msg-actions left-actions" *ngIf="msj.enviadoPorMi">
+
+                                <!-- Tres puntitos -->
+                                <div class="msg-action-wrap">
+                                    <button class="btn-action" (click)="toggleMenuMensaje($any(msj).id)" title="Opciones">
+                                        <i class="pi pi-ellipsis-v"></i>
+                                    </button>
+                                    <div class="action-dropdown sent-dropdown" *ngIf="menuMensajeActivo() === $any(msj).id" (mouseleave)="cerrarMenuMensaje()">
+                                        <button *ngIf="msj.tipo === 'text'" (click)="iniciarEdicion(msj); cerrarMenuMensaje()">
+                                            <i class="pi pi-pencil"></i> Editar
+                                        </button>
+                                        <button (click)="eliminarParaMi(msj)">
+                                            <i class="pi pi-trash"></i> Eliminar para mí
+                                        </button>
+                                        <button (click)="eliminarParaTodos(msj)">
+                                            <i class="pi pi-ban"></i> Eliminar para todos
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Reacción -->
+                                <div class="msg-action-wrap">
+                                    <button class="btn-action" (click)="toggleMenuReaccion($any(msj).id)" title="Reaccionar">
+                                        <i class="pi pi-face-smile"></i>
+                                    </button>
+                                    <div class="emoji-picker-mini sent-dropdown" *ngIf="menuReaccionActivo() === $any(msj).id" (mouseleave)="cerrarMenuReaccion()">
+                                        <button *ngFor="let e of REACCIONES_RAPIDAS" (click)="reaccionar(msj, e)">
+                                            <img [src]="getTwemojiUrl(e)" class="twemoji-img" alt="{{ e }}">
+                                        </button>
+                                    </div>
+                                </div>
+
                             </div>
-                            <p class="message-text">{{ msj.texto }}</p>
+
+                            <!-- Burbuja -->
+                            <div class="bubble">
+                                <span class="sender-tag" *ngIf="chatManagement.contactoActivo()?.esGrupo && !msj.enviadoPorMi">
+                                    {{ $any(msj).remitenteNombre || 'Usuario' }}
+                                </span>
+
+                                <div *ngIf="msj.tipo === 'file' || msj.tipo === 'image'" class="file-wrapper">
+                                    <a *ngIf="msj.tipo === 'file'" [href]="msj.archivoUrl" download target="_blank" class="file-link">
+                                        <i class="pi pi-file"></i><span>Archivo</span><i class="pi pi-download"></i>
+                                    </a>
+                                    <a *ngIf="msj.tipo === 'image'" [href]="msj.archivoUrl" target="_blank">
+                                        <img [src]="msj.archivoUrl" alt="Imagen" class="img-msg">
+                                    </a>
+                                </div>
+
+                                <p class="message-text" [class.deleted-msg]="$any(msj).eliminado">{{ msj.texto }}</p>
+
+                                <!-- Footer: hora + checks en fila propia para no solaparse -->
+                                <div class="bubble-footer">
+                                    <span class="msg-time">{{ msj.hora }}<em *ngIf="$any(msj).editado">&nbsp;· editado</em></span>
+                                    <span class="msg-status-text" *ngIf="msj.enviadoPorMi">
+                                        <span *ngIf="!msj.leido">· Enviado</span>
+                                        <span *ngIf="msj.leido" class="status-leido">· Leído</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Acciones derecha (mensajes recibidos) -->
+                            <div class="msg-actions right-actions" *ngIf="!msj.enviadoPorMi">
+
+                                <!-- Reacción -->
+                                <div class="msg-action-wrap">
+                                    <button class="btn-action" (click)="toggleMenuReaccion($any(msj).id)" title="Reaccionar">
+                                        <i class="pi pi-face-smile"></i>
+                                    </button>
+                                    <div class="emoji-picker-mini" *ngIf="menuReaccionActivo() === $any(msj).id" (mouseleave)="cerrarMenuReaccion()">
+                                        <button *ngFor="let e of REACCIONES_RAPIDAS" (click)="reaccionar(msj, e)">
+                                            <img [src]="getTwemojiUrl(e)" class="twemoji-img" alt="{{ e }}">
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Tres puntitos -->
+                                <div class="msg-action-wrap">
+                                    <button class="btn-action" (click)="toggleMenuMensaje($any(msj).id)" title="Opciones">
+                                        <i class="pi pi-ellipsis-v"></i>
+                                    </button>
+                                    <div class="action-dropdown" *ngIf="menuMensajeActivo() === $any(msj).id" (mouseleave)="cerrarMenuMensaje()">
+                                        <button (click)="eliminarParaMi(msj)">
+                                            <i class="pi pi-trash"></i> Eliminar para mí
+                                        </button>
+                                        <button *ngIf="esAdminActual()" (click)="eliminarParaTodos(msj)">
+                                            <i class="pi pi-ban"></i> Eliminar para todos
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
                         </div>
-                        <div class="message-meta">
-                            <span class="time">{{ msj.hora }} <span *ngIf="$any(msj).editado" class="edited-mark">(Editado)</span></span>
-                            <span *ngIf="msj.enviadoPorMi" class="read-status" [title]="msj.leido ? 'Leído' : 'Enviado'">
-                                <!-- Doble Check WhatsApp Style -->
-                                <i class="pi pi-check" [ngClass]="msj.leido ? 'text-blue-500' : 'text-500'"></i>
-                                <i class="pi pi-check" [ngClass]="msj.leido ? 'text-blue-500' : 'text-500'" style="margin-left: -7px;"></i>
+
+                        <!-- Pills de reacciones -->
+                        <div class="reactions-bar" *ngIf="$any(msj).reacciones?.length > 0">
+                            <span *ngFor="let r of $any(msj).reacciones" class="reaction-pill">
+                                <img [src]="getTwemojiUrl(r.emoji)" class="twemoji-pill" alt="{{ r.emoji }}" (error)="r.fallback = true" *ngIf="!r.fallback">
+                                <span *ngIf="r.fallback">{{ r.emoji }}</span>
+                                <small>{{ r.count }}</small>
                             </span>
-                            <button *ngIf="msj.enviadoPorMi && msj.tipo === 'text'" class="action-edit-msg" (click)="iniciarEdicion(msj)" title="Editar mensaje">
-                                <i class="pi pi-pencil"></i>
-                            </button>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -135,8 +238,9 @@
                     <button (click)="mostrarEmojis.set(false)"><i class="pi pi-times"></i></button>
                 </div>
                 <div class="emoji-grid">
-                    <span class="emoji-item" *ngFor="let emoji of listaEmojis" (click)="agregarEmojiSeleccionado(emoji)">
-                        {{ emoji }}
+                    <span class="emoji-item" *ngFor="let emoji of listaEmojis" (click)="agregarEmojiSeleccionado(emoji)" title="{{ emoji }}">
+                        <img [src]="getTwemojiUrl(emoji)" class="twemoji-grid" alt="{{ emoji }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                        <span style="display:none;">{{ emoji }}</span>
                     </span>
                 </div>
                 <div style="padding: 8px; text-align: center; font-size: 11px; color: #9ca3af; background: #f9fafb; border-top: 1px solid #e5e7eb;">
@@ -187,7 +291,7 @@
     </aside>
     
     <!-- Estado vacío / Placeholder -->
-    <main class="chat-main empty-state-container" *ngIf="!chatManagement.contactoActivo()">
+    <main class="chat-main empty-state-container mobile-hidden" *ngIf="!chatManagement.contactoActivo()">
         <div class="empty-state-content">
             <div class="empty-icon-circle">
                 <i class="pi pi-comments"></i>
@@ -229,7 +333,9 @@
                         <img [src]="fotoGrupoBase64()" alt="Vista previa" />
                     </div>
                     <div class="photo-actions">
-                        <button class="btn-cancel" (click)="fotoGrupoInput.click()"><i class="pi pi-camera"></i> {{ fotoGrupoBase64() ? 'Cambiar foto' : 'Subir foto' }}</button>
+                        <button class="btn-cancel" (click)="fotoGrupoInput.click()" style="color: var(--primary-color); border-color: var(--primary-color);">
+                            <i class="pi pi-camera"></i> {{ fotoGrupoBase64() ? 'Cambiar foto' : 'Subir foto' }}
+                        </button>
                         <button class="btn-cancel text-red-500" *ngIf="fotoGrupoBase64()" (click)="fotoGrupoBase64.set(null)"><i class="pi pi-trash"></i></button>
                     </div>
                     <input type="file" #fotoGrupoInput accept="image/*" style="display: none;" (change)="onFotoGrupoSelected($event)" />

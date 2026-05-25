@@ -1,0 +1,348 @@
+<div class="contenedor">
+  <div
+    *ngIf="notificacionToast"
+    class="toast-notificacion"
+    [class.toast-notificacion--error]="notificacionToast.tipo === 'error'"
+    [class.toast-notificacion--success]="notificacionToast.tipo === 'success'"
+    role="status"
+    aria-live="polite"
+  >
+    <div class="toast-notificacion__contenido">
+      <i
+        class="pi"
+        [ngClass]="notificacionToast.tipo === 'success' ? 'pi-check-circle' : 'pi-exclamation-circle'"
+      ></i>
+      <span>{{ notificacionToast.mensaje }}</span>
+    </div>
+
+    <button
+      class="toast-notificacion__cerrar"
+      type="button"
+      (click)="cerrarNotificacion()"
+      aria-label="Cerrar notificacion"
+    >
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <div class="header">
+    <div>
+      <h2>Repositorio</h2>
+      <p class="subtitulo">
+        Documentos institucionales y recursos internos
+      </p>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <button
+      class="card"
+      type="button"
+      *ngFor="let bloque of bloques"
+      (click)="seleccionarBloque(bloque)"
+    >
+
+      <div class="card-top">
+        <div class="icono">
+          {{ bloque.icono }}
+        </div>
+
+        <span class="badge">
+          {{ bloque.documentos.length }}
+        </span>
+      </div>
+
+      <h3>{{ bloque.titulo }}</h3>
+
+      <p>
+        {{
+          esBloqueRedes(bloque)
+            ? bloque.documentos.length + ' redes registradas'
+            : bloque.documentos.length + ' documentos disponibles'
+        }}
+      </p>
+
+    </button>
+
+  </div>
+
+</div>
+
+<div class="modal" *ngIf="bloqueSeleccionado">
+
+  <div class="modal-content">
+
+    <div class="modal-header">
+
+      <div class="header-info">
+
+        <div class="modal-icon">
+          {{ bloqueSeleccionado.icono }}
+        </div>
+
+        <div>
+          <h3>{{ bloqueSeleccionado.titulo }}</h3>
+
+          <span>
+            {{ bloqueSeleccionado.documentos.length }}
+            elementos
+          </span>
+        </div>
+
+      </div>
+
+      <button
+        class="btn-close"
+        type="button"
+        (click)="cerrarModal()"
+      >
+        x
+      </button>
+
+    </div>
+
+    <div class="form">
+
+      <ng-container *ngIf="esRedesSociales(); else docsForm">
+
+        <div class="social-form">
+          <input
+            [(ngModel)]="nuevoNombre"
+            placeholder="Nombre de la red"
+          />
+
+          <input
+            [(ngModel)]="nuevoLink"
+            placeholder="https://..."
+          />
+        </div>
+
+        <button
+          class="btn-add"
+          type="button"
+          (click)="agregarRedSocial()"
+        >
+          + Agregar red social
+        </button>
+
+      </ng-container>
+
+      <ng-template #docsForm>
+        <div class="repo-toolbar">
+          <div class="breadcrumbs">
+            <ng-container *ngFor="let carpeta of historialCarpetas; let i = index">
+              <span 
+                class="crumb" 
+                (click)="irACarpeta(i)"
+                (dragover)="onDragOver($event, carpeta.id)"
+                (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event, carpeta.id)"
+                [class.drag-over]="carpetaDestinoOverId === carpeta.id"
+              >{{ carpeta.nombre }}</span>
+              <span class="separator" *ngIf="i < historialCarpetas.length - 1">/</span>
+            </ng-container>
+          </div>
+          
+          <div class="toolbar-actions">
+            <button class="btn-new-folder" type="button" (click)="toggleCrearCarpeta()" [title]="creandoCarpeta ? 'Cancelar' : 'Nueva Carpeta'">
+              <i class="pi" [ngClass]="creandoCarpeta ? 'pi-times' : 'pi-folder-plus'"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="create-folder-box" *ngIf="creandoCarpeta">
+          <input type="text" [(ngModel)]="nombreNuevaCarpeta" placeholder="Nombre de la nueva carpeta" (keyup.enter)="crearCarpeta()">
+          <button type="button" (click)="crearCarpeta()" [disabled]="!nombreNuevaCarpeta.trim()">Crear</button>
+        </div>
+
+        <div class="upload-box" *ngIf="!creandoCarpeta"
+             [ngClass]="{'drag-over': isDragOverZone}"
+             (dragover)="onFileDragOver($event)"
+             (dragleave)="onFileDragLeave($event)"
+             (drop)="onFileDrop($event)">
+
+          <input
+            type="file"
+            id="fileInput"
+            (change)="onFileSelected($event)"
+          />
+
+          <label for="fileInput">
+            <div class="upload-icon">
+              <i class="pi pi-upload"></i>
+            </div>
+
+            <span>
+              {{
+                archivoSeleccionado
+                  ? archivoSeleccionado.name
+                  : 'Subir archivo aquí'
+              }}
+            </span>
+          </label>
+
+        </div>
+
+        <button
+          *ngIf="!creandoCarpeta"
+          class="btn-add"
+          type="button"
+          (click)="agregarDocumento()"
+          [disabled]="!archivoSeleccionado || subiendo"
+        >
+          {{ subiendo ? 'Subiendo...' : '+ Confirmar subida' }}
+        </button>
+
+      </ng-template>
+
+    </div>
+
+    <div class="list">
+
+      <ng-container *ngIf="esRedesSociales(); else docsList">
+
+        <div
+          class="empty-state"
+          *ngIf="!bloqueSeleccionado.documentos.length"
+        >
+          <div class="empty-icon">#</div>
+          <p>No hay redes sociales registradas.</p>
+        </div>
+
+        <div
+          class="social-grid"
+          *ngIf="bloqueSeleccionado.documentos.length"
+        >
+
+          <div
+            class="social-card"
+            *ngFor="let red of bloqueSeleccionado.documentos; let i = index"
+          >
+
+            <a
+              class="social-main"
+              [href]="red.url"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div class="icon social" [ngClass]="claseRedSocial(red.url)">
+                <span>{{ etiquetaRedSocial(red.url) }}</span>
+              </div>
+
+              <div class="info">
+                <span class="title">
+                  {{ red.nombre }}
+                </span>
+
+                <span class="subtitle">
+                  {{ obtenerDominio(red.url) }}
+                </span>
+              </div>
+            </a>
+
+            <button
+              *ngIf="puedeEliminarRepositorio"
+              class="delete"
+              type="button"
+              (click)="eliminarRed(i)"
+              title="Eliminar"
+              aria-label="Eliminar red social"
+            >
+              <i class="pi pi-trash"></i>
+            </button>
+
+          </div>
+
+        </div>
+
+      </ng-container>
+
+      <ng-template #docsList>
+
+        <div
+          class="empty-state"
+          *ngIf="!elementosMostrados.length"
+        >
+          <div class="empty-icon">
+            <i class="pi pi-folder-open"></i>
+          </div>
+          <p>Esta carpeta está vacía.</p>
+        </div>
+
+        <div
+          class="item"
+          *ngFor="let doc of elementosMostrados; let i = index"
+          (dblclick)="entrarCarpeta(doc)"
+          [class.is-folder]="doc.esCarpeta"
+          [class.drag-over]="doc.esCarpeta && carpetaDestinoOverId === doc.id"
+          draggable="true"
+          (dragstart)="onDragStart($event, doc)"
+          (dragover)="doc.esCarpeta ? onDragOver($event, doc.id) : null"
+          (dragleave)="doc.esCarpeta ? onDragLeave($event) : null"
+          (drop)="doc.esCarpeta ? onDrop($event, doc.id) : null"
+        >
+
+          <div class="item-left" (click)="doc.esCarpeta ? entrarCarpeta(doc) : null">
+
+            <div class="icon" [ngClass]="doc.esCarpeta ? 'folder' : 'doc'">
+              <i class="pi" [ngClass]="doc.esCarpeta ? 'pi-folder' : 'pi-file'"></i>
+              <span *ngIf="!doc.esCarpeta">{{ obtenerExtension(doc.nombre) }}</span>
+            </div>
+
+            <div class="info">
+              <a
+                *ngIf="!doc.esCarpeta; else folderName"
+                [href]="doc.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="doc-link"
+              >
+                {{ doc.nombre }}
+              </a>
+              <ng-template #folderName>
+                <span class="folder-name">{{ doc.nombre }}</span>
+              </ng-template>
+
+              <span class="subtitle" *ngIf="!doc.esCarpeta">
+                {{ obtenerNombreArchivo(doc.url) }}
+              </span>
+            </div>
+
+          </div>
+
+          <div class="acciones">
+            <a
+              *ngIf="!doc.esCarpeta"
+              [href]="doc.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-download"
+              (click)="$event.stopPropagation()"
+              title="Ver"
+              aria-label="Ver documento"
+            >
+              <i class="pi pi-eye"></i>
+            </a>
+
+            <button
+              *ngIf="puedeEliminarRepositorio"
+              class="delete"
+              type="button"
+              (click)="eliminarDocumento(i); $event.stopPropagation()"
+              title="Eliminar"
+              aria-label="Eliminar elemento"
+            >
+              <i class="pi pi-trash"></i>
+            </button>
+          </div>
+
+        </div>
+
+      </ng-template>
+
+    </div>
+
+  </div>
+
+</div>

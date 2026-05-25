@@ -10,41 +10,69 @@ export interface AdminDashboardStats {
   actividadReciente: any[];
   estadisticasTareas: {
     pendientes: number;
-    planificacion: number;
+    progreso?: number;
+    planificacion?: number;
     ejecucion: number;
     completadas: number;
-    otros: number;
+    paralizado?: number;
+    otros?: number;
   };
   estadisticasComunicaciones: {
-    negociacion: number;
+    pendiente?: number;
+    proceso?: number;
+    negociacion?: number;
     firmados: number;
-    descartados: number;
-    otros: number;
+    cancelados?: number;
+    descartados?: number;
+    otros?: number;
   };
+}
+
+export interface DirectorEvaluationTarget {
+  id?: number;
+  usuarioId?: number;
+  nombre?: string;
+  nombreCompleto?: string;
+  puesto?: string;
+  rol?: string;
+  rating?: number;
+  comentario?: string;
+  fecha?: string;
+  pendiente?: boolean;
+  activo?: boolean;
 }
 
 export interface UserDashboardStats {
   misProyectos: number;
   misConvenios: number;
+  desempenoEquipo?: number;
   desempenoEquipoArea: number;
-  desempenoPersonal: number;
+  desempenoPersonal?: number;
   misTareasRecientes: any[];
   misAlertas: any[];
   actividadReciente?: any[];
   // Campos opcionales — el backend los puede incluir para el Director
   estadisticasTareas?: {
     pendientes: number;
-    planificacion: number;
+    progreso?: number;
+    planificacion?: number;
     ejecucion: number;
     completadas: number;
-    otros: number;
+    paralizado?: number;
+    otros?: number;
   };
   estadisticasComunicaciones?: {
-    negociacion: number;
+    pendiente?: number;
+    proceso?: number;
+    negociacion?: number;
     firmados: number;
-    descartados: number;
-    otros: number;
+    cancelados?: number;
+    descartados?: number;
+    otros?: number;
   };
+  directorPendingEvaluations?: DirectorEvaluationTarget[];
+  pendientesEvaluacion?: DirectorEvaluationTarget[];
+  promedioEvaluacionDirector?: number;
 }
 
 @Injectable({
@@ -77,6 +105,16 @@ export class DashboardService {
     );
   }
 
+  getDirectorPendingUsers(): Observable<any | null> {
+    const url = `${this.apiUrl}/director/pending-users`;
+    return this.http.get<any>(url, this.headers).pipe(
+      catchError((err: any) => {
+        console.error('Error fetching director pending users:', err);
+        return of(null);
+      })
+    );
+  }
+
   /**
    * Devuelve estadísticas del endpoint correcto según el rol:
    * - Admin / Administrador → /admin
@@ -87,5 +125,30 @@ export class DashboardService {
       return this.getAdminStats();
     }
     return this.getUserStats();
+  }
+
+  /** Registrar una evaluación del director (solo director puede enviar) */
+  createDirectorEvaluation(rating: number, comentario?: string, usuarioId?: number) {
+    const body: { rating: number; comentario?: string; [key: string]: unknown } = { rating, comentario };
+    if (usuarioId !== undefined) {
+      body['usuarioId'] = usuarioId;
+    }
+
+    return this.http.post(`${this.apiUrl}/director-evaluation`, body, this.headers).pipe(
+      catchError((err: any) => {
+        console.error('Error creating director evaluation:', err);
+        return of(null);
+      })
+    );
+  }
+
+  /** Obtener historial de evaluaciones del director (solo para director) */
+  getDirectorEvaluations() {
+    return this.http.get<any[]>(`${this.apiUrl}/director-evaluations`, this.headers).pipe(
+      catchError((err: any) => {
+        console.error('Error fetching director evaluations:', err);
+        return of([] as any[]);
+      })
+    );
   }
 }

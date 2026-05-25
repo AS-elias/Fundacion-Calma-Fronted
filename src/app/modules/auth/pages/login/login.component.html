@@ -7,21 +7,40 @@
 
       <p>Plataforma Institucional</p>
 
-      <div class="form-container">
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="form-container">
+        
+        <div class="form-error" *ngIf="mensajeError()">
+          <i class="pi pi-exclamation-triangle"></i>
+          {{ mensajeError() }}
+        </div>
+
         <div class="input-group">
           <label>Correo Institucional</label>
-          <input type="email" pInputText placeholder="correo@gmail.com" [(ngModel)]="email">
+          <input type="email" pInputText placeholder="correo@gmail.com" formControlName="email"
+                 [ngClass]="{'input-error': f['email'].invalid && (f['email'].dirty || f['email'].touched)}">
+          <small class="error-text" *ngIf="f['email'].invalid && (f['email'].dirty || f['email'].touched)">
+            <span *ngIf="f['email'].errors?.['required']">El correo es requerido.</span>
+            <span *ngIf="f['email'].errors?.['email']">Ingrese un correo válido.</span>
+          </small>
         </div>
 
         <div class="input-group">
           <label>Contraseña</label>
-          <p-password [feedback]="false" [toggleMask]="true" placeholder="********" [(ngModel)]="password"></p-password>
+          <p-password [feedback]="false" [toggleMask]="true" placeholder="********" formControlName="password"
+                      [ngClass]="{'input-error-pass': f['password'].invalid && (f['password'].dirty || f['password'].touched)}"></p-password>
+          <small class="error-text" *ngIf="f['password'].invalid && (f['password'].dirty || f['password'].touched)">
+            <span *ngIf="f['password'].errors?.['required']">La contraseña es requerida.</span>
+            <span *ngIf="f['password'].errors?.['minlength']">Mínimo 6 caracteres.</span>
+          </small>
         </div>
 
-        <button class="btn-login" (click)="onLogin()">INGRESAR</button>
-      </div>
+        <button type="submit" class="btn-login" [disabled]="cargando()">
+          <i *ngIf="cargando()" class="pi pi-spinner pi-spin"></i>
+          {{ cargando() ? 'INGRESANDO...' : 'INGRESAR' }}
+        </button>
+      </form>
 
-      <a href="#" class="forgot-pass">¿Olvidaste tu contraseña?</a>
+      <a routerLink="/recuperar-password" class="forgot-pass">¿Olvidaste tu contraseña?</a>
 
       <p>© 2026 Fundación Calma</p>
     </div>

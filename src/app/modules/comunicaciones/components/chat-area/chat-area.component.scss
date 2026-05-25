@@ -34,3 +34,58 @@
     background-color: var(--primary-700) !important;
   }
 }
+
+/* =====================================================
+   DARK MODE OVERRIDES
+   ===================================================== */
+:host-context(.app-dark) {
+  .chat-area {
+    background-color: var(--surface-ground) !important;
+  }
+  
+  .chat-area .bg-white {
+    background-color: var(--surface-section) !important;
+    color: var(--text-color) !important;
+  }
+
+  .chat-area .bg-bluegray-50, .chat-area .bg-surface-50 {
+    background-color: var(--surface-ground) !important;
+  }
+
+  .chat-area .surface-border {
+    border-color: var(--surface-border) !important;
+  }
+
+  .chat-area .text-color-secondary {
+    color: var(--text-color-secondary) !important;
+  }
+
+  .chat-area h3 {
+    color: var(--text-color-title) !important;
+  }
+  
+  .chat-area p, .chat-area span:not(.pi) {
+    color: var(--text-color) !important;
+  }
+
+  .chat-area .bg-gray-300 {
+    background-color: var(--surface-border) !important;
+  }
+
+  /* Burbuja del mensaje recibido */
+  .chat-area .custom-bubble-received {
+    background-color: var(--surface-card) !important;
+    border: 1px solid var(--surface-border) !important;
+    color: var(--text-color) !important;
+  }
+  .chat-area .custom-bubble-received p {
+    color: var(--text-color) !important;
+  }
+
+  /* Input box de escribir mensaje */
+  .chat-area input[type="text"] {
+    color: var(--text-color) !important;
+    background-color: var(--surface-ground) !important;
+  }
+}
+

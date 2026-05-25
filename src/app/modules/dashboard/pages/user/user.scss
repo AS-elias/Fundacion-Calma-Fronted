@@ -1,7 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
 
 .user-dashboard-container {
-  font-family: 'Inter', sans-serif;
+  background: var(--surface-section) ;
+  border-radius: 12px;
+  margin: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--surface-border, #e5e7eb);
+  
   color: var(--text-color);
   display: flex;
   flex-direction: column;

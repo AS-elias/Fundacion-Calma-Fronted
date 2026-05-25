@@ -1,7 +1,7 @@
 .call-status {
   .btn-secondary {
     background-color: #e5e7eb;
-    color: #374151;
+    color: var(--text-color);
     border: none;
     padding: 8px 16px;
     border-radius: 6px;
@@ -15,7 +15,7 @@
     }
 
     &:active {
-      background-color: #9ca3af;
+      background-color: var(--text-color-secondary);
       color: #fff;
     }
   }

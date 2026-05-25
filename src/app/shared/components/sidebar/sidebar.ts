@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../../modules/auth/services/auth.service';
+import { CommunicationService } from '../../../core/services/communication.service';
 
 // Interfaces del backend
 export interface PermisoArea {
@@ -32,6 +33,14 @@ export class SidebarComponent implements OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
   private http = inject(HttpClient);
+  private commService = inject(CommunicationService);
+
+  // Total global de mensajes sin leer (para mostrar badge en el sidebar)
+  totalMensajesSinLeer = computed(() => {
+    let total = 0;
+    this.commService.mensajesSinLeerGlobal().forEach(count => total += count);
+    return total;
+  });
 
   private apiUrl = 'http://localhost:3005/api/comunidad';
 

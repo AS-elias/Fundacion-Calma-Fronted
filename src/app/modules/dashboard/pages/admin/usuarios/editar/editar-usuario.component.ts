@@ -41,8 +41,20 @@ export class EditarUsuarioComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       rol_id: [null, Validators.required],
       puesto: ['', [Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
-      fecha_fin_contrato: [''],
-      estado: ['ACTIVO']
+      estado: ['ACTIVO'],
+      fecha_ingreso: [new Date().toISOString().split('T')[0]],
+      duracion_meses: [null],
+      fecha_fin_contrato: ['']
+    });
+
+    this.editarForm.get('duracion_meses')?.valueChanges.subscribe(() => this.calcularFechaFin());
+    this.editarForm.get('fecha_ingreso')?.valueChanges.subscribe(() => this.calcularFechaFin());
+
+    this.editarForm.get('rol_id')?.valueChanges.subscribe(rolId => {
+      const puestoControl = this.editarForm.get('puesto');
+      if (rolId === 24 || rolId === 25) {
+        puestoControl?.setValue('');
+      }
     });
   }
 
@@ -133,14 +145,18 @@ export class EditarUsuarioComponent implements OnInit {
 
   poblarFormulario(user: any): void {
     const fechaContrato = user.fecha_fin_contrato ? user.fecha_fin_contrato.split('T')[0] : '';
+    const fechaIngreso = user.fecha_ingreso ? user.fecha_ingreso.split('T')[0] : new Date().toISOString().split('T')[0];
+    
     this.editarForm.patchValue({
       nombre_completo: user.nombre_completo ?? '',
       apellido_completo: user.apellido_completo ?? '',
       email: user.email ?? '',
       rol_id: user.rol_id ?? user.rol?.id ?? null,
       puesto: user.puesto ?? '',
-      fecha_fin_contrato: fechaContrato,
-      estado: user.estado ?? 'ACTIVO'
+      estado: user.estado ?? 'ACTIVO',
+      fecha_ingreso: fechaIngreso,
+      duracion_meses: user.duracion_meses ?? null,
+      fecha_fin_contrato: fechaContrato
     });
   }
 
@@ -199,6 +215,28 @@ export class EditarUsuarioComponent implements OnInit {
     return area.subareas.filter((s: any) => this.isAreaSelected(s.id)).length;
   }
 
+  calcularFechaFin(): void {
+    const meses = this.editarForm.get('duracion_meses')?.value;
+    const ingresoStr = this.editarForm.get('fecha_ingreso')?.value;
+
+    if (meses && ingresoStr) {
+      const partes = ingresoStr.split('-');
+      if (partes.length === 3) {
+        const año = parseInt(partes[0], 10);
+        const mes = parseInt(partes[1], 10) - 1; // 0-indexed
+        const dia = parseInt(partes[2], 10);
+        const fecha = new Date(año, mes, dia);
+        fecha.setMonth(fecha.getMonth() + Number(meses));
+        
+        const outAño = fecha.getFullYear();
+        const outMes = String(fecha.getMonth() + 1).padStart(2, '0');
+        const outDia = String(fecha.getDate()).padStart(2, '0');
+        
+        this.editarForm.get('fecha_fin_contrato')?.setValue(`${outAño}-${outMes}-${outDia}`, { emitEvent: false });
+      }
+    }
+  }
+
   onSubmit(): void {
     if (this.editarForm.invalid) {
       this.editarForm.markAllAsTouched();
@@ -215,6 +253,8 @@ export class EditarUsuarioComponent implements OnInit {
       puesto: formValues.puesto || '',
       rol_id: Number(formValues.rol_id),
       estado: formValues.estado,
+      fecha_ingreso: formValues.fecha_ingreso || '',
+      duracion_meses: formValues.duracion_meses ? Number(formValues.duracion_meses) : null,
       fecha_fin_contrato: formValues.fecha_fin_contrato ? formValues.fecha_fin_contrato : null
     };
 
@@ -222,7 +262,7 @@ export class EditarUsuarioComponent implements OnInit {
       area_id: id,
       puede_publicar: true,
       puede_editar: true,
-      permitir_subareas: true
+      permitir_subareas: false
     }));
 
     forkJoin({

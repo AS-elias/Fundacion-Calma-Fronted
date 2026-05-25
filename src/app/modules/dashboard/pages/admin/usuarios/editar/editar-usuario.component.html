@@ -84,11 +84,28 @@
               </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" *ngIf="editarForm.get('rol_id')?.value === 26">
               <label for="puesto">Puesto Organizacional</label>
               <input id="puesto" type="text" formControlName="puesto" placeholder="Ej. Analista, Coordinador"
                      (input)="onInputLetras($event, 'puesto')"
                      [class.is-invalid]="editarForm.get('puesto')?.invalid && editarForm.get('puesto')?.touched">
+            </div>
+
+            <div class="form-group">
+              <label for="fecha_ingreso">Fecha de Ingreso <span class="required">*</span></label>
+              <input id="fecha_ingreso" type="date" formControlName="fecha_ingreso" 
+                     [min]="minDate" [max]="maxDate" [class.is-invalid]="editarForm.get('fecha_ingreso')?.invalid && editarForm.get('fecha_ingreso')?.touched">
+            </div>
+
+            <div class="form-group">
+              <label for="duracion_meses">Duración (Opcional)</label>
+              <select id="duracion_meses" formControlName="duracion_meses">
+                <option [ngValue]="null">Personalizado / Indefinido</option>
+                <option value="3">3 Meses</option>
+                <option value="6">6 Meses</option>
+                <option value="12">12 Meses</option>
+              </select>
+              <small class="info-text">Actualiza la fecha fin automáticamente.</small>
             </div>
 
             <div class="form-group">

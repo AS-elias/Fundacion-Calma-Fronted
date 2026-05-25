@@ -1,0 +1,235 @@
+<section class="perfil-page">
+  <div class="perfil-card" *ngIf="!cargando; else cargandoTpl">
+    <div class="perfil-hero">
+      <div class="perfil-main">
+        <div class="perfil-photo">
+          <img *ngIf="fotoPerfil; else inicialesTpl" [src]="fotoPerfil" alt="Foto de perfil" />
+          <ng-template #inicialesTpl>{{ iniciales }}</ng-template>
+        </div>
+
+        <div class="perfil-title">
+          <span>{{ rol }}</span>
+          <h1>{{ usuario?.nombre_completo }} {{ usuario?.apellido_completo }}</h1>
+          <p>{{ usuario?.puesto || 'Sin puesto registrado' }}</p>
+        </div>
+      </div>
+
+      <button class="edit-button" type="button" (click)="activarEdicion()" *ngIf="!editando" title="Editar perfil">
+        <i class="pi pi-pencil"></i>
+      </button>
+    </div>
+
+    <div class="perfil-alert" [class.error]="mensaje.tipo === 'error'" *ngIf="mensaje">
+      {{ mensaje.texto }}
+    </div>
+
+    <ng-container *ngIf="!editando; else editarTpl">
+      <div class="perfil-content">
+        <div class="section-title">
+          <div>
+            <h2>Informacion personal</h2>
+            <p>Datos visibles dentro de la plataforma.</p>
+          </div>
+        </div>
+
+        <div class="perfil-grid">
+          <div class="info-item info-item--wide">
+            <i class="pi pi-lock"></i>
+            <span>Correo institucional</span>
+            <strong>{{ usuario?.email }}</strong>
+            <small>No se puede modificar desde el perfil.</small>
+          </div>
+
+          <div class="info-item">
+            <i class="pi pi-phone"></i>
+            <span>Telefono</span>
+            <strong>{{ usuario?.telefono || 'Sin telefono' }}</strong>
+          </div>
+
+          <div class="info-item">
+            <i class="pi pi-briefcase"></i>
+            <span>Puesto</span>
+            <strong>{{ usuario?.puesto || 'Sin puesto' }}</strong>
+          </div>
+
+          <div class="info-item">
+            <i class="pi pi-check-circle"></i>
+            <span>Estado</span>
+            <strong>{{ usuario?.estado || 'ACTIVO' }}</strong>
+          </div>
+
+          <div class="info-item">
+            <i class="pi pi-id-card"></i>
+            <span>Rol</span>
+            <strong>{{ rol }}</strong>
+          </div>
+
+          <div class="info-item">
+            <i class="pi pi-calendar"></i>
+            <span>Cumpleaños</span>
+            <strong>{{ usuario?.fecha_nacimiento ? (usuario?.fecha_nacimiento | date:'longDate') : 'Sin registrar' }}</strong>
+          </div>
+
+          <div class="info-item" *ngIf="usuario?.linkedin_url">
+            <i class="pi pi-linkedin"></i>
+            <span>LinkedIn</span>
+            <a [href]="usuario?.linkedin_url" target="_blank" rel="noopener noreferrer" style="color: #0a66c2; font-weight: 600; text-decoration: none;">Ver Perfil</a>
+          </div>
+          
+          <div class="info-item info-item--wide" *ngIf="usuario?.biografia">
+            <i class="pi pi-info-circle"></i>
+            <span>Acerca de mí</span>
+            <p style="margin: 4px 0 0; color: #4b5563; font-style: italic;">"{{ usuario?.biografia }}"</p>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div class="perfil-content" style="margin-top: 2rem;" *ngIf="!editando && !cambiandoClave">
+      <div class="section-title">
+        <div>
+          <h2>Seguridad de la Cuenta</h2>
+          <p>Gestiona el acceso y protege tu información.</p>
+        </div>
+      </div>
+      <div class="perfil-grid">
+        <div class="info-item info-item--wide">
+          <i class="pi pi-key"></i>
+          <span>Contraseña</span>
+          <strong>********</strong>
+          <button class="secondary-button" style="margin-top: 10px; width: fit-content;" (click)="iniciarCambioClave()">Cambiar Contraseña</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="perfil-content" style="margin-top: 2rem;" *ngIf="cambiandoClave">
+      <div class="section-title">
+        <div>
+          <h2>Cambiar Contraseña</h2>
+          <p>Ingresa tu contraseña actual y define una nueva clave segura.</p>
+        </div>
+      </div>
+
+      <div class="perfil-alert error" *ngIf="mensajeClave?.tipo === 'error'">
+        {{ mensajeClave?.texto }}
+      </div>
+
+      <form [formGroup]="cambiarClaveForm" (ngSubmit)="guardarNuevaClave()" class="perfil-form" style="max-width: 500px;">
+        <label>
+          Contraseña Actual
+          <input formControlName="actual" type="password" placeholder="Tu contraseña actual" />
+        </label>
+
+        <label>
+          Nueva Contraseña
+          <input formControlName="nueva" type="password" placeholder="Mínimo 8 caracteres" />
+          <ul class="password-checklist">
+            <li [class.valid]="(fClave.nueva.value?.length || 0) >= 8"><i class="pi" [ngClass]="(fClave.nueva.value?.length || 0) >= 8 ? 'pi-check' : 'pi-times'"></i> Mínimo 8 caracteres</li>
+            <li [class.valid]="hasUppercase(fClave.nueva.value || '')"><i class="pi" [ngClass]="hasUppercase(fClave.nueva.value || '') ? 'pi-check' : 'pi-times'"></i> Una letra mayúscula</li>
+            <li [class.valid]="hasLowercase(fClave.nueva.value || '')"><i class="pi" [ngClass]="hasLowercase(fClave.nueva.value || '') ? 'pi-check' : 'pi-times'"></i> Una letra minúscula</li>
+            <li [class.valid]="hasNumber(fClave.nueva.value || '')"><i class="pi" [ngClass]="hasNumber(fClave.nueva.value || '') ? 'pi-check' : 'pi-times'"></i> Un número</li>
+            <li [class.valid]="hasSymbol(fClave.nueva.value || '')"><i class="pi" [ngClass]="hasSymbol(fClave.nueva.value || '') ? 'pi-check' : 'pi-times'"></i> Un símbolo (@$!%*?&)</li>
+          </ul>
+        </label>
+
+        <label>
+          Confirmar Nueva Contraseña
+          <input formControlName="confirmar" type="password" placeholder="Repite la nueva contraseña" />
+        </label>
+
+        <div class="perfil-actions" style="margin-top: 1rem;">
+          <button class="secondary-button" type="button" (click)="cancelarCambioClave()">Cancelar</button>
+          <button class="primary-button" type="submit" [disabled]="guardandoClave">
+            {{ guardandoClave ? 'Actualizando...' : 'Actualizar Contraseña' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <ng-template #editarTpl>
+      <div class="section-title edit-title">
+        <div>
+          <h2>Editar perfil</h2>
+          <p>Actualiza tus datos personales. El correo permanece protegido.</p>
+        </div>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="perfil-form">
+        <div class="photo-editor form-panel">
+          <div class="photo-preview">
+            <img *ngIf="fotoPerfil; else inicialesEditarTpl" [src]="fotoPerfil" alt="Foto de perfil" />
+            <ng-template #inicialesEditarTpl>{{ iniciales }}</ng-template>
+          </div>
+          <div>
+            <strong>Foto de perfil</strong>
+            <p>Usa una imagen clara para que tu equipo pueda reconocerte.</p>
+            <label class="photo-upload">
+              <i class="pi pi-camera"></i>
+              Cambiar foto
+              <input type="file" accept="image/*" (change)="seleccionarFoto($event)" />
+            </label>
+          </div>
+        </div>
+
+        <div class="locked-email form-panel">
+          <i class="pi pi-lock"></i>
+          <div>
+            <span>Correo institucional</span>
+            <strong>{{ usuario?.email }}</strong>
+            <p>Este dato esta asociado al acceso y no se puede cambiar.</p>
+          </div>
+        </div>
+
+        <label>
+          Nombre
+          <input formControlName="nombre_completo" type="text" />
+        </label>
+
+        <label>
+          Apellido
+          <input formControlName="apellido_completo" type="text" />
+        </label>
+
+        <label>
+          Teléfono
+          <input formControlName="telefono" type="tel" />
+        </label>
+
+        <label>
+          Puesto
+          <input formControlName="puesto" type="text" />
+        </label>
+
+        <label>
+          Fecha de Nacimiento
+          <input formControlName="fecha_nacimiento" type="date" />
+        </label>
+
+        <label>
+          Perfil de LinkedIn (URL)
+          <input formControlName="linkedin_url" type="url" placeholder="https://linkedin.com/in/tu-perfil" />
+        </label>
+
+        <label style="grid-column: 1 / -1;">
+          Acerca de mí (Biografía)
+          <textarea formControlName="biografia" rows="3" placeholder="Escribe una frase o resumen sobre ti... (Máx 300 caracteres)" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; font-size: 14px; margin-top: 4px; resize: vertical;"></textarea>
+        </label>
+
+        <p class="perfil-error" *ngIf="form.invalid && form.touched" style="grid-column: 1 / -1;">
+          Revisa los campos. Usa solo letras en nombre, apellido y puesto; números en teléfono. Ingresa una URL válida de LinkedIn.
+        </p>
+
+        <div class="perfil-actions">
+          <button class="secondary-button" type="button" (click)="cancelarEdicion()">Cancelar</button>
+          <button class="primary-button" type="submit" [disabled]="guardando">
+            {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+        </div>
+      </form>
+    </ng-template>
+  </div>
+
+  <ng-template #cargandoTpl>
+    <div class="perfil-card perfil-loading">Cargando perfil...</div>
+  </ng-template>
+</section>

@@ -10,37 +10,45 @@
     </div>
 
     <div *ngIf="!cargando && stats" class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon bg-blue"><i class="pi pi-briefcase"></i></div>
-            <div class="stat-data">
-                <span class="label">Proyectos Realizados</span>
-                <span class="number">{{ stats.misProyectos }}</span>
-            </div>
-        </div>
+        <ng-container *ngIf="stats.misProyectos !== undefined && stats.misProyectos !== null">
+          <div class="stat-card">
+              <div class="stat-icon bg-blue"><i class="pi pi-briefcase"></i></div>
+              <div class="stat-data">
+                  <span class="label">Proyectos Realizados</span>
+                  <span class="number">{{ stats.misProyectos }}</span>
+              </div>
+          </div>
+        </ng-container>
 
-        <div class="stat-card">
-            <div class="stat-icon bg-yellow"><i class="pi pi-map"></i></div>
-            <div class="stat-data">
-                <span class="label">Convenios Vigentes</span>
-                <span class="number">{{ stats.misConvenios }}</span>
-            </div>
-        </div>
+        <ng-container *ngIf="stats.misConvenios !== undefined && stats.misConvenios !== null">
+          <div class="stat-card">
+              <div class="stat-icon bg-yellow"><i class="pi pi-map"></i></div>
+              <div class="stat-data">
+                  <span class="label">Convenios Vigentes</span>
+                  <span class="number">{{ stats.misConvenios }}</span>
+              </div>
+          </div>
+        </ng-container>
 
-        <div class="stat-card">
-            <div class="stat-icon bg-purple"><i class="pi pi-users"></i></div>
-            <div class="stat-data">
-                <span class="label">Desempeño de Equipo</span>
-                <span class="number">{{ stats.desempenoEquipoArea | number:'1.0-0' }}%</span>
-            </div>
-        </div>
+        <ng-container *ngIf="stats.desempenoEquipo !== undefined && stats.desempenoEquipo !== null">
+          <div class="stat-card">
+              <div class="stat-icon bg-purple"><i class="pi pi-users"></i></div>
+              <div class="stat-data">
+                  <span class="label">Desempeño de Equipo</span>
+                  <span class="number">{{ stats.desempenoEquipo | number:'1.0-0' }}%</span>
+              </div>
+          </div>
+        </ng-container>
 
-        <div class="stat-card">
-            <div class="stat-icon bg-green"><i class="pi pi-star-fill"></i></div>
-            <div class="stat-data">
-                <span class="label">Desempeño Personal</span>
-                <span class="number">{{ stats.desempenoPersonal | number:'1.0-0' }}%</span>
+        <ng-container *ngIf="stats.desempenoPersonal !== undefined && stats.desempenoPersonal !== null">
+            <div class="stat-card">
+                <div class="stat-icon bg-green"><i class="pi pi-star-fill"></i></div>
+                <div class="stat-data">
+                    <span class="label">Desempeño Personal</span>
+                    <span class="number">{{ stats.desempenoPersonal | number:'1.0-0' }}%</span>
+                </div>
             </div>
-        </div>
+        </ng-container>
     </div>
 
     <div class="main-content-grid">
@@ -49,55 +57,27 @@
 
             <div class="task-card">
                 <div class="card-header">
-                    <h3>Mis Tareas Recientes</h3>
+                    <h3>Actividad Reciente del Área</h3>
                 </div>
                 
-                <div class="task-list" *ngIf="stats.misTareasRecientes.length">
-                    <div class="task-item" *ngFor="let tarea of stats.misTareasRecientes">
+                <div class="task-list" *ngIf="$any(stats).actividadReciente?.length">
+                    <div class="task-item" *ngFor="let act of $any(stats).actividadReciente">
                         <div class="task-info">
-                            <div class="icon-box" [ngClass]="tarea.estado === 'COMPLETADA' ? 'bg-green' : 'bg-blue'">
-                                <i class="pi" [ngClass]="tarea.estado === 'COMPLETADA' ? 'pi-check' : 'pi-sync'"></i>
+                            <div class="icon-box" [ngClass]="act.tipo === 'CONVENIO' ? 'bg-purple' : 'bg-blue'">
+                                <i class="pi" [ngClass]="act.tipo === 'CONVENIO' ? 'pi-file' : 'pi-check-square'"></i>
                             </div>
                             <div class="details">
-                                <span class="title">{{ tarea.titulo }}</span>
-                                <span class="area">{{ tarea.area_nombre }}</span>
+                                <span class="title">{{ limpiarTexto(act.entidad || 'Actividad general') }}</span>
+                                <span class="area"><strong>{{ act.usuario || 'Sistema' }}</strong> {{ limpiarTexto(act.detalle || act.mensaje || act.accion || 'realizó una acción') }}</span>
                             </div>
                         </div>
                         <div class="task-meta">
-                            <span class="badge" [ngClass]="{'progress': tarea.estado === 'EN_EJECUCION', 'pending': tarea.estado === 'PENDIENTE'}">
-                                {{ tarea.estado }}
-                            </span>
-                            <span class="date" *ngIf="tarea.fecha_vencimiento"><i class="pi pi-calendar"></i> {{ tarea.fecha_vencimiento | date:'dd MMM yyyy' }}</span>
+                            <span class="date" *ngIf="act.fecha"><i class="pi pi-clock"></i> {{ act.fecha | date:'dd MMM yyyy, HH:mm' }}</span>
                         </div>
                     </div>
                 </div>
-                <div *ngIf="!stats.misTareasRecientes.length" style="padding: 1rem; color: #718096; text-align: center;">
-                    No tienes tareas recientes.
-                </div>
-            </div>
-
-            <div class="task-card mt-4">
-                <div class="card-header">
-                    <h3>Alertas y Prioridades <span class="alert-dot" *ngIf="stats.misAlertas.length"></span></h3>
-                </div>
-                
-                <div class="task-list" *ngIf="stats.misAlertas.length">
-                    <div class="task-item alert-item" *ngFor="let alerta of stats.misAlertas">
-                        <div class="task-info">
-                            <div class="icon-box bg-red"><i class="pi pi-exclamation-triangle"></i></div>
-                            <div class="details">
-                                <span class="title text-red">{{ alerta.titulo }}</span>
-                                <span class="area">{{ alerta.area_nombre }}</span>
-                            </div>
-                        </div>
-                        <div class="task-meta">
-                            <span class="badge high-priority">{{ alerta.prioridad }}</span>
-                            <span class="date" *ngIf="alerta.fecha_vencimiento"><i class="pi pi-clock"></i> {{ alerta.fecha_vencimiento | date:'dd MMM yyyy' }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div *ngIf="!stats.misAlertas.length" style="padding: 1rem; color: #718096; text-align: center;">
-                    No tienes alertas pendientes. ¡Buen trabajo!
+                <div *ngIf="!$any(stats).actividadReciente?.length" style="padding: 1rem; color: #718096; text-align: center;">
+                    No tienes actividad reciente en tu área.
                 </div>
             </div>
 
@@ -109,10 +89,54 @@
                     <h3>Mi Agenda</h3>
                 </div>
                 <div class="calendar-body">
-                    <p-datepicker [(ngModel)]="fechaActual" [inline]="true" styleClass="w-full"></p-datepicker>
+                    <p-datepicker [(ngModel)]="fechaActual" [inline]="true" styleClass="w-full" (onSelect)="onDateSelect($event)">
+                        <ng-template pTemplate="date" let-date>
+                            <div style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                                <span>{{ date.day }}</span>
+                                <div style="position: absolute; bottom: 2px; display: flex; gap: 2px;">
+                                    <span *ngIf="hasVencimiento(date)" style="width: 4px; height: 4px; background-color: #ef4444; border-radius: 50%;"></span>
+                                    <span *ngIf="hasEvent(date)" style="width: 4px; height: 4px; background-color: var(--calma-primary, #048abf); border-radius: 50%;"></span>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </p-datepicker>
                 </div>
             </div>
         </div>
 
+        <!-- Dialogo de Actividades y Vencimientos -->
+        <p-dialog [(visible)]="mostrarDialogoDia" [header]="'Eventos del ' + (fechaActual | date:'dd/MM/yyyy')" [modal]="true" [style]="{width: '30vw', minWidth: '300px'}" [draggable]="false" [resizable]="false">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                
+                <div *ngIf="vencimientosDelDiaSeleccionado.length > 0">
+                    <h5 style="margin: 0 0 10px 0; color: #b91c1c; font-size: 0.9rem;">
+                        <i class="pi pi-exclamation-triangle mr-1"></i> Vencimientos Límite
+                    </h5>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div *ngFor="let item of vencimientosDelDiaSeleccionado" style="background: #fef2f2; padding: 10px; border-radius: 6px; border-left: 3px solid #ef4444;">
+                            <div style="font-weight: 600; font-size: 0.85rem; color: #7f1d1d;">{{ limpiarTexto(item.titulo || item.nombre || 'Vencimiento sin título') }}</div>
+                            <div style="font-size: 0.75rem; color: #991b1b; margin-top: 2px;">{{ item.descripcion || item.estado || 'Fecha límite' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="actividadesDelDiaSeleccionado.length > 0">
+                    <h5 style="margin: 0 0 10px 0; color: var(--calma-primary, #048abf); font-size: 0.9rem;">
+                        <i class="pi pi-check-circle mr-1"></i> Actividades Realizadas
+                    </h5>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div *ngFor="let act of actividadesDelDiaSeleccionado" style="background: #f8fafc; padding: 10px; border-radius: 6px; border-left: 3px solid var(--calma-primary, #048abf);">
+                            <div style="font-weight: 600; font-size: 0.85rem; color: #1e293b;">{{ limpiarTexto(act.entidad || act.titulo || 'Actividad general') }}</div>
+                            <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;"><strong>{{ act.usuario || 'Sistema' }}</strong> {{ limpiarTexto(act.detalle || act.mensaje || act.accion || 'realizó una acción') }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="vencimientosDelDiaSeleccionado.length === 0 && actividadesDelDiaSeleccionado.length === 0">
+                    <p style="text-align: center; color: #64748b; font-style: italic; font-size: 0.85rem;">No hay eventos registrados en esta fecha.</p>
+                </div>
+
+            </div>
+        </p-dialog>
     </div>
 </div>

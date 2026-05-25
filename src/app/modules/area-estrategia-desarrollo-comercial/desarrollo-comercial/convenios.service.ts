@@ -77,7 +77,11 @@ type ComentarioResponse = {
   id: number;
   convenioId: number;
   usuarioId: number;
+  usuarioNombre?: string | null;
   comentario: string;
+  fechaCreacion?: string;
+  createdAt?: string;
+  fecha?: string;
 };
 
 type ArchivoResponse = {
@@ -94,6 +98,7 @@ export class ConveniosService {
   private readonly comentariosApiUrl = 'http://localhost:3005/api/comentarios';
   private readonly archivosApiUrl = 'http://localhost:3005/api/convenio-archivos';
   private readonly historialApiUrl = 'http://localhost:3005/api/convenio-historial';
+  private readonly apiOrigin = this.apiUrl.replace(/\/api\/convenios$/, '');
 
   constructor(
     private http: HttpClient,
@@ -144,9 +149,21 @@ export class ConveniosService {
 
   deleteConvenio(convenioId: string): Observable<void> {
     if (!convenioId) return throwError(() => new Error('Convenio sin id'));
+    const usuario = this.authService.getCurrentUser();
+    const params: Record<string, string> = {};
+
+    if (usuario?.id) {
+      params['usuarioId'] = String(usuario.id);
+    }
+
+    if (usuario?.nombre?.trim()) {
+      params['usuarioNombre'] = usuario.nombre.trim();
+    }
+
     return this.http
       .delete<void>(`${this.apiUrl}/${convenioId}`, {
         headers: this.authService.getAuthHeaders(),
+        params,
       })
       .pipe(
         catchError((error) => {
@@ -262,6 +279,7 @@ export class ConveniosService {
         { headers: this.authService.getAuthHeadersWithoutContentType() },
       )
       .pipe(
+        map((archivo) => archivo ? this.normalizarArchivoResponse(archivo) : null),
         catchError((error) => {
           console.error('Error al crear archivo', error);
           return throwError(() => error);
@@ -275,7 +293,10 @@ export class ConveniosService {
       .get<ArchivoResponse[]>(`${this.archivosApiUrl}/convenio/${convenioId}`, {
         headers: this.authService.getAuthHeaders(),
       })
-      .pipe(catchError(() => of([])));
+      .pipe(
+        map((archivos) => archivos.map((archivo) => this.normalizarArchivoResponse(archivo))),
+        catchError(() => of([])),
+      );
   }
 
   deleteArchivo(archivoId: number): Observable<void> {
@@ -311,5 +332,20 @@ export class ConveniosService {
   ): ConvenioHistorialDto[] {
     if (Array.isArray(response)) return response;
     return response.data ?? response.historial ?? [];
+  }
+
+  private normalizarArchivoResponse(archivo: ArchivoResponse): ArchivoResponse {
+    return {
+      ...archivo,
+      urlArchivo: this.normalizarArchivoUrl(archivo.urlArchivo),
+    };
+  }
+
+  private normalizarArchivoUrl(url: string): string {
+    if (!url || /^https?:\/\//i.test(url) || url.startsWith('blob:') || url.startsWith('data:')) {
+      return url;
+    }
+
+    return `${this.apiOrigin}${url.startsWith('/') ? url : `/${url}`}`;
   }
 }

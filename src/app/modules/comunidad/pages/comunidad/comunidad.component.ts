@@ -6,9 +6,10 @@ import { DialogModule } from 'primeng/dialog';
 import { ComunidadService, Contacto, ContactoBackend, UsuarioOtraArea, SolicitudContacto } from '../../services/comunidad.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { User } from '../../../../shared/models/user.model';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CommunicationService } from '../../../../core/services/communication.service';
+import { NavbarSearchService } from '../../../../shared/services/navbar-search.service';
 
 @Component({
   selector: 'app-comunidad',
@@ -35,11 +36,14 @@ export class ComunidadComponent implements OnInit, OnDestroy {
   usuarioAutenticado: User | null = null;
   areaUsuario: string = 'Todos';
 
+  private syncSub?: Subscription;
+
   constructor(
     private router: Router, 
     private comunidadService: ComunidadService,
     private authService: AuthService,
-    private communicationService: CommunicationService
+    private communicationService: CommunicationService,
+    private navbarSearchService: NavbarSearchService
   ) {
     this.usuarioAutenticado = authService.getCurrentUser();
     if (this.usuarioAutenticado?.area) {
@@ -51,10 +55,37 @@ export class ComunidadComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.obtenerContactos();
     this.conectarYEscucharSockets();
+
+    this.syncSub = this.communicationService.sistemaActualizado$.subscribe((event: any) => {
+      if (event.modulo === 'comunidad') {
+        this.solicitarUsuariosConectados();
+      }
+    });
+
+    // Escuchar búsqueda del navbar
+    this.navbarSearchService.searchQuery$.subscribe(query => {
+      this.textoBusqueda = query;
+      this.aplicarFiltros();
+    });
   }
 
   ngOnDestroy() {
     this.communicationService.disconnect();
+    if (this.syncSub) {
+      this.syncSub.unsubscribe();
+    }
+  }
+
+  private solicitarUsuariosConectados() {
+    const socket = this.communicationService.getSocket();
+    if (socket && socket.connected) {
+      socket.emit('getConnectedUsers', {}, (response: any) => {
+        if (response && response.connectedUsers) {
+          const arr = Array.isArray(response.connectedUsers) ? response.connectedUsers : Array.from(response.connectedUsers);
+          arr.forEach((uid: any) => this.actualizarEstadoUsuario(Number(uid), true));
+        }
+      });
+    }
   }
 
   private conectarYEscucharSockets() {
@@ -75,13 +106,36 @@ export class ComunidadComponent implements OnInit, OnDestroy {
       socket.on('userOffline', (data: any) => {
         if (data?.userId) this.actualizarEstadoUsuario(data.userId, false);
       });
+
+      // Recibir lista de todos los usuarios online al conectar
+      socket.on('onlineUsers', (data: any[]) => {
+        if (Array.isArray(data)) {
+          data.forEach(uid => this.actualizarEstadoUsuario(uid, true));
+        }
+      });
+
+      // Pedir lista actual de conectados
+      socket.emit('getConnectedUsers', {}, (response: any) => {
+        if (response && response.connectedUsers) {
+          const arr = Array.isArray(response.connectedUsers) ? response.connectedUsers : Array.from(response.connectedUsers);
+          arr.forEach((uid: any) => this.actualizarEstadoUsuario(Number(uid), true));
+        }
+      });
     }).catch(err => console.error('Error conectando sockets en comunidad:', err));
   }
 
+  private usuariosOnline = new Set<number>();
+
   private actualizarEstadoUsuario(userId: number, online: boolean) {
+    if (online) {
+      this.usuariosOnline.add(Number(userId));
+    } else {
+      this.usuariosOnline.delete(Number(userId));
+    }
+
     let cambiado = false;
     this.contactos.forEach(c => {
-      if (c.usuarioId === userId || c.id === userId) {
+      if (Number(c.usuarioId) === Number(userId) || Number(c.id) === Number(userId)) {
         if (c.online !== online) {
           c.online = online;
           cambiado = true;
@@ -132,18 +186,27 @@ export class ComunidadComponent implements OnInit, OnDestroy {
 
     const favoritosGuardados = this.cargarFavoritos();
     
-    this.contactos = dataSinUsuario.map((u: any) => ({
-      id: Number(u.id),
-      usuarioId: Number(u.usuarioId || u.id),
-      nombre: u.nombreCompleto || u.nombre || 'Usuario',
-      rol: u.rolNombre || u.rol || u.puesto || 'Usuario',
-      area: u.areaPrincipal || u.area || 'General',
-      email: u.email,
-      telefono: u.telefono || undefined,
-      iniciales: (u.nombreCompleto || u.nombre || u.email || 'U').substring(0, 2).toUpperCase(),
-      online: u.online || u.enLinea || false,
-      esFavorito: favoritosGuardados.includes(Number(u.id))
-    }));
+    this.contactos = dataSinUsuario.map((u: any) => {
+      const uId = Number(u.id);
+      const uUsuarioId = Number(u.usuarioId || u.id);
+      
+      return {
+        id: uId,
+        usuarioId: uUsuarioId,
+        nombre: u.nombreCompleto || u.nombre || 'Usuario',
+        rol: u.rolNombre || u.rol || u.puesto || 'Usuario',
+        area: u.areaPrincipal || u.area || 'General',
+        email: u.email,
+        telefono: u.telefono || undefined,
+        iniciales: (u.nombreCompleto || u.nombre || u.email || 'U').substring(0, 2).toUpperCase(),
+        online: this.usuariosOnline.has(uId) || this.usuariosOnline.has(uUsuarioId) || u.online || u.enLinea || false,
+        esFavorito: favoritosGuardados.includes(uId),
+        fecha_nacimiento: u.fechaNacimiento || u.fecha_nacimiento || undefined,
+        linkedin_url: u.linkedinUrl || u.linkedin_url || undefined,
+        biografia: u.biografia || undefined,
+        foto_url: u.fotoUrl || u.foto_url || undefined
+      };
+    });
     
     this.areas = [...new Set(this.contactos.map(c => c.area).filter(Boolean))];
     console.log('Contactos procesados en total:', this.contactos.length);
@@ -151,29 +214,60 @@ export class ComunidadComponent implements OnInit, OnDestroy {
     this.cargando = false;
   }
 
-  aplicarFiltros() {
-    let resultado = [...this.contactos];
+  // ============================================
+  // PERFIL COMPLETO (MODAL)
+  // ============================================
+  contactoSeleccionado: Contacto | null = null;
+  mostrarModalPerfil: boolean = false;
 
-    if (this.textoBusqueda.trim()) {
-      const busqueda = this.textoBusqueda.toLowerCase();
-      resultado = resultado.filter(c =>
-        c.nombre.toLowerCase().includes(busqueda) ||
-        c.rol.toLowerCase().includes(busqueda) ||
-        (c.email && c.email.toLowerCase().includes(busqueda))
-      );
+  abrirPerfil(contacto: Contacto) {
+    this.contactoSeleccionado = contacto;
+    this.mostrarModalPerfil = true;
+  }
+
+  cerrarPerfil() {
+    this.mostrarModalPerfil = false;
+    setTimeout(() => this.contactoSeleccionado = null, 300);
+  }
+
+  filtroRapido: 'Todos' | 'MiArea' | 'Favoritos' | 'EnLinea' = 'Todos';
+
+  setFiltroRapido(filtro: 'Todos' | 'MiArea' | 'Favoritos' | 'EnLinea') {
+    this.filtroRapido = filtro;
+    this.aplicarFiltros();
+  }
+
+  aplicarFiltros() {
+    let result = [...this.contactos];
+
+    if (this.filtroRapido === 'MiArea' && this.areaUsuario !== 'Todos') {
+      result = result.filter(c => c.area === this.areaUsuario);
+    } else if (this.filtroRapido === 'Favoritos') {
+      result = result.filter(c => c.esFavorito);
+    } else if (this.filtroRapido === 'EnLinea') {
+      result = result.filter(c => c.online);
     }
 
     if (this.areaSeleccionada !== 'Todos') {
-      resultado = resultado.filter(c => c.area === this.areaSeleccionada);
+      result = result.filter(c => c.area === this.areaSeleccionada);
     }
 
-    resultado.sort((a, b) => {
+    if (this.textoBusqueda.trim()) {
+      const term = this.textoBusqueda.toLowerCase().trim();
+      result = result.filter(c => 
+        c.nombre.toLowerCase().includes(term) ||
+        (c.email && c.email.toLowerCase().includes(term)) ||
+        c.rol.toLowerCase().includes(term)
+      );
+    }
+
+    result.sort((a, b) => {
       // Primero ordenamos por favoritos, luego alfabéticamente
       if (a.esFavorito !== b.esFavorito) return a.esFavorito ? -1 : 1;
       return a.nombre.localeCompare(b.nombre);
     });
 
-    this.contactosFiltrados = resultado;
+    this.contactosFiltrados = result;
   }
 
   onBusquedaChange() {
@@ -184,8 +278,24 @@ export class ComunidadComponent implements OnInit, OnDestroy {
     this.aplicarFiltros();
   }
 
+  esCumpleanos(fechaStr?: string): boolean {
+    if (!fechaStr) return false;
+    
+    try {
+      const fecha = new Date(fechaStr);
+      if (isNaN(fecha.getTime())) return false;
+      
+      const hoy = new Date();
+      // Ensure we compare day and month correctly, adjusting for timezone if needed, 
+      // but assuming the backend sends YYYY-MM-DD or similar
+      return fecha.getUTCDate() === hoy.getDate() && fecha.getUTCMonth() === hoy.getMonth();
+    } catch {
+      return false;
+    }
+  }
+
   // ============================================
-  // CONTACTOS - ACCIONES
+  // SOLICITUDES DE CONTACTO
   // ============================================
 
   eliminarContacto(id: number | undefined) {

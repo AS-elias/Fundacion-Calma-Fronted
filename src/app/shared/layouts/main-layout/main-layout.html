@@ -1,7 +1,10 @@
-<div class="layout-wrapper">
+<div class="layout-wrapper" [ngClass]="{'layout-mobile-active': layoutService.sidebarMobileOpen$ | async}">
 
   <!-- SIDEBAR -->
   <app-sidebar></app-sidebar>
+
+  <!-- OVERLAY PARA MOVILES -->
+  <div class="layout-mask" *ngIf="layoutService.sidebarMobileOpen$ | async" (click)="closeMenu()"></div>
 
   <!-- AREA PRINCIPAL -->
   <main class="layout-main">

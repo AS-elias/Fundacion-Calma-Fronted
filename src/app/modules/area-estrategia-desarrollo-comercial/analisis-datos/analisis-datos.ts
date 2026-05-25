@@ -1,7 +1,8 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of, switchMap } from 'rxjs';
+import { AuthService } from '../../auth/services/auth.service';
 import { AnalisisDatosService } from './analisis-datos.service';
 
 type CategoriaPanel = 'estrategico' | 'comercial' | 'espacios' | 'comunicacion';
@@ -163,6 +164,20 @@ export class AnalisisDatos implements OnInit {
   tipoVenueFiltro: EstadoVenueFiltro = 'todos';
   estadoDifusionFiltro: EstadoDifusionFiltro = 'todos';
   nuevaTarea: TareaForm = this.crearTareaForm();
+
+  // Variables de paginación
+  paginaColegios = 1;
+  paginaEmpresas = 1;
+  paginaVenues = 1;
+  paginaDifusion = 1;
+  itemsPorPagina = 10;
+
+  // Variables de guardado
+  guardandoColegio = false;
+  guardandoEmpresa = false;
+  guardandoVenue = false;
+  guardandoDifusion = false;
+  guardandoTarea = false;
 
   readonly paneles: PanelDato[] = [
     {
@@ -352,7 +367,10 @@ export class AnalisisDatos implements OnInit {
     },
   ];
 
-  constructor(private analisisService: AnalisisDatosService) {}
+  constructor(
+    private analisisService: AnalisisDatosService,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit(): void {
     this.cargarDatosBackend();
@@ -481,6 +499,42 @@ export class AnalisisDatos implements OnInit {
     });
   }
 
+  get colegiosPaginados(): ColegioDato[] {
+    const inicio = (this.paginaColegios - 1) * this.itemsPorPagina;
+    return this.colegiosFiltrados.slice(inicio, inicio + this.itemsPorPagina);
+  }
+
+  get totalPaginasColegios(): number[] {
+    return Array(Math.ceil(this.colegiosFiltrados.length / this.itemsPorPagina)).fill(0).map((x, i) => i + 1);
+  }
+
+  get empresasPaginadas(): EmpresaDato[] {
+    const inicio = (this.paginaEmpresas - 1) * this.itemsPorPagina;
+    return this.empresasFiltradas.slice(inicio, inicio + this.itemsPorPagina);
+  }
+
+  get totalPaginasEmpresas(): number[] {
+    return Array(Math.ceil(this.empresasFiltradas.length / this.itemsPorPagina)).fill(0).map((x, i) => i + 1);
+  }
+
+  get venuesPaginados(): VenueDato[] {
+    const inicio = (this.paginaVenues - 1) * this.itemsPorPagina;
+    return this.venuesFiltrados.slice(inicio, inicio + this.itemsPorPagina);
+  }
+
+  get totalPaginasVenues(): number[] {
+    return Array(Math.ceil(this.venuesFiltrados.length / this.itemsPorPagina)).fill(0).map((x, i) => i + 1);
+  }
+
+  get difusionesPaginadas(): DifusionDato[] {
+    const inicio = (this.paginaDifusion - 1) * this.itemsPorPagina;
+    return this.difusionesFiltradas.slice(inicio, inicio + this.itemsPorPagina);
+  }
+
+  get totalPaginasDifusion(): number[] {
+    return Array(Math.ceil(this.difusionesFiltradas.length / this.itemsPorPagina)).fill(0).map((x, i) => i + 1);
+  }
+
   abrirPanel(panel: PanelDato): void {
     if (
       panel.clave !== 'mapeo-educativo' &&
@@ -495,23 +549,35 @@ export class AnalisisDatos implements OnInit {
   }
 
   cerrarRegistroColegios(): void {
+    if (this.colegioBorrador && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+      return;
+    }
     this.cancelarEdicionColegio();
     this.panelActivo = null;
   }
 
   cerrarRegistroEmpresas(): void {
+    if (this.empresaBorrador && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+      return;
+    }
     this.cancelarEdicionEmpresa();
     this.cancelarEliminacionEmpresa();
     this.panelActivo = null;
   }
 
   cerrarRegistroVenues(): void {
+    if (this.venueBorrador && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+      return;
+    }
     this.cancelarEdicionVenue();
     this.cancelarEliminacionVenue();
     this.panelActivo = null;
   }
 
   cerrarRegistroDifusion(): void {
+    if (this.difusionBorrador && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+      return;
+    }
     this.cancelarEdicionDifusion();
     this.cancelarEliminacionDifusion();
     this.panelActivo = null;
@@ -561,8 +627,10 @@ export class AnalisisDatos implements OnInit {
       ? this.analisisService.createColegio(payload)
       : this.analisisService.updateColegio(colegioGuardado.id, payload);
 
+    this.guardandoColegio = true;
     request.subscribe({
       next: () => {
+        this.guardandoColegio = false;
         this.cancelarEdicionColegio();
         this.cargarColegios();
         this.mostrarNotificacion(
@@ -570,7 +638,10 @@ export class AnalisisDatos implements OnInit {
           esNuevo ? 'Se guardo exitosamente.' : 'Se guardo los cambios exitosamente.',
         );
       },
-      error: () => this.mostrarNotificacion('error', 'No se pudo guardar el colegio.'),
+      error: () => {
+        this.guardandoColegio = false;
+        this.mostrarNotificacion('error', 'No se pudo guardar el colegio.');
+      },
     });
   }
 
@@ -651,8 +722,10 @@ export class AnalisisDatos implements OnInit {
       ? this.analisisService.createEmpresa(payload)
       : this.analisisService.updateEmpresa(empresaGuardada.id, payload);
 
+    this.guardandoEmpresa = true;
     request.subscribe({
       next: () => {
+        this.guardandoEmpresa = false;
         this.cancelarEdicionEmpresa();
         this.cargarEmpresas();
         this.mostrarNotificacion(
@@ -660,7 +733,10 @@ export class AnalisisDatos implements OnInit {
           esNuevo ? 'Se guardo exitosamente.' : 'Se guardo los cambios exitosamente.',
         );
       },
-      error: () => this.mostrarNotificacion('error', 'No se pudo guardar la empresa.'),
+      error: () => {
+        this.guardandoEmpresa = false;
+        this.mostrarNotificacion('error', 'No se pudo guardar la empresa.');
+      },
     });
   }
 
@@ -739,8 +815,10 @@ export class AnalisisDatos implements OnInit {
       ? this.analisisService.createVenue(payload)
       : this.analisisService.updateVenue(venueGuardado.id, payload);
 
+    this.guardandoVenue = true;
     request.subscribe({
       next: () => {
+        this.guardandoVenue = false;
         this.cancelarEdicionVenue();
         if (esNuevo) {
           this.busquedaVenue = '';
@@ -752,7 +830,10 @@ export class AnalisisDatos implements OnInit {
           esNuevo ? 'Se guardo exitosamente.' : 'Se guardo los cambios exitosamente.',
         );
       },
-      error: () => this.mostrarNotificacion('error', 'No se pudo guardar el venue.'),
+      error: () => {
+        this.guardandoVenue = false;
+        this.mostrarNotificacion('error', 'No se pudo guardar el venue.');
+      },
     });
   }
 
@@ -831,8 +912,10 @@ export class AnalisisDatos implements OnInit {
       ? this.analisisService.createDifusion(payload)
       : this.analisisService.updateDifusion(difusionGuardada.id, payload);
 
+    this.guardandoDifusion = true;
     request.subscribe({
       next: () => {
+        this.guardandoDifusion = false;
         this.cancelarEdicionDifusion();
         if (esNuevo) {
           this.busquedaDifusion = '';
@@ -844,7 +927,10 @@ export class AnalisisDatos implements OnInit {
           esNuevo ? 'Se guardo exitosamente.' : 'Se guardo los cambios exitosamente.',
         );
       },
-      error: () => this.mostrarNotificacion('error', 'No se pudo guardar la difusión.'),
+      error: () => {
+        this.guardandoDifusion = false;
+        this.mostrarNotificacion('error', 'No se pudo guardar la difusión.');
+      },
     });
   }
 
@@ -887,6 +973,9 @@ export class AnalisisDatos implements OnInit {
   }
 
   cerrarFormularioTarea(): void {
+    if ((this.nuevaTarea.titulo.trim() || this.nuevaTarea.descripcion.trim()) && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+      return;
+    }
     this.mostrandoFormularioTarea = false;
     this.tareaEditando = null;
     this.nuevaTarea = this.crearTareaForm();
@@ -927,6 +1016,7 @@ export class AnalisisDatos implements OnInit {
       ? this.analisisService.updateTarea(tareaGuardada.id, payload)
       : this.analisisService.createTarea(payload);
 
+    this.guardandoTarea = true;
     request
       .pipe(
         switchMap((tareaRespuesta) => {
@@ -961,6 +1051,7 @@ export class AnalisisDatos implements OnInit {
       )
       .subscribe({
         next: () => {
+          this.guardandoTarea = false;
           this.cerrarFormularioTarea();
           this.cargarTareas();
           this.mostrarNotificacion(
@@ -968,7 +1059,10 @@ export class AnalisisDatos implements OnInit {
             esEdicion ? 'Se guardaron los cambios exitosamente.' : 'Se creó exitosamente.',
           );
         },
-        error: () => this.mostrarNotificacion('error', 'No se pudo guardar la tarea.'),
+        error: () => {
+          this.guardandoTarea = false;
+          this.mostrarNotificacion('error', 'No se pudo guardar la tarea.');
+        },
       });
   }
 
@@ -1358,15 +1452,17 @@ export class AnalisisDatos implements OnInit {
   }
 
   private toTareaPayload(tarea: TareaDato): any {
+    const currentUser = this.authService.getCurrentUser();
+    const creadorId = currentUser?.id ? Number(currentUser.id) : undefined;
+
     return {
-      area_id: 24,
       categoria: this.obtenerCategoriaTarea(),
       titulo: tarea.titulo,
       subtitulo: tarea.descripcion,
       descripcion: tarea.descripcion,
       estado: this.toEstadoTareaApi(tarea.estado),
       fecha_limite: tarea.fechaLimite || null,
-      creador_id: 22,
+      ...(creadorId ? { creador_id: creadorId } : {}),
       enlaces: (tarea.enlaces ?? []).map((enlace) => ({
         nombre: enlace.nombre,
         url: enlace.url,

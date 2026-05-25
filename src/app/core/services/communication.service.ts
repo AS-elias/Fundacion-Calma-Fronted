@@ -1,7 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { jwtDecode } from 'jwt-decode'; 
+import { Subject } from 'rxjs';
 
+export interface SistemaActualizadoEvent {
+  modulo: string;
+  accion?: string;
+  [key: string]: any;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +15,23 @@ import { jwtDecode } from 'jwt-decode';
 export class CommunicationService {
   private socket: Socket | null = null;
   private jwtToken: string = '';
+
+  // 🔔 Vigilante Global para todo el sistema
+  public sistemaActualizado$ = new Subject<SistemaActualizadoEvent>();
+
+  // 🔔 Contador global de mensajes sin leer por canal
+  mensajesSinLeerGlobal = signal<Map<number, number>>(new Map());
+
+  // Referencia nombrada del listener global para poder re-adjuntarlo después del socket.off del componente
+  private readonly globalNewMessageHandler = (data: any) => {
+    if (!data?.canalId) return;
+    const canalId = Number(data.canalId);
+    if (isNaN(canalId)) return;
+    const mapa = new Map(this.mensajesSinLeerGlobal());
+    mapa.set(canalId, (mapa.get(canalId) || 0) + 1);
+    this.mensajesSinLeerGlobal.set(mapa);
+  };
+
 
   constructor() { }
 
@@ -34,6 +57,15 @@ export class CommunicationService {
 
       this.socket.on('connect', () => {
         console.log('Conectado a WebSocket');
+        // Registrar el listener global con referencia nombrada
+        this.socket?.off('newMessage', this.globalNewMessageHandler); // Evitar duplicados
+        this.socket?.on('newMessage', this.globalNewMessageHandler);
+
+        // Registrar el vigilante global de sistema_actualizado
+        this.socket?.on('sistema_actualizado', (data: SistemaActualizadoEvent) => {
+          this.sistemaActualizado$.next(data);
+        });
+
         resolve();
       });
 
@@ -51,9 +83,21 @@ export class CommunicationService {
 
   disconnect(): void {
     if (this.socket) {
+      this.socket.off('newMessage', this.globalNewMessageHandler);
       this.socket.disconnect();
       this.socket = null;
     }
+  }
+
+  /**
+   * Re-registra el listener global de newMessage.
+   * Llamar esto después de cualquier socket.off('newMessage') del componente
+   * para que el contador global no se pierda.
+   */
+  reattachGlobalListeners(): void {
+    if (!this.socket) return;
+    this.socket.off('newMessage', this.globalNewMessageHandler); // quitar primero para no duplicar
+    this.socket.on('newMessage', this.globalNewMessageHandler);
   }
 
   getSocket(): Socket | null {
@@ -77,14 +121,22 @@ export class CommunicationService {
 
   // A) Crear Canal
   // ✅ FIRE-AND-FORGET: No esperar respuesta
-  createChannel(data: any): void {
-    if (!this.socket) {
-      console.error('❌ No hay conexión Socket');
-      return;
-    }
-    console.log('📤 Creando canal:', data);
-    this.socket.emit('createChannel', data);
-    // Backend enviará userChannels cuando esté listo
+  createChannel(data: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (!this.socket) {
+        console.error('❌ No hay conexión Socket');
+        return reject('No socket');
+      }
+      console.log('🚀 Creando canal:', data);
+      
+      this.socket.emit('createChannel', data, (response: any) => {
+        if (response && response.success) {
+          resolve(response.data);
+        } else {
+          reject(response?.error || 'Error al crear/obtener canal');
+        }
+      });
+    });
   }
 
   // B) Unirse a un Canal

@@ -6,7 +6,23 @@
             <p>Conecta, colabora y comunícate con todos los miembros de la organización.</p>
         </div>
         
-        <!-- Buscador y Filtros -->
+        <!-- Pestañas Rápidas (Tabs) -->
+        <div class="quick-tabs">
+            <button class="tab-btn" [class.active]="filtroRapido === 'Todos'" (click)="setFiltroRapido('Todos')">
+                <i class="pi pi-users"></i> Todos
+            </button>
+            <button class="tab-btn" *ngIf="areaUsuario !== 'Todos'" [class.active]="filtroRapido === 'MiArea'" (click)="setFiltroRapido('MiArea')">
+                <i class="pi pi-briefcase"></i> Mi Área
+            </button>
+            <button class="tab-btn" [class.active]="filtroRapido === 'Favoritos'" (click)="setFiltroRapido('Favoritos')">
+                <i class="pi pi-star-fill star-active"></i> Favoritos
+            </button>
+            <button class="tab-btn" [class.active]="filtroRapido === 'EnLinea'" (click)="setFiltroRapido('EnLinea')">
+                <i class="pi pi-circle-fill online-icon"></i> En Línea
+            </button>
+        </div>
+
+        <!-- Buscador y Filtros Secundarios -->
         <div class="filters">
             <div class="search-box">
                 <i class="pi pi-search"></i>
@@ -30,32 +46,39 @@
 
     <!-- Grilla de Contactos -->
     <div class="contacts-grid" *ngIf="!cargando && contactosFiltrados.length > 0">
-        <div class="contact-card" *ngFor="let contacto of contactosFiltrados">
+        <div class="contact-card glass-card" *ngFor="let contacto of contactosFiltrados">
             
             <button class="fav-btn" (click)="toggleFavorito(contacto)" [title]="contacto.esFavorito ? 'Quitar de favoritos' : 'Añadir a favoritos'">
                 <i class="pi" [ngClass]="contacto.esFavorito ? 'pi-star-fill star-active' : 'pi-star'"></i>
             </button>
 
-            <div class="card-body">
+            <div class="card-body" (click)="abrirPerfil(contacto)" style="cursor: pointer;" title="Ver perfil completo">
                 <div class="avatar-wrapper">
-                    <div class="avatar bg-primary">{{ contacto.iniciales }}</div>
+                    <img *ngIf="contacto.foto_url" [src]="contacto.foto_url" alt="Foto de perfil" class="avatar-img" />
+                    <div *ngIf="!contacto.foto_url" class="avatar bg-primary">{{ contacto.iniciales }}</div>
                     <!-- Puntito verde/gris de "En línea" -->
                     <span class="status-indicator" [ngClass]="contacto.online ? 'online' : 'offline'" [title]="contacto.online ? 'En línea' : 'Desconectado'"></span>
+                    <!-- Insignia de Cumpleaños -->
+                    <span class="birthday-badge" *ngIf="esCumpleanos(contacto.fecha_nacimiento)" title="¡Hoy es su cumpleaños!">🎂</span>
                 </div>
                 
                 <h3 class="name">{{ contacto.nombre }}</h3>
                 <span class="role">{{ contacto.rol }}</span>
-                <span class="area-badge">{{ contacto.area }}</span>
+                <span class="area-badge" [title]="contacto.area">{{ contacto.area }}</span>
             </div>
 
-            <div class="card-footer">
-                <button class="action-btn" (click)="abrirChat(contacto)" title="Enviar mensaje por Chat">
+            <div class="card-footer actions-hover">
+                <button class="action-btn chat-btn" (click)="abrirChat(contacto)" title="Enviar mensaje por Chat">
                     <i class="pi pi-comment"></i>
+                    <span>Chat</span>
                 </button>
-                <button class="action-btn" (click)="enviarCorreo(contacto)" title="Enviar Correo">
+                <button class="action-btn email-btn" (click)="enviarCorreo(contacto)" title="Enviar Correo">
                     <i class="pi pi-envelope"></i>
                 </button>
-                <button class="action-btn" *ngIf="contacto.telefono" (click)="iniciarLlamada(contacto)" title="Llamar por teléfono">
+                <a class="action-btn linkedin-btn" *ngIf="contacto.linkedin_url" [href]="contacto.linkedin_url" target="_blank" rel="noopener noreferrer" title="Ver perfil de LinkedIn" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                    <i class="pi pi-linkedin"></i>
+                </a>
+                <button class="action-btn phone-btn" *ngIf="contacto.telefono" (click)="iniciarLlamada(contacto)" title="Llamar por teléfono">
                     <i class="pi pi-phone"></i>
                 </button>
             </div>
@@ -69,3 +92,75 @@
         <p>No se encontraron usuarios que coincidan con tu búsqueda actual.</p>
     </div>
 </div>
+
+<!-- Modal de Perfil Completo -->
+<p-dialog [(visible)]="mostrarModalPerfil" [modal]="true" [draggable]="false" [resizable]="false" 
+          [style]="{width: '90%', maxWidth: '450px'}" styleClass="perfil-modal" (onHide)="cerrarPerfil()">
+    
+    <div class="perfil-modal-content" *ngIf="contactoSeleccionado">
+        <div class="perfil-header-bg"></div>
+        
+        <div class="perfil-avatar-section">
+            <img *ngIf="contactoSeleccionado.foto_url" [src]="contactoSeleccionado.foto_url" alt="Foto de perfil" class="avatar-large-img" />
+            <div *ngIf="!contactoSeleccionado.foto_url" class="avatar-large bg-primary">{{ contactoSeleccionado.iniciales }}</div>
+            <span class="status-badge" [ngClass]="contactoSeleccionado.online ? 'online' : 'offline'">
+                {{ contactoSeleccionado.online ? 'En línea' : 'Desconectado' }}
+            </span>
+            <span class="birthday-badge-large" *ngIf="esCumpleanos(contactoSeleccionado.fecha_nacimiento)" title="¡Hoy es su cumpleaños!">🎂</span>
+        </div>
+
+        <div class="perfil-info-principal">
+            <h2>{{ contactoSeleccionado.nombre }}</h2>
+            <span class="area-badge-large">{{ contactoSeleccionado.area }}</span>
+            <p class="rol">{{ contactoSeleccionado.rol }}</p>
+        </div>
+
+        <div class="perfil-biografia" *ngIf="contactoSeleccionado.biografia">
+            <i class="pi pi-quote-left quote-icon"></i>
+            <p>"{{ contactoSeleccionado.biografia }}"</p>
+        </div>
+
+        <div class="perfil-detalles">
+            <div class="detalle-item" *ngIf="contactoSeleccionado.email">
+                <i class="pi pi-envelope"></i>
+                <div class="detalle-texto">
+                    <span>Correo electrónico</span>
+                    <strong>{{ contactoSeleccionado.email }}</strong>
+                </div>
+            </div>
+            
+            <div class="detalle-item" *ngIf="contactoSeleccionado.telefono">
+                <i class="pi pi-phone"></i>
+                <div class="detalle-texto">
+                    <span>Teléfono</span>
+                    <strong>{{ contactoSeleccionado.telefono }}</strong>
+                </div>
+            </div>
+
+            <div class="detalle-item" *ngIf="contactoSeleccionado.fecha_nacimiento">
+                <i class="pi pi-calendar"></i>
+                <div class="detalle-texto">
+                    <span>Cumpleaños</span>
+                    <strong>{{ contactoSeleccionado.fecha_nacimiento | date:'longDate' }}</strong>
+                </div>
+            </div>
+
+            <div class="detalle-item" *ngIf="contactoSeleccionado.linkedin_url">
+                <i class="pi pi-linkedin"></i>
+                <div class="detalle-texto">
+                    <span>LinkedIn</span>
+                    <a [href]="contactoSeleccionado.linkedin_url" target="_blank" rel="noopener noreferrer">Ver Perfil Profesional</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="perfil-acciones-rapidas">
+            <button class="btn-chat" (click)="abrirChat(contactoSeleccionado); cerrarPerfil()">
+                <i class="pi pi-comment"></i> Enviar Mensaje
+            </button>
+            <button class="btn-correo" (click)="enviarCorreo(contactoSeleccionado); cerrarPerfil()">
+                <i class="pi pi-envelope"></i>
+            </button>
+        </div>
+    </div>
+</p-dialog>

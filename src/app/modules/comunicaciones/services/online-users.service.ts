@@ -47,22 +47,33 @@ export class OnlineUsersService {
   /**
    * Actualiza el estado en línea de un usuario en los contactos
    */
-  updateUserStatusInContactos(contactos: any[], userId: number, isOnline: boolean): void {
-    contactos.forEach(contacto => {
-      if (contacto.participantes && Array.isArray(contacto.participantes)) {
-        const participante = contacto.participantes.find((p: any) =>
-          Number(p.id) === Number(userId) ||
-          Number(p.usuarioId) === Number(userId)
-        );
-        if (participante) {
-          participante.enLinea = isOnline;
+  updateUserStatusInContactos(contactos: any[], userId: number, isOnline: boolean): any[] {
+    return contactos.map(contacto => {
+      // Clonar el contacto para asegurar que Angular detecte el cambio de referencia
+      const nuevoContacto = { ...contacto };
+      
+      if (nuevoContacto.participantes && Array.isArray(nuevoContacto.participantes)) {
+        nuevoContacto.participantes = nuevoContacto.participantes.map((p: any) => {
+          const pId = Number(p.id) || Number(p.usuarioId);
+          if (pId === Number(userId)) {
+            return { ...p, enLinea: isOnline };
+          }
+          return p;
+        });
 
+        // Revisar si modificamos al participante
+        const participante = nuevoContacto.participantes.find((p: any) => 
+          (Number(p.id) || Number(p.usuarioId)) === Number(userId)
+        );
+
+        if (participante) {
           // Si es un chat directo (no es grupo), el estado del contacto refleja al del otro participante
-          if (!contacto.esGrupo) {
-            contacto.enLinea = isOnline;
+          if (!nuevoContacto.esGrupo) {
+            nuevoContacto.enLinea = isOnline;
           }
         }
       }
+      return nuevoContacto;
     });
   }
 

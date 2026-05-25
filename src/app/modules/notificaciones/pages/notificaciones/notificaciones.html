@@ -1,81 +1,465 @@
 <div class="notificaciones-container">
+  <div
+    *ngIf="notificacionToast"
+    class="toast-notificacion"
+    [class.toast-notificacion--error]="notificacionToast.tipo === 'error'"
+    [class.toast-notificacion--success]="notificacionToast.tipo === 'success'"
+    role="status"
+    aria-live="polite"
+  >
+    <div class="toast-notificacion__contenido">
+      <i
+        class="pi"
+        [ngClass]="notificacionToast.tipo === 'success' ? 'pi-check-circle' : 'pi-exclamation-circle'"
+      ></i>
+      <span>{{ notificacionToast.mensaje }}</span>
+    </div>
+
+    <button
+      class="toast-notificacion__cerrar"
+      type="button"
+      (click)="cerrarNotificacion()"
+      aria-label="Cerrar notificacion"
+    >
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
 
   <div class="header">
 
-    <h2>
-      Centro de Notificaciones
-      <span class="contador">{{ cantidadNoLeidas }}</span>
-    </h2>
+    <div class="titulo">
+      <h2>Centro de Notificaciones</h2>
+      <span class="contador">
+        {{ cantidadNoLeidas }} no leídas
+      </span>
+    </div>
 
     <button
-      pButton
-      label="Nueva Publicación"
-      icon="pi pi-plus"
-      class="p-button-sm">
+      *ngIf="puedeCrearNotificacion"
+      class="btn-nueva"
+      type="button"
+      (click)="toggleFormulario()"
+    >
+      + Nueva publicación
     </button>
 
   </div>
-
 
   <div class="filtros">
 
     <button
       class="filtro"
-      [class.activo]="filtroSeleccionado === 'todos'"
-      (click)="cambiarFiltro('todos')">
-      Todos
+      [class.activo]="filtroSeleccionado === 'comunicados'"
+      (click)="cambiarFiltro('comunicados')"
+    >
+      Comunicados
     </button>
 
     <button
       class="filtro"
-      [class.activo]="filtroSeleccionado === 'comunicado'"
-      (click)="cambiarFiltro('comunicado')">
-      Comunicado
-    </button>
-
-    <button
-      class="filtro"
-      [class.activo]="filtroSeleccionado === 'alerta'"
-      (click)="cambiarFiltro('alerta')">
-      Alerta
+      [class.activo]="filtroSeleccionado === 'sistema'"
+      (click)="cambiarFiltro('sistema')"
+    >
+      Sistema
     </button>
 
   </div>
 
+  <div class="filtros-secundarios">
+    <button
+      class="btn-secundario btn-secundario--icono"
+      type="button"
+      [class.activo]="filtroSeleccionado === 'favoritos'"
+      title="Favoritos"
+      aria-label="Favoritos"
+      (click)="cambiarFiltro('favoritos')"
+    >
+      <i class="pi pi-star"></i>
+    </button>
+
+    <div class="filtro-fecha-wrap">
+      <button
+        class="btn-secundario btn-secundario--icono"
+        type="button"
+        [class.activo]="mostrarFiltroFecha || fechaDesde || fechaHasta"
+        title="Filtrar por fecha"
+        aria-label="Filtrar por fecha"
+        (click)="toggleFiltroFecha()"
+      >
+        <i class="pi pi-calendar"></i>
+      </button>
+
+      <div
+        *ngIf="mostrarFiltroFecha"
+        class="filtro-fecha"
+        aria-label="Filtrar notificaciones por fecha"
+      >
+        <label>
+          Desde
+          <input type="date" [(ngModel)]="fechaDesde" />
+        </label>
+
+        <label>
+          Hasta
+          <input type="date" [(ngModel)]="fechaHasta" />
+        </label>
+
+        <button
+          type="button"
+          class="btn-limpiar-fecha"
+          (click)="limpiarFiltroFecha()"
+          [disabled]="!fechaDesde && !fechaHasta"
+        >
+          <i class="pi pi-eraser"></i>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <div class="lista-notificaciones">
 
     <div
-      class="card"
       *ngFor="let n of notificacionesFiltradas"
+      class="card-notificacion"
       [class.leido]="n.leido"
+      (click)="abrirDetalle(n)"
     >
 
+      <div class="barra"></div>
+
       <div class="icono">
-
-        <span *ngIf="n.tipo === 'comunicado'">📢</span>
-        <span *ngIf="n.tipo === 'alerta'">⚠️</span>
-
+        {{ n.tipo === 'sistema' ? '!' : 'C' }}
       </div>
-
 
       <div class="contenido">
-
         <h4>{{ n.titulo }}</h4>
+        <p class="mensaje-resumen">
+          {{ resumenMensaje(n) }}
+        </p>
+        <a
+          *ngIf="enlaceNotificacion(n)"
+          [href]="enlaceNotificacion(n)!"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="link-chip"
+          (click)="$event.stopPropagation()"
+        >
+          Abrir enlace
+        </a>
 
-        <p>{{ n.mensaje }}</p>
-
-        <span class="fecha">{{ n.fecha }}</span>
+        <span class="fecha">
+          {{ n.creado_at | date:'dd MMM yyyy - hh:mm a' }}
+        </span>
 
       </div>
 
+      <div *ngIf="n.imagen" class="imagen-notificacion-frame">
+        <img [src]="n.imagen" class="imagen-notificacion" alt="Imagen"/>
+      </div>
+
+      <div class="acciones">
+        <button class="btn-leido" type="button" (click)="toggleLeido(n); $event.stopPropagation()">
+          {{ n.leido ? 'Deshacer' : 'Marcar leído' }}
+        </button>
+
+        <button
+          class="btn-icon-accion"
+          [class.activo]="n.favorito"
+          type="button"
+          [attr.aria-label]="n.favorito ? 'Quitar de favoritos' : 'Agregar a favoritos'"
+          [title]="n.favorito ? 'Quitar de favoritos' : 'Agregar a favoritos'"
+          (click)="toggleFavorito(n, $event)"
+        >
+          {{ n.favorito ? '★' : '☆' }}
+        </button>
+
+        <button class="btn-eliminar" type="button" (click)="abrirConfirmacion(n.id, $event)">
+          <i class="pi pi-trash"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="mostrarFormulario" class="overlay">
+
+  <div class="modal-clean">
+
+    <div class="modal-header">
+
+      <h3>Nueva publicación</h3>
+
+      <span
+        class="close"
+        (click)="toggleFormulario()"
+      >
+        ✕
+      </span>
+
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+
+        <label>Título</label>
+        <input [(ngModel)]="form.titulo" placeholder="Escribe el título..."/>
+      </div>
+
+      <div class="form-group">
+
+        <label>Mensaje</label>
+
+        <textarea
+          [(ngModel)]="form.mensaje"
+          placeholder="Escribe el mensaje..."
+        ></textarea>
+
+      </div>
+
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label>Enlace (opcional)</label>
+
+          <input
+            [(ngModel)]="form.enlace"
+            placeholder="https://..."
+          />
+
+        </div>
+
+        <div class="form-group">
+
+          <label>Firma</label>
+
+          <input
+            [(ngModel)]="form.firma"
+            placeholder="Atte..."
+          />
+
+        </div>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>Imagen</label>
+
+        <label class="upload-box">
+
+          <input
+            type="file"
+            accept="image/*"
+            (change)="onFileSelected($event)"
+          />
+
+          <span>📎 Subir imagen</span>
+
+        </label>
+
+        <small *ngIf="form.imagen">
+          {{ form.imagen }}
+        </small>
+
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
 
       <button
-        class="btn-leido"
-        (click)="toggleLeido(n)">
+        class="btn cancel"
+        type="button"
+        (click)="toggleFormulario()"
+      >
+        Cancelar
+      </button>
 
-        {{ n.leido ? 'Desmarcar' : 'Marcar leído' }}
+      <button
+        class="btn primary"
+        type="button"
+        (click)="guardarNotificacion()"
+      >
+        Publicar
+      </button>
 
+    </div>
+
+  </div>
+
+</div>
+
+<!-- MODAL DETALLE -->
+
+<div
+  *ngIf="notificacionSeleccionada"
+  class="modal-detalle"
+  (click)="cerrarModal()"
+>
+
+  <div class="modal-detalle-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-detalle-header">
+      <div class="modal-title-group">
+        <div class="modal-icono">
+          {{ notificacionSeleccionada.tipo === 'sistema' ? '!' : 'C' }}
+        </div>
+
+        <div>
+          <span class="modal-eyebrow">
+            {{ notificacionSeleccionada.tipo === 'sistema' ? 'Sistema' : 'Comunicado' }}
+          </span>
+          <h3>
+            {{ notificacionSeleccionada.titulo }}
+          </h3>
+        </div>
+      </div>
+
+      <button class="btn-cerrar-x" type="button" (click)="cerrarModal()">
+        x
+      </button>
+    </div>
+
+    <div
+      class="detalle-layout"
+      [class.con-imagen]="notificacionSeleccionada.imagen"
+    >
+
+      <div class="detalle-contenido">
+        <div *ngIf="esSistema(notificacionSeleccionada)" class="sistema-detalle">
+          <div class="sistema-detalle__item">
+            <span>Apartado</span>
+            <strong>{{ apartadoSistema(notificacionSeleccionada) }}</strong>
+          </div>
+
+          <div class="sistema-detalle__item">
+            <span>Accion</span>
+            <strong>{{ accionSistema(notificacionSeleccionada) }}</strong>
+          </div>
+
+          <div class="sistema-detalle__item" *ngIf="usuarioSistema(notificacionSeleccionada); else origenAutomatico">
+            <span>Usuario</span>
+            <strong>{{ usuarioSistema(notificacionSeleccionada) }}</strong>
+          </div>
+
+          <ng-template #origenAutomatico>
+            <div class="sistema-detalle__item">
+              <span>Origen</span>
+              <strong>{{ origenSistema(notificacionSeleccionada) }}</strong>
+            </div>
+          </ng-template>
+        </div>
+
+        <div
+          *ngIf="esSistema(notificacionSeleccionada); else mensajeComunicado"
+          class="sistema-info"
+        >
+          <div class="sistema-resumen">
+            <span>Resumen</span>
+            <p>{{ mensajePrincipal(notificacionSeleccionada) }}</p>
+          </div>
+
+          <div
+            *ngIf="cambiosSistema(notificacionSeleccionada).length"
+            class="sistema-cambios"
+          >
+            <span>Cambios realizados</span>
+            <div
+              *ngFor="let cambio of cambiosSistema(notificacionSeleccionada)"
+              class="sistema-cambio"
+            >
+              {{ cambio }}
+            </div>
+          </div>
+        </div>
+
+        <ng-template #mensajeComunicado>
+          <div class="mensaje-detalle">
+            {{ mensajePrincipal(notificacionSeleccionada) }}
+          </div>
+        </ng-template>
+
+        <a
+          *ngIf="!esSistema(notificacionSeleccionada) && enlaceNotificacion(notificacionSeleccionada)"
+          [href]="enlaceNotificacion(notificacionSeleccionada)!"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="detalle-link"
+        >
+          Abrir enlace
+        </a>
+
+        <div
+          *ngIf="!esSistema(notificacionSeleccionada) && firmaNotificacion(notificacionSeleccionada)"
+          class="firma-detalle"
+        >
+          Atte. {{ firmaNotificacion(notificacionSeleccionada) }}
+        </div>
+
+        <button
+          *ngIf="esSistema(notificacionSeleccionada) && rutaSistema(notificacionSeleccionada)"
+          class="detalle-link sistema-accion"
+          type="button"
+          (click)="navegarSistema(notificacionSeleccionada)"
+        >
+          {{ textoBotonSistema(notificacionSeleccionada) }}
+        </button>
+
+      </div>
+
+      <div
+        *ngIf="notificacionSeleccionada.imagen"
+        class="imagen-modal-frame"
+      >
+
+        <img
+          [src]="notificacionSeleccionada.imagen"
+          class="imagen-modal"
+          alt="Imagen"
+        />
+
+      </div>
+
+    </div>
+
+    <span class="fecha-detalle">
+      {{ notificacionSeleccionada.creado_at | date:'dd MMMM yyyy - hh:mm a' }}
+    </span>
+
+  </div>
+
+</div>
+
+
+<div *ngIf="mostrarConfirmacion" class="modal">
+
+  <div class="modal-box">
+
+    <h3>¿Eliminar notificación?</h3>
+
+    <p>
+      Esta acción no se puede deshacer.
+    </p>
+
+    <div class="acciones-confirmacion">
+
+      <button
+        class="btn-cancelar"
+        type="button"
+        (click)="cancelarEliminar()"
+      >
+        Cancelar
+      </button>
+
+      <button
+        class="btn-confirmar"
+        type="button"
+        (click)="confirmarEliminar()"
+      >
+        Eliminar
       </button>
 
     </div>

@@ -105,6 +105,10 @@ export interface Contacto {
   esFavorito?: boolean;
   online?: boolean;
   usuarioId?: number;
+  fecha_nacimiento?: string;
+  linkedin_url?: string;
+  biografia?: string;
+  foto_url?: string;
 }
 
 // Interfaz para los datos que trae el backend
@@ -122,6 +126,9 @@ export interface ContactoBackend {
   fotoUrl: string | null;
   online: boolean;
   usuarioId: number;
+  fechaNacimiento?: string;
+  linkedinUrl?: string | null;
+  biografia?: string | null;
 }
 
 // Nueva interfaz para solicitudes de contacto

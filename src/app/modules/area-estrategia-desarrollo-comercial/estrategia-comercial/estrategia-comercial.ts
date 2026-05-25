@@ -144,6 +144,19 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
   confirmacionEliminacion: ConfirmacionEliminacion | null = null;
   notificacion: NotificacionToast | null = null;
 
+  limitePorColumna: Record<string, number> = {
+    'Pendiente': 10,
+    'En progreso': 10,
+    'En revision': 10,
+    'En ejecucion': 10,
+    'Finalizado': 10,
+    'Paralizado': 10,
+    'Completado': 10,
+  };
+
+  guardandoEmpresa = false;
+  guardandoProyecto = false;
+
   readonly prioridadesActividad: PrioridadActividad[] = ['Alta', 'Media', 'Baja'];
 
   readonly columnas: ColumnaKanban[] = [
@@ -285,7 +298,18 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
   }
 
   actividadesPorEstado(estado: EstadoActividad): ActividadKanban[] {
-    return this.actividades.filter((actividad) => actividad.estado === estado);
+    const limite = this.limitePorColumna[estado] || 10;
+    return this.actividades.filter((actividad) => actividad.estado === estado).slice(0, limite);
+  }
+
+  totalActividadesPorEstado(estado: EstadoActividad): number {
+    return this.actividades.filter((actividad) => actividad.estado === estado).length;
+  }
+
+  cargarMasActividades(estado: EstadoActividad): void {
+    if (this.limitePorColumna[estado]) {
+      this.limitePorColumna[estado] += 10;
+    }
   }
 
   abrirModalNuevaActividad(estado: EstadoActividad): void {
@@ -296,6 +320,10 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
 
   cerrarModalNuevaActividad(forzar = false): void {
     if (this.guardandoActividad && !forzar) return;
+
+    if (!forzar && (this.actividadForm.titulo.trim() || this.actividadForm.descripcion.trim()) && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+      return;
+    }
 
     this.modalNuevaActividadAbierto = false;
     this.actividadEditandoId = null;
@@ -423,6 +451,9 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
   }
 
   cerrarModalEmpresa(): void {
+    if ((this.empresaForm.nombre.trim() || this.empresaForm.descripcion.trim()) && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+      return;
+    }
     this.modalEmpresaAbierto = false;
     this.empresaEditandoId = null;
   }
@@ -433,25 +464,34 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
 
     const descripcion = this.empresaForm.descripcion.trim();
 
+    this.guardandoEmpresa = true;
     if (this.empresaEditandoId) {
       this.estrategiaService.updateEmpresa(this.empresaEditandoId, { nombre, descripcion }).subscribe({
         next: () => {
+          this.guardandoEmpresa = false;
           this.cerrarModalEmpresa();
           this.cargarEmpresasYProyectos();
           this.mostrarNotificacion('success', 'Los cambios de la empresa se guardaron correctamente.');
         },
-        error: () => this.mostrarNotificacion('error', 'No se pudo guardar la empresa.'),
+        error: () => {
+          this.guardandoEmpresa = false;
+          this.mostrarNotificacion('error', 'No se pudo guardar la empresa.');
+        },
       });
       return;
     }
 
     this.estrategiaService.createEmpresa({ nombre, descripcion }).subscribe({
       next: () => {
+        this.guardandoEmpresa = false;
         this.cerrarModalEmpresa();
         this.cargarEmpresasYProyectos();
         this.mostrarNotificacion('success', 'La empresa se creó correctamente.');
       },
-      error: () => this.mostrarNotificacion('error', 'No se pudo crear la empresa.'),
+      error: () => {
+        this.guardandoEmpresa = false;
+        this.mostrarNotificacion('error', 'No se pudo crear la empresa.');
+      },
     });
 
   }
@@ -524,6 +564,9 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
   }
 
   cerrarModalProyecto(): void {
+    if ((this.proyectoForm.titulo.trim() || this.proyectoForm.descripcion.trim()) && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+      return;
+    }
     this.modalProyectoAbierto = false;
     this.empresaProyectoActivaId = null;
     this.proyectoEditandoId = null;
@@ -548,6 +591,7 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
       }))
       .filter((enlace) => enlace.etiqueta || enlace.url);
 
+    this.guardandoProyecto = true;
     if (this.proyectoEditandoId) {
       this.estrategiaService
         .updateProyecto(this.proyectoEditandoId, {
@@ -564,12 +608,16 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
         )
         .subscribe({
           next: () => {
+            this.guardandoProyecto = false;
             this.cerrarModalProyecto();
             this.modalDetalleProyectoAbierto = true;
             this.cargarEmpresasYProyectos();
             this.mostrarNotificacion('success', 'Los cambios del proyecto se guardaron correctamente.');
           },
-          error: () => this.mostrarNotificacion('error', 'No se pudo guardar el proyecto.'),
+          error: () => {
+            this.guardandoProyecto = false;
+            this.mostrarNotificacion('error', 'No se pudo guardar el proyecto.');
+          },
         });
       return;
     }
@@ -585,11 +633,15 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
       .pipe(switchMap((proyecto) => this.guardarEnlacesProyecto(proyecto?.id, enlaces)))
       .subscribe({
         next: () => {
+          this.guardandoProyecto = false;
           this.cerrarModalProyecto();
           this.cargarEmpresasYProyectos();
           this.mostrarNotificacion('success', 'El proyecto se creó correctamente.');
         },
-        error: () => this.mostrarNotificacion('error', 'No se pudo crear el proyecto.'),
+        error: () => {
+          this.guardandoProyecto = false;
+          this.mostrarNotificacion('error', 'No se pudo crear el proyecto.');
+        },
       });
 
   }
