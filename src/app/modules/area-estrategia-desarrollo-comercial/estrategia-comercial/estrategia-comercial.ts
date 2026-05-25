@@ -169,121 +169,9 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
     { estado: 'Completado', clase: 'completado', icono: 'pi pi-check-circle', etiqueta: 'Completado' },
   ];
 
-  actividades: ActividadKanban[] = [
-    {
-      id: 'a1',
-      titulo: 'Red nacional de voluntariado',
-      descripcion: 'Construir la primera red de voluntariado de la Fundacion Calma.',
-      estado: 'Pendiente',
-      creadoPor: this.nombreUsuarioActual,
-      prioridad: 'Media',
-      fechaCreacion: '21/04/2026',
-      fechaLimite: '',
-      enlaces: [],
-    },
-    {
-      id: 'a2',
-      titulo: 'Estrategia de marca comercial',
-      descripcion: '',
-      estado: 'Completado',
-      creadoPor: this.nombreUsuarioActual,
-      prioridad: 'Media',
-      fechaCreacion: '21/04/2026',
-      fechaLimite: '',
-      enlaces: [],
-    },
-  ];
-
-  empresas: EmpresaProyecto[] = [
-    {
-      id: 'e1',
-      nombre: 'Tayloy',
-      descripcion: 'Retail de suministros escolares y oficinas',
-      expandida: false,
-      proyectos: [
-        {
-          id: 'p1',
-          titulo: 'Campana Escolar 2026',
-          descripcion: 'Alianza comercial para acciones de retorno a clases.',
-          estado: 'Pendiente',
-          fechaLimite: '2026-04-19',
-          enlaces: [
-            {
-              etiqueta: 'Cronograma de taller',
-              url: 'https://example.com/cronograma-escolar',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: 'e2',
-      nombre: 'EduFutura',
-      descripcion: 'Capacitaciones y talleres educativos',
-      expandida: true,
-      proyectos: [
-        {
-          id: 'p2',
-          titulo: 'Taller Virtual Docentes',
-          descripcion: 'Serie de talleres virtuales para docentes',
-          estado: 'Pendiente',
-          fechaLimite: '2026-04-19',
-          enlaces: [
-            {
-              etiqueta: 'Cronograma de taller',
-              url: 'https://example.com/taller-docentes-1',
-            },
-            {
-              etiqueta: 'Material de apoyo',
-              url: 'https://example.com/material-docentes-1',
-            },
-          ],
-        },
-        {
-          id: 'p3',
-          titulo: 'Taller Virtual Docentes',
-          descripcion: 'Serie de talleres virtuales para docentes',
-          estado: 'En Progreso',
-          fechaLimite: '2026-04-19',
-          enlaces: [
-            {
-              etiqueta: 'Cronograma de taller',
-              url: 'https://example.com/taller-docentes-2',
-            },
-            {
-              etiqueta: 'Lista de asistencia',
-              url: 'https://example.com/asistencia-docentes',
-            },
-            {
-              etiqueta: 'Reporte semanal',
-              url: 'https://example.com/reporte-docentes',
-            },
-          ],
-        },
-        {
-          id: 'p4',
-          titulo: 'Taller Virtual Docentes',
-          descripcion: 'Serie de talleres virtuales para docentes',
-          estado: 'Completada',
-          fechaLimite: '2026-04-19',
-          enlaces: [
-            {
-              etiqueta: 'Cronograma de taller',
-              url: 'https://example.com/taller-docentes-3',
-            },
-            {
-              etiqueta: 'Evidencias',
-              url: 'https://example.com/evidencias-docentes',
-            },
-            {
-              etiqueta: 'Informe final',
-              url: 'https://example.com/informe-docentes',
-            },
-          ],
-        },
-      ],
-    },
-  ];
+  /** Solo datos del API; sin mocks (evita tarjetas “fantasma” al cargar). */
+  actividades: ActividadKanban[] = [];
+  empresas: EmpresaProyecto[] = [];
 
   ngOnInit(): void {
     this.cargarDatosBackend();
@@ -791,17 +679,25 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
     forkJoin({
       actividades: this.estrategiaService.getActividades(),
       enlaces: this.estrategiaService.getActividadEnlaces(),
-    }).subscribe(({ actividades, enlaces }) => {
-      const enlacesPorActividad = this.agruparPorId(enlaces, 'actividad_id');
-      this.actividades = actividades.map((actividad) =>
-        this.fromActividadApi(actividad, enlacesPorActividad.get(String(actividad.id)) ?? actividad.enlaces ?? []),
-      );
+    }).subscribe({
+      next: ({ actividades, enlaces }) => {
+        const enlacesPorActividad = this.agruparPorId(enlaces ?? [], 'actividad_id');
+        this.actividades = (actividades ?? []).map((actividad) =>
+          this.fromActividadApi(
+            actividad,
+            enlacesPorActividad.get(String(actividad.id)) ?? actividad.enlaces ?? [],
+          ),
+        );
 
-      if (this.actividadSeleccionada) {
-        this.actividadSeleccionada =
-          this.actividades.find((actividad) => actividad.id === this.actividadSeleccionada?.id) ??
-          this.actividadSeleccionada;
-      }
+        if (this.actividadSeleccionada) {
+          this.actividadSeleccionada =
+            this.actividades.find((actividad) => actividad.id === this.actividadSeleccionada?.id) ??
+            null;
+        }
+      },
+      error: () => {
+        this.actividades = [];
+      },
     });
   }
 
@@ -810,11 +706,12 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
       empresas: this.estrategiaService.getEmpresas(),
       proyectos: this.estrategiaService.getProyectos(),
       enlaces: this.estrategiaService.getProyectoEnlaces(),
-    }).subscribe(({ empresas, proyectos, enlaces }) => {
-      const proyectosPorEmpresa = this.agruparPorId(proyectos, 'empresa_id');
-      const enlacesPorProyecto = this.agruparPorId(enlaces, 'proyecto_id');
+    }).subscribe({
+      next: ({ empresas, proyectos, enlaces }) => {
+      const proyectosPorEmpresa = this.agruparPorId(proyectos ?? [], 'empresa_id');
+      const enlacesPorProyecto = this.agruparPorId(enlaces ?? [], 'proyecto_id');
 
-      this.empresas = empresas.map((empresa) => {
+      this.empresas = (empresas ?? []).map((empresa) => {
         const empresaId = String(empresa.id);
         const empresaPrevia = this.buscarEmpresaPorId(empresaId);
 
@@ -841,6 +738,10 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
             this.proyectoSeleccionado;
         }
       }
+      },
+      error: () => {
+        this.empresas = [];
+      },
     });
   }
 

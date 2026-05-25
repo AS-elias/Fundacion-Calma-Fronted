@@ -214,158 +214,13 @@ export class AnalisisDatos implements OnInit {
     },
   ];
 
-  tareasEnProceso: TareaDato[] = [
-    {
-      id: 'tarea-proceso-1',
-      titulo: 'Recopilación de datos',
-      descripcion: 'Colegios de UGEL 04',
-      estado: 'pendiente',
-      etiquetaEstado: 'Pendiente',
-      fechaCreacion: '25/03/2026',
-      fechaLimite: '2026-03-25',
-      enlaces: [
-        { nombre: 'Abrir Documento', url: 'https://docs.google.com/' },
-        { nombre: 'Abrir Documento', url: 'https://docs.google.com/' },
-      ],
-    },
-  ];
-
-  tareasConcluidas: TareaDato[] = [
-    {
-      id: 'tarea-concluida-1',
-      titulo: 'Recopilación de datos',
-      descripcion: 'Colegios de UGEL 04',
-      estado: 'completado',
-      etiquetaEstado: 'Completado',
-      fechaCreacion: '25/03/2026',
-      fechaLimite: '2026-03-25',
-      enlaces: [{ nombre: 'Abrir Documento', url: 'https://docs.google.com/' }],
-    },
-  ];
-
-  colegios: ColegioDato[] = [
-    {
-      id: 'colegio-1',
-      codigoModular: '0324608',
-      nombre: 'San Vicente de Paul',
-      correo: 'secretaria@csvp.edu.pe',
-      telefono: '999999999',
-      nivel: 'Primaria',
-      director: 'Chavez Luis Roger Ulises',
-      tipo: 'Particular',
-      ugel: 'UGEL 01',
-      departamento: 'Lima',
-      distrito: 'Surquillo',
-      zona: 'Urbana',
-      cantidadAlumnos: 291,
-      direccion: 'Mz H lote 8',
-    },
-    {
-      id: 'colegio-2',
-      codigoModular: '0324609',
-      nombre: 'San Vicente de Paul',
-      correo: 'secretaria@csvp.edu.pe',
-      telefono: '999999999',
-      nivel: 'Primaria',
-      director: 'Chavez Luis Roger Ulises',
-      tipo: 'Particular',
-      ugel: 'UGEL 01',
-      departamento: 'Lima',
-      distrito: 'Surquillo',
-      zona: 'Urbana',
-      cantidadAlumnos: 291,
-      direccion: 'Mz H lote 8',
-    },
-  ];
-
-  empresas: EmpresaDato[] = [
-    {
-      id: 'empresa-1',
-      ruc: '20602844219',
-      nombre: 'Inversiones Distribuciones SAC',
-      correo: 'operaciones@fulegsa.com.pe',
-      telefonoFijo: '01025897',
-      celular: '999999999',
-      departamento: 'Lima',
-      distrito: 'Surquillo',
-      direccion: 'Mz H lote 8',
-      sector: 'Educacion privada',
-      estado: 'Convenio',
-      descripcion: 'Esta empresa trabaja con la fundacion romero.',
-    },
-    {
-      id: 'empresa-2',
-      ruc: '20602844229',
-      nombre: 'Inversiones Distribuciones EIRL',
-      correo: 'operaciones@fulegsa.com.pe',
-      telefonoFijo: '01025897',
-      celular: '999999999',
-      departamento: 'Lima',
-      distrito: 'Surquillo',
-      direccion: 'Mz H lote 8',
-      sector: 'Educacion privada',
-      estado: 'Alianza',
-      descripcion: 'Esta empresa trabajo con la fundacion romero.',
-    },
-  ];
-
-  venues: VenueDato[] = [
-    {
-      id: 'venue-1',
-      nombre: 'Villa Lucumo',
-      departamento: 'Lima',
-      distrito: 'Surquillo',
-      direccion: 'Pachacamac, Lima',
-      celular: '972162178',
-      correo: 'villa.lucumo@gmail.com',
-      capacidadPersonas: 200,
-      estado: 'Contactado',
-      sitioWeb: 'https://www.facebook.com/p/Villa-L%C3%BAcumo',
-      detalles: 'Este venue trabajo en la fundacion romero',
-    },
-    {
-      id: 'venue-2',
-      nombre: 'Villa Lucumo',
-      departamento: 'Lima',
-      distrito: 'Surquillo',
-      direccion: 'Pachacamac, Lima',
-      celular: '972162178',
-      correo: 'villa.lucumo@gmail.com',
-      capacidadPersonas: 200,
-      estado: 'Contactado',
-      sitioWeb: 'https://www.facebook.com/p/Villa-L%C3%BAcumo',
-      detalles: 'Este venue trabajo en la fundacion romero',
-    },
-  ];
-
-  difusiones: DifusionDato[] = [
-    {
-      id: 'difusion-1',
-      nombre: 'Radio Exitosa',
-      tipo: 'Radio',
-      plataforma: 'YouTube',
-      lugar: 'Lurin, Lima',
-      contacto: 'Maria',
-      celular: '972162178',
-      correo: 'Maria.v.@gmail.com',
-      fecha: '12/12/2026',
-      estado: 'Contactado',
-      observaciones: 'Este medio de comunicacion ya trabajo antes con una fundacion',
-    },
-    {
-      id: 'difusion-2',
-      nombre: 'Radio Exitosa',
-      tipo: 'Radio',
-      plataforma: 'YouTube',
-      lugar: 'Lurin, Lima',
-      contacto: 'Maria',
-      celular: '972162178',
-      correo: 'Maria.v.@gmail.com',
-      fecha: '12/12/2026',
-      estado: 'Contactado',
-      observaciones: 'Este medio de comunicacion ya trabajo antes con una fundacion',
-    },
-  ];
+  /** Solo datos del API; sin mocks (evita “fantasmas” al cargar). */
+  tareasEnProceso: TareaDato[] = [];
+  tareasConcluidas: TareaDato[] = [];
+  colegios: ColegioDato[] = [];
+  empresas: EmpresaDato[] = [];
+  venues: VenueDato[] = [];
+  difusiones: DifusionDato[] = [];
 
   constructor(
     private analisisService: AnalisisDatosService,
@@ -1264,34 +1119,60 @@ export class AnalisisDatos implements OnInit {
   }
 
   private cargarColegios(): void {
-    this.analisisService.getColegios().subscribe((colegios) => {
-      this.colegios = colegios.map((colegio) => this.fromColegioApi(colegio));
+    this.analisisService.getColegios().subscribe({
+      next: (colegios) => {
+        this.colegios = (colegios ?? []).map((colegio) => this.fromColegioApi(colegio));
+      },
+      error: () => {
+        this.colegios = [];
+      },
     });
   }
 
   private cargarEmpresas(): void {
-    this.analisisService.getEmpresas().subscribe((empresas) => {
-      this.empresas = empresas.map((empresa) => this.fromEmpresaApi(empresa));
+    this.analisisService.getEmpresas().subscribe({
+      next: (empresas) => {
+        this.empresas = (empresas ?? []).map((empresa) => this.fromEmpresaApi(empresa));
+      },
+      error: () => {
+        this.empresas = [];
+      },
     });
   }
 
   private cargarVenues(): void {
-    this.analisisService.getVenues().subscribe((venues) => {
-      this.venues = venues.map((venue) => this.fromVenueApi(venue));
+    this.analisisService.getVenues().subscribe({
+      next: (venues) => {
+        this.venues = (venues ?? []).map((venue) => this.fromVenueApi(venue));
+      },
+      error: () => {
+        this.venues = [];
+      },
     });
   }
 
   private cargarDifusiones(): void {
-    this.analisisService.getDifusiones().subscribe((difusiones) => {
-      this.difusiones = difusiones.map((difusion) => this.fromDifusionApi(difusion));
+    this.analisisService.getDifusiones().subscribe({
+      next: (difusiones) => {
+        this.difusiones = (difusiones ?? []).map((difusion) => this.fromDifusionApi(difusion));
+      },
+      error: () => {
+        this.difusiones = [];
+      },
     });
   }
 
   private cargarTareas(): void {
-    this.analisisService.getTareas().subscribe((tareas) => {
-      const tareasNormalizadas = tareas.map((tarea) => this.fromTareaApi(tarea));
-      this.tareasEnProceso = tareasNormalizadas.filter((tarea) => tarea.estado !== 'completado');
-      this.tareasConcluidas = tareasNormalizadas.filter((tarea) => tarea.estado === 'completado');
+    this.analisisService.getTareas().subscribe({
+      next: (tareas) => {
+        const tareasNormalizadas = (tareas ?? []).map((tarea) => this.fromTareaApi(tarea));
+        this.tareasEnProceso = tareasNormalizadas.filter((tarea) => tarea.estado !== 'completado');
+        this.tareasConcluidas = tareasNormalizadas.filter((tarea) => tarea.estado === 'completado');
+      },
+      error: () => {
+        this.tareasEnProceso = [];
+        this.tareasConcluidas = [];
+      },
     });
   }
 
