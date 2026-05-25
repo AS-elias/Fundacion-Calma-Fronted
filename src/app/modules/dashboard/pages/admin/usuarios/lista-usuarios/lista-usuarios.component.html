@@ -50,7 +50,11 @@
             </div>
           </td>
           <td>{{ u.email }}</td>
-          <td><span class="badge rol-badge">{{ u.rol?.nombre | uppercase }}</span></td>
+          <td>
+            <span class="badge rol-badge">
+              {{ (typeof u.rol === 'string' ? u.rol : u.rol?.nombre) | uppercase }}
+            </span>
+          </td>
           <td>
             <span *ngIf="u.fecha_fin_contrato" class="date-text">
               <i class="pi pi-calendar"></i> {{ u.fecha_fin_contrato | date:'shortDate' }}

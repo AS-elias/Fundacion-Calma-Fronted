@@ -16,6 +16,7 @@ export class ListaUsuariosComponent implements OnInit {
   cargando = true;
   error = '';
   mensajeExito = '';
+  typeof = typeof; // Hacer typeof disponible en el template
 
   constructor(
     private authService: AuthService,
