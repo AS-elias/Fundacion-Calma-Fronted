@@ -52,15 +52,27 @@
 
         <!-- Email -->
         <div class="form-group full-width">
-          <label for="email">Correo Institucional (Generado Automáticamente) <span class="required">*</span></label>
-          <div class="input-icon">
-            <i class="pi pi-envelope"></i>
-            <input id="email" type="email" formControlName="email" placeholder="Se generará a partir del nombre" readonly
-                   style="background-color: #f3f4f6; color: #6b7280; cursor: not-allowed;"
-                   [class.is-invalid]="registroForm.get('email')?.invalid && registroForm.get('email')?.touched">
+          <label for="email">Correo Institucional <span class="required">*</span></label>
+          <div class="input-icon-with-button">
+            <div class="input-icon">
+              <i class="pi pi-envelope"></i>
+              <input id="email" type="email" formControlName="email" placeholder="Se generará a partir del nombre y apellido"
+                     (input)="onEmailManualEdit()"
+                     [class.is-invalid]="registroForm.get('email')?.invalid && registroForm.get('email')?.touched">
+            </div>
+            <button type="button" class="btn-regenerar" (click)="generarCorreo()" title="Regenerar correo automático">
+              <i class="pi pi-refresh"></i>
+            </button>
           </div>
+          <small class="info-text" *ngIf="!emailEditadoManualmente">
+            <i class="pi pi-info-circle"></i> Generado automáticamente. Edita si hay conflicto de nombres.
+          </small>
+          <small class="info-text" *ngIf="emailEditadoManualmente" style="color: #f59e0b;">
+            <i class="pi pi-pencil"></i> Correo editado manualmente. 
+            <button type="button" class="btn-reset-email" (click)="generarCorreo()">Restaurar automático</button>
+          </small>
           <small class="error-msg" *ngIf="registroForm.get('email')?.invalid && registroForm.get('email')?.touched">
-            Ingresa un nombre y apellido válidos para generar el correo.
+            Ingresa un email válido.
           </small>
         </div>
 

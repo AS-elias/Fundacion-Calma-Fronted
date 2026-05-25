@@ -178,3 +178,54 @@ $error-red: #ef4444;
     border: 1px solid #ef4444;
   }
 }
+
+/* Estilos para el campo de email editable con botón de regeneración */
+.form-group {
+  .input-icon-with-button {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+
+    .input-icon {
+      flex: 1;
+    }
+
+    .btn-regenerar {
+      background: var(--surface-section);
+      border: 1px solid $border-color;
+      border-radius: 8px;
+      padding: 12px 15px;
+      color: $text-gray;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', sans-serif;
+
+      &:hover {
+        background: $bg-light;
+        color: $primary-cyan;
+        border-color: $primary-cyan;
+      }
+
+      i { font-size: 16px; }
+    }
+  }
+
+  .btn-reset-email {
+    background: none;
+    border: none;
+    color: #f59e0b;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #d97706;
+    }
+  }
+}

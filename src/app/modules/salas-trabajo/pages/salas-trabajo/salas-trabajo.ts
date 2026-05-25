@@ -167,7 +167,9 @@ export class SalasTrabajo implements OnInit, OnDestroy {
       link: this.nuevaSala.link
     };
     
-    if (!this.nuevaSala.es_general) {
+    if (this.nuevaSala.es_general) {
+      payload.es_general = true;
+    } else {
       payload.area = this.nuevaSala.area;
     }
 
@@ -181,7 +183,16 @@ export class SalasTrabajo implements OnInit, OnDestroy {
       // EDICIÓN
       this.salasTrabajoService.editarSala(this.nuevaSala.id, payload).subscribe({
         next: (salaEditada) => {
-          this.cargarSalas(); // Recargar todo para reordenar grupos si cambió de área
+          // Actualizar localmente si es la sala general
+          if (this.nuevaSala.es_general && this.salaGeneral) {
+            this.salaGeneral.nombre = this.nuevaSala.nombre;
+            this.salaGeneral.descripcion = this.nuevaSala.descripcion;
+            this.salaGeneral.link = this.nuevaSala.link;
+          } else {
+            // Si es otra sala, recargar todo para reordenar grupos
+            this.cargarSalas();
+          }
+          
           this.cerrarModalAgregar();
           this.messageService.add({severity:'success', summary:'Éxito', detail:'Sala editada correctamente.'});
         },

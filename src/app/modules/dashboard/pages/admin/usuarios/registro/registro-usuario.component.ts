@@ -20,6 +20,7 @@ export class RegistroUsuarioComponent implements OnInit {
   subareasDisponibles: any[] = [];
   minDate: string = '';
   maxDate: string = '';
+  emailEditadoManualmente = false;
 
   constructor(
     private fb: FormBuilder,
@@ -151,12 +152,18 @@ export class RegistroUsuarioComponent implements OnInit {
       if (correo) {
         correo += '.fcalma@gmail.com';
         this.registroForm.get('email')?.setValue(correo);
+        this.emailEditadoManualmente = false; // Resetear el estado cuando se regenera
       } else {
         this.registroForm.get('email')?.setValue('');
       }
     } else {
       this.registroForm.get('email')?.setValue('');
     }
+  }
+
+  onEmailManualEdit(): void {
+    // Marcar que el email fue editado manualmente (ya no es el autogenerado)
+    this.emailEditadoManualmente = true;
   }
 
   calcularFechaFin(): void {
@@ -292,6 +299,7 @@ export class RegistroUsuarioComponent implements OnInit {
 
     // Limpiar el formulario para no mantener datos antiguos
     this.registroForm.reset({ rol: 'usuario', puesto: '', fecha_fin_contrato: '', nombre: '', apellido: '', email: '', area_id: null, subarea_id: null });
+    this.emailEditadoManualmente = false; // Resetear el estado del email
 
     // Redirigir a la lista de usuarios para que el usuario pueda confirmar visualmente.
     this.router.navigate(['/dashboard/admin-dashboard/usuarios'], {

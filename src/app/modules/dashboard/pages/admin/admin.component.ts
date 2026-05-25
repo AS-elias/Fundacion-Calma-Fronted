@@ -189,12 +189,13 @@ export class AdminComponent implements OnInit, OnDestroy {
         },
         y: {
           beginAtZero: true,
-          max: 100, // Fijar máximo a 100% para el Desempeño
+          max: 100,
           ticks: { color: textColorSecondary },
           grid: { color: surfaceBorder, drawBorder: false }
         }
       }
     };
+
   }
 
   initCharts(stats: AdminDashboardStats) {
@@ -240,18 +241,7 @@ export class AdminComponent implements OnInit, OnDestroy {
       this.stats.totalProyectos = pendientes + progreso + ejecucion + completadas + paralizado;
     }
 
-    // 3. Gráfico de Barras (Desempeño general de ejemplo)
-    this.desempenoChartData = {
-      labels: ['Desempeño Global'],
-      datasets: [
-        {
-          label: 'Porcentaje (%)',
-          data: [stats.desempenoEquipo || 0],
-          backgroundColor: ['#0ea5e9'],
-          borderRadius: 8
-        }
-      ]
-    };
+
   }
 
   /** Deriva los datos de gráficas para el Director a partir de las tareas de su área */

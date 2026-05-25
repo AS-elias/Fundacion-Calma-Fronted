@@ -76,13 +76,7 @@
                 </div>
             </div>
 
-            <!-- BLOQUE 4: Desempeño -->
-            <div class="detail-box">
-                <h3>Desempeño del Equipo</h3>
-                <div class="chart-container" style="position: relative; height: 230px; width: 100%;">
-                    <p-chart type="bar" [data]="desempenoChartData" [options]="barOptions" height="230px"></p-chart>
-                </div>
-            </div>
+
 
         </div>
     </ng-container>
@@ -251,7 +245,7 @@
                 </div>
             </div>
 
-            <!-- BLOQUE 4: Desempeño -->
+            <!-- BLOQUE 4: Desempeño del Área (Solo Director) -->
             <div class="detail-box">
                 <h3>Desempeño del Área</h3>
                 <ng-container *ngIf="userStats.desempenoEquipo !== undefined && userStats.desempenoEquipo !== null; else noDesempenoEquipo">
@@ -265,6 +259,7 @@
                   </div>
                 </ng-template>
             </div>
+
         </div>
     </ng-container>
 
