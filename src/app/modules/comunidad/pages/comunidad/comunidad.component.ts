@@ -10,6 +10,10 @@ import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CommunicationService } from '../../../../core/services/communication.service';
 import { NavbarSearchService } from '../../../../shared/services/navbar-search.service';
+import {
+  esCumpleanosHoy,
+  formatDateOnlyLong,
+} from '../../../../shared/utils/date-only';
 
 @Component({
   selector: 'app-comunidad',
@@ -279,19 +283,11 @@ export class ComunidadComponent implements OnInit, OnDestroy {
   }
 
   esCumpleanos(fechaStr?: string): boolean {
-    if (!fechaStr) return false;
-    
-    try {
-      const fecha = new Date(fechaStr);
-      if (isNaN(fecha.getTime())) return false;
-      
-      const hoy = new Date();
-      // Ensure we compare day and month correctly, adjusting for timezone if needed, 
-      // but assuming the backend sends YYYY-MM-DD or similar
-      return fecha.getUTCDate() === hoy.getDate() && fecha.getUTCMonth() === hoy.getMonth();
-    } catch {
-      return false;
-    }
+    return esCumpleanosHoy(fechaStr);
+  }
+
+  cumpleanosTexto(fechaStr?: string): string {
+    return formatDateOnlyLong(fechaStr);
   }
 
   // ============================================

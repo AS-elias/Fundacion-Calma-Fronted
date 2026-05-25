@@ -67,7 +67,7 @@
           <div class="info-item">
             <i class="pi pi-calendar"></i>
             <span>Cumpleaños</span>
-            <strong>{{ usuario?.fecha_nacimiento ? (usuario?.fecha_nacimiento | date:'longDate') : 'Sin registrar' }}</strong>
+            <strong>{{ usuario?.fecha_nacimiento ? fechaNacimientoTexto(usuario.fecha_nacimiento) : 'Sin registrar' }}</strong>
           </div>
 
           <div class="info-item" *ngIf="usuario?.linkedin_url">

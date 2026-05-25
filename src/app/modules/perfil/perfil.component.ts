@@ -3,6 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../auth/services/auth.service';
+import {
+  formatDateOnlyLong,
+  toDateInputValue,
+} from '../../shared/utils/date-only';
 
 @Component({
   selector: 'app-perfil',
@@ -209,13 +213,8 @@ export class PerfilComponent implements OnInit {
     });
   }
 
-  private formatFecha(fechaStr?: string): string {
-    if (!fechaStr) return '';
-    // If it's a full ISO string, return YYYY-MM-DD
-    if (fechaStr.includes('T')) {
-      return fechaStr.split('T')[0];
-    }
-    return fechaStr;
+  fechaNacimientoTexto(fecha?: string | null): string {
+    return formatDateOnlyLong(fecha);
   }
 
   private poblarFormulario(usuario: any): void {
@@ -226,7 +225,7 @@ export class PerfilComponent implements OnInit {
       puesto: usuario?.puesto ?? '',
       biografia: usuario?.biografia ?? '',
       linkedin_url: usuario?.linkedin_url ?? '',
-      fecha_nacimiento: this.formatFecha(usuario?.fecha_nacimiento),
+      fecha_nacimiento: toDateInputValue(usuario?.fecha_nacimiento),
     });
   }
 
