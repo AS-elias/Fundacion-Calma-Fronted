@@ -22,7 +22,7 @@ export interface Notificacion {
 })
 export class NotificacionesService {
 
-  private apiUrl = 'http://localhost:3005/api/notificaciones';
+  private apiUrl = 'https://fundacion-calma-backend.onrender.com/api/notificaciones';
   private apiOrigin = this.apiUrl.replace(/\/api\/notificaciones$/, '');
   private cambiosSubject = new Subject<void>();
   cambios$ = this.cambiosSubject.asObservable();

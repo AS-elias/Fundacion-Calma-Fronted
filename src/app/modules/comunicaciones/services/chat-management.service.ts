@@ -33,9 +33,9 @@ export class ChatManagementService {
       return url;
     }
     if (url.startsWith('/')) {
-      return `http://localhost:3005${url}`;
+      return `https://fundacion-calma-backend.onrender.com${url}`;
     }
-    return `http://localhost:3005/${url}`;
+    return `https://fundacion-calma-backend.onrender.com/${url}`;
   }
 
   /**

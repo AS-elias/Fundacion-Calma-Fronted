@@ -26,7 +26,7 @@ export interface AccesoArea {
   providedIn: 'root'
 })
 export class ComunidadService {
-  private apiUrl = 'http://localhost:3005/api/comunidad';
+  private apiUrl = 'https://fundacion-calma-backend.onrender.com/api/comunidad';
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 
@@ -57,7 +57,7 @@ export class ComunidadService {
   }
 
   searchUsuariosByEmail(email: string): Observable<any[]> {
-    return this.http.get<any[]>(`http://localhost:3005/api/usuarios/search?email=${email}`, {
+    return this.http.get<any[]>(`https://fundacion-calma-backend.onrender.com/api/usuarios/search?email=${email}`, {
       headers: this.getHeaders()
     });
   }
@@ -87,7 +87,7 @@ export class ComunidadService {
   buscarUsuariosOtraArea(searchTerm: string): Observable<UsuarioOtraArea[]> {
     // Usar endpoint genérico de búsqueda de usuarios
     return this.http.get<UsuarioOtraArea[]>(
-      `http://localhost:3005/api/usuarios/search?q=${encodeURIComponent(searchTerm)}`,
+      `https://fundacion-calma-backend.onrender.com/api/usuarios/search?q=${encodeURIComponent(searchTerm)}`,
       { headers: this.getHeaders() }
     );
   }

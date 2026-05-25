@@ -94,10 +94,10 @@ type ArchivoResponse = {
 
 @Injectable({ providedIn: 'root' })
 export class ConveniosService {
-  private readonly apiUrl = 'http://localhost:3005/api/convenios';
-  private readonly comentariosApiUrl = 'http://localhost:3005/api/comentarios';
-  private readonly archivosApiUrl = 'http://localhost:3005/api/convenio-archivos';
-  private readonly historialApiUrl = 'http://localhost:3005/api/convenio-historial';
+  private readonly apiUrl = 'https://fundacion-calma-backend.onrender.com/api/convenios';
+  private readonly comentariosApiUrl = 'https://fundacion-calma-backend.onrender.com/api/comentarios';
+  private readonly archivosApiUrl = 'https://fundacion-calma-backend.onrender.com/api/convenio-archivos';
+  private readonly historialApiUrl = 'https://fundacion-calma-backend.onrender.com/api/convenio-historial';
   private readonly apiOrigin = this.apiUrl.replace(/\/api\/convenios$/, '');
 
   constructor(

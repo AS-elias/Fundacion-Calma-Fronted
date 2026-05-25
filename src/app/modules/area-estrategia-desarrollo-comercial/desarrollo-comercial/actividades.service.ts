@@ -53,7 +53,7 @@ type ActividadesListApiResponse =
 
 @Injectable({ providedIn: 'root' })
 export class ActividadesService {
-  private readonly apiUrl = 'http://localhost:3005/api/actividades';
+  private readonly apiUrl = 'https://fundacion-calma-backend.onrender.com/api/actividades';
 
   constructor(
     private http: HttpClient,

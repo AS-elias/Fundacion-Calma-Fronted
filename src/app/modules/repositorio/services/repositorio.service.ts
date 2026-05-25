@@ -30,7 +30,7 @@ export class RepositorioService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 
-  private apiUrl = 'http://localhost:3005/api/repositorio';
+  private apiUrl = 'https://fundacion-calma-backend.onrender.com/api/repositorio';
   private apiOrigin = this.apiUrl.replace(/\/api\/repositorio$/, '');
 
   listar(): Observable<Bloque[]> {

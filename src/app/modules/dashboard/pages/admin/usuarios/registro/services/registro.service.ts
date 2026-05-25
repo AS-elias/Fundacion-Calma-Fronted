@@ -7,8 +7,8 @@ import { AuthService } from '../../../../../../auth/services/auth.service';
   providedIn: 'root'
 })
 export class RegistroService {
-  private apiUrl = 'http://localhost:3005/api/auth/register';
-  private areasUrl = 'http://localhost:3005/api/comunidad';
+  private apiUrl = 'https://fundacion-calma-backend.onrender.com/api/auth/register';
+  private areasUrl = 'https://fundacion-calma-backend.onrender.com/api/comunidad';
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 

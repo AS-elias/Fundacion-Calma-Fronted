@@ -9,7 +9,7 @@ import { SecureStorageService } from '../../../core/services/secure-storage.serv
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3005/api/auth';
+  private apiUrl = 'https://fundacion-calma-backend.onrender.com/api/auth';
   private tokenKey = 'calma_token';
   private userKey = 'calma_user';
 

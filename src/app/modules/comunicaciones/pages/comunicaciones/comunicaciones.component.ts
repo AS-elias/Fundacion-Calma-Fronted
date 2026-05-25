@@ -152,9 +152,9 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
       return url;
     }
     if (url.startsWith('/')) {
-      return `http://localhost:3005${url}`;
+      return `https://fundacion-calma-backend.onrender.com${url}`;
     }
-    return `http://localhost:3005/${url}`;
+    return `https://fundacion-calma-backend.onrender.com/${url}`;
   }
 
   get miIniciales(): string {
@@ -627,7 +627,7 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
               if (otro.avatar) {
                 let url = otro.avatar;
                 if (url && !url.startsWith('http') && !url.startsWith('data:image')) {
-                  url = url.startsWith('/') ? `http://localhost:3005${url}` : `http://localhost:3005/${url}`;
+                  url = url.startsWith('/') ? `https://fundacion-calma-backend.onrender.com${url}` : `https://fundacion-calma-backend.onrender.com/${url}`;
                 }
                 (contactoMapeado as any).avatarUrl = url;
               }

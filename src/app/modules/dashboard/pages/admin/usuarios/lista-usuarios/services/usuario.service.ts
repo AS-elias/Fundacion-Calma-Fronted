@@ -7,7 +7,7 @@ import { AuthService } from '../../../../../../auth/services/auth.service';
   providedIn: 'root'
 })
 export class UsuarioService {
-  private apiUrl = 'http://localhost:3005/api/auth/users';
+  private apiUrl = 'https://fundacion-calma-backend.onrender.com/api/auth/users';
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 

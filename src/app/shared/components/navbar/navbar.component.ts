@@ -105,7 +105,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       return url;
     }
 
-    return `http://localhost:3005${url.startsWith('/') ? url : `/${url}`}`;
+    return `https://fundacion-calma-backend.onrender.com${url.startsWith('/') ? url : `/${url}`}`;
   }
 
   cargarNotificaciones() {

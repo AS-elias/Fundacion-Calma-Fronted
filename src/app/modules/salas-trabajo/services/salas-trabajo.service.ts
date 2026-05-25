@@ -22,7 +22,7 @@ export interface GrupoSalas {
   providedIn: 'root'
 })
 export class SalasTrabajoService {
-  private apiUrl = 'http://localhost:3005/api/salas-trabajo';
+  private apiUrl = 'https://fundacion-calma-backend.onrender.com/api/salas-trabajo';
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 

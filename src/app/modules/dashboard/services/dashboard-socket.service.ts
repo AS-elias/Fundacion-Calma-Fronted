@@ -28,7 +28,7 @@ export class DashboardSocketService implements OnDestroy {
     }
 
     console.log('DashboardSocketService: Conectando a /dashboard...');
-    this.socket = io('http://localhost:3005/dashboard', {
+    this.socket = io('https://fundacion-calma-backend.onrender.com/dashboard', {
       auth: {
         token: token,
       },

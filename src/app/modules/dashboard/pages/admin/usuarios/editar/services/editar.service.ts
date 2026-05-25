@@ -12,8 +12,8 @@ export interface AreaPermiso {
 
 @Injectable({ providedIn: 'root' })
 export class EditarService {
-  private usersUrl = 'http://localhost:3005/api/auth/users';
-  private areasUrl = 'http://localhost:3005/api/comunidad';
+  private usersUrl = 'https://fundacion-calma-backend.onrender.com/api/auth/users';
+  private areasUrl = 'https://fundacion-calma-backend.onrender.com/api/comunidad';
 
   private http = inject(HttpClient);
   private authService = inject(AuthService);

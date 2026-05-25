@@ -42,7 +42,7 @@ export class SidebarComponent implements OnInit {
     return total;
   });
 
-  private apiUrl = 'http://localhost:3005/api/comunidad';
+  private apiUrl = 'https://fundacion-calma-backend.onrender.com/api/comunidad';
 
   // Link al dashboard según rol
   get dashboardLink(): string {

@@ -45,7 +45,7 @@ export class CommunicationService {
 
       this.jwtToken = jwtToken;
 
-      this.socket = io('http://localhost:3005/comunicaciones', {
+      this.socket = io('https://fundacion-calma-backend.onrender.com/comunicaciones', {
         auth: {
           token: jwtToken,
         },
@@ -309,7 +309,7 @@ export class CommunicationService {
     formData.append('file', file);
 
     const response = await fetch(
-      `http://localhost:3005/api/comunicaciones/channels/${canalId}/files`,
+      `https://fundacion-calma-backend.onrender.com/api/comunicaciones/channels/${canalId}/files`,
       {
         method: 'POST',
         headers: {
@@ -324,7 +324,7 @@ export class CommunicationService {
   // Eliminar Canal completo usando REST
   async deleteChannelRest(canalId: number): Promise<any> {
     const response = await fetch(
-      `http://localhost:3005/api/comunicaciones/channels/${canalId}`,
+      `https://fundacion-calma-backend.onrender.com/api/comunicaciones/channels/${canalId}`,
       {
         method: 'DELETE',
         headers: {
@@ -351,7 +351,7 @@ export class CommunicationService {
   // Obtener Info del Canal (REST)
   async getChannelInfoRest(canalId: number): Promise<any> {
     const response = await fetch(
-      `http://localhost:3005/api/comunicaciones/channels/${canalId}/info`,
+      `https://fundacion-calma-backend.onrender.com/api/comunicaciones/channels/${canalId}/info`,
       {
         headers: {
           'Authorization': `Bearer ${this.jwtToken}`
@@ -364,7 +364,7 @@ export class CommunicationService {
   // Actualizar Canal (REST alternativo)
   async updateChannelRest(canalId: number, data: any): Promise<any> {
     const response = await fetch(
-      `http://localhost:3005/api/comunicaciones/channels/${canalId}`,
+      `https://fundacion-calma-backend.onrender.com/api/comunicaciones/channels/${canalId}`,
       {
         method: 'PATCH',
         headers: {
@@ -380,7 +380,7 @@ export class CommunicationService {
   // Añadir Reacción (REST alternativo)
   async addReactionRest(mensajeId: number, usuarioId: number, emoji: string): Promise<any> {
     const response = await fetch(
-      `http://localhost:3005/api/comunicaciones/messages/${mensajeId}/reactions`,
+      `https://fundacion-calma-backend.onrender.com/api/comunicaciones/messages/${mensajeId}/reactions`,
       {
         method: 'POST',
         headers: {

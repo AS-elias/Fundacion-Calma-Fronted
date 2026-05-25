@@ -79,7 +79,7 @@ export interface UserDashboardStats {
   providedIn: 'root'
 })
 export class DashboardService {
-  private apiUrl = 'http://localhost:3005/api/dashboard';
+  private apiUrl = 'https://fundacion-calma-backend.onrender.com/api/dashboard';
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 

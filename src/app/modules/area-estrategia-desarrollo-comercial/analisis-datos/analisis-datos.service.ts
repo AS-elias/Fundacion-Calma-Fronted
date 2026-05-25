@@ -28,7 +28,7 @@ type ApiMutationResponse<T> =
 
 @Injectable({ providedIn: 'root' })
 export class AnalisisDatosService {
-  private readonly apiUrl = 'http://localhost:3005/api';
+  private readonly apiUrl = 'https://fundacion-calma-backend.onrender.com/api';
 
   constructor(
     private http: HttpClient,

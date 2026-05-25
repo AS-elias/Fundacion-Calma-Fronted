@@ -1,4 +1,4 @@
-ï»¿import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -71,8 +71,8 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
     'ONG',
     'UGEL',
     'Persona',
-    'Organismo pÃºblico',
-    'AsociaciÃ³n civil',
+    'Organismo público',
+    'Asociación civil',
     'Venue',
   ];
   tiposConexion: string[] = ['Convenio', 'Alianza'];
@@ -245,7 +245,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
     if (enlacesConContenido.some((enlace) => !this.urlActividadValida(enlace.url))) {
       this.mostrarNotificacion(
         'error',
-        'Cada enlace debe tener una URL vÃ¡lida con protocolo http o https.',
+        'Cada enlace debe tener una URL válida con protocolo http o https.',
       );
       return;
     }
@@ -254,7 +254,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
     if (!areaId) {
       this.mostrarNotificacion(
         'error',
-        'No se pudo identificar el Ã¡rea actual para crear la actividad.',
+        'No se pudo identificar el área actual para crear la actividad.',
       );
       return;
     }
@@ -792,7 +792,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
     if (!this.convenioSeleccionado) return;
     this.intentoGuardar = true;
     if (!this.formularioConvenioValido()) {
-      alert('âš ï¸ Completa todos los campos obligatorios');
+      alert('?? Completa todos los campos obligatorios');
       return;
     }
     const payload = this.toDto(this.convenioSeleccionado);
@@ -832,12 +832,12 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
 
           this.mostrarNotificacion(
             'success',
-            resp?.mensaje ?? resp?.message ?? 'Se registrÃ³ exitosamente.',
+            resp?.mensaje ?? resp?.message ?? 'Se registró exitosamente.',
           );
         },
         error: (error) => {
-          console.error('âŒ No se pudo conectar con el servidor', error);
-          this.mostrarNotificacion('error', 'Registro fallido. IntÃ©ntalo nuevamente.');
+          console.error('? No se pudo conectar con el servidor', error);
+          this.mostrarNotificacion('error', 'Registro fallido. Inténtalo nuevamente.');
         },
       });
 
@@ -878,19 +878,19 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
         if (cambios.length && !/^\d+$/.test(actualizadoId)) {
           this.registrarEventoHistorialLocal(
             actualizadoId,
-            `InformaciÃ³n actualizada: ${cambios.join(', ')}`,
+            `Información actualizada: ${cambios.join(', ')}`,
           );
         }
         this.hidratarComentarios(actualizadoId);
         this.hidratarHistorial(actualizadoId);
         this.mostrarNotificacion(
           'success',
-          resp?.mensaje ?? resp?.message ?? 'Se guardÃ³ los cambios exitosamente.',
+          resp?.mensaje ?? resp?.message ?? 'Se guardó los cambios exitosamente.',
         );
       },
       error: (error) => {
         console.error('No se pudo actualizar el convenio', error);
-        this.mostrarNotificacion('error', 'No se pudo guardar los cambios. IntÃ©ntalo nuevamente.');
+        this.mostrarNotificacion('error', 'No se pudo guardar los cambios. Inténtalo nuevamente.');
       },
     });
   }
@@ -970,7 +970,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
       nombre.endsWith('.jpg') ||
       nombre.endsWith('.jpeg');
     if (!esImg) {
-      alert('Solo se permiten imÃ¡genes PNG o JPG para el logo.');
+      alert('Solo se permiten imágenes PNG o JPG para el logo.');
       input.value = '';
       return;
     }
@@ -1120,7 +1120,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
       case 'convenio':
         return 'PROCESO DE CONVENIO';
       case 'reunion':
-        return 'REUNIÃ“N AGENDADA';
+        return 'REUNIÓN AGENDADA';
       case 'firmado':
         return 'CONVENIO FIRMADO';
       case 'cancelado':
@@ -1159,7 +1159,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
 
   private formatearEventoHistorial(evento: ConvenioHistorialDto): string {
     const descripcion = this.limpiarEncabezadoHistorial(
-      evento.descripcion ?? evento.accion ?? 'Sin descripciÃ³n',
+      evento.descripcion ?? evento.accion ?? 'Sin descripción',
     );
     const fechaRaw = evento.fechaCreacion ?? evento.createdAt ?? evento.fecha;
     if (!fechaRaw) return descripcion;
@@ -1167,7 +1167,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
     const fecha = new Date(fechaRaw);
     if (Number.isNaN(fecha.getTime())) return descripcion;
 
-    return `${descripcion} Â· ${this.formatearFecha(fecha)}`;
+    return `${descripcion} · ${this.formatearFecha(fecha)}`;
   }
 
   private limpiarEncabezadoHistorial(descripcion: string): string {
@@ -1180,7 +1180,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
   }
 
   private registrarEventoHistorialLocal(convenioId: string, descripcion: string) {
-    const evento = `${descripcion.trim()} Â· ${this.formatearFecha(new Date())}`;
+    const evento = `${descripcion.trim()} · ${this.formatearFecha(new Date())}`;
     const historialActual = this.obtenerHistorialConvenio(convenioId);
     this.asignarHistorialConvenio(
       convenioId,
@@ -1230,7 +1230,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
 
     const campos: Array<{ etiqueta: string; antes: string; despues: string }> = [
       {
-        etiqueta: 'Nombre de instituciÃ³n',
+        etiqueta: 'Nombre de institución',
         antes: anterior.nombre ?? '',
         despues: actual.nombre ?? '',
       },
@@ -1240,13 +1240,13 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
         antes: this.labelEstado(this.mapEstado(anterior.estado)),
         despues: this.labelEstado(this.mapEstado(actual.estado)),
       },
-      { etiqueta: 'Fecha de expiraciÃ³n', antes: anterior.fecha ?? '', despues: actual.fecha ?? '' },
+      { etiqueta: 'Fecha de expiración', antes: anterior.fecha ?? '', despues: actual.fecha ?? '' },
       { etiqueta: 'Tipo', antes: anterior.tipo ?? '', despues: actual.tipo ?? '' },
       { etiqueta: 'Rubro', antes: anterior.rubro ?? '', despues: actual.rubro ?? '' },
-      { etiqueta: 'ConexiÃ³n', antes: anterior.conexion ?? '', despues: actual.conexion ?? '' },
+      { etiqueta: 'Conexión', antes: anterior.conexion ?? '', despues: actual.conexion ?? '' },
       { etiqueta: 'Contacto', antes: anterior.contacto ?? '', despues: actual.contacto ?? '' },
       {
-        etiqueta: 'NÃºmero de telÃ©fono',
+        etiqueta: 'Número de teléfono',
         antes: anterior.telefono ?? '',
         despues: actual.telefono ?? '',
       },
@@ -1526,7 +1526,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
 
     partes.push(comentario.comentario);
 
-    return partes.join(' Â· ');
+    return partes.join(' · ');
   }
 
   private hidratarHistorial(convenioId: string) {
@@ -1598,7 +1598,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
     try {
       localStorage.setItem(this.storageSelectedKey, id);
     } catch (e) {
-      console.error('No se pudo guardar la selecciÃ³n de convenio', e);
+      console.error('No se pudo guardar la selección de convenio', e);
     }
   }
 
@@ -1611,7 +1611,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
         this.abrirDetalle(encontrado);
       }
     } catch (e) {
-      console.error('No se pudo restaurar la selecciÃ³n de convenio', e);
+      console.error('No se pudo restaurar la selección de convenio', e);
     }
   }
 

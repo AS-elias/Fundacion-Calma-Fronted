@@ -15,7 +15,7 @@ export class PerfilComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
-  private readonly apiUrl = 'http://localhost:3005/api/auth/me';
+  private readonly apiUrl = 'https://fundacion-calma-backend.onrender.com/api/auth/me';
 
   cargando = true;
   editando = false;
@@ -235,6 +235,6 @@ export class PerfilComponent implements OnInit {
       return url ?? null;
     }
 
-    return `http://localhost:3005${url.startsWith('/') ? url : `/${url}`}`;
+    return `https://fundacion-calma-backend.onrender.com${url.startsWith('/') ? url : `/${url}`}`;
   }
 }
