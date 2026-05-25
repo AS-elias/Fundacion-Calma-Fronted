@@ -16,7 +16,6 @@ export class ListaUsuariosComponent implements OnInit {
   cargando = true;
   error = '';
   mensajeExito = '';
-  typeof = typeof; // Hacer typeof disponible en el template
 
   constructor(
     private authService: AuthService,
@@ -82,5 +81,12 @@ export class ListaUsuariosComponent implements OnInit {
 
   irARegistro(): void {
     this.router.navigate(['/dashboard/admin-dashboard/usuarios/registro']);
+  }
+
+  getRolDisplay(rol: any): string {
+    if (typeof rol === 'string') {
+      return rol;
+    }
+    return rol?.nombre || 'Sin rol';
   }
 }

@@ -52,7 +52,7 @@
           <td>{{ u.email }}</td>
           <td>
             <span class="badge rol-badge">
-              {{ (typeof u.rol === 'string' ? u.rol : u.rol?.nombre) | uppercase }}
+              {{ getRolDisplay(u.rol) | uppercase }}
             </span>
           </td>
           <td>
