@@ -73,10 +73,10 @@
 }
 
 .card-table {
-  background: white;
+  background: var(--surface-section);
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+  overflow-x: auto; /* Responsive tables */
   padding: 1.5rem;
 
   .loading-state, .error-msg, .empty-state {

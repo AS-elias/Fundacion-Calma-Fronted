@@ -17,7 +17,7 @@ $text-light: #9ca3af;
   padding: 30px;
   min-height: calc(100vh - 100px);
   overflow-y: auto;
-  background: #ffffff;
+  background: var(--surface-section) ;
   border: 1px solid $border-color;
   border-radius: 12px;
   margin: 20px;
@@ -58,7 +58,7 @@ $text-light: #9ca3af;
 }
 
 .card {
-  background: #ffffff;
+  background: var(--surface-section) ;
   padding: 25px;
   border-radius: 12px;
   border: 1px solid $border-darker;
@@ -131,7 +131,7 @@ $text-light: #9ca3af;
 .modal-content {
   width: 90%;
   max-width: 500px;
-  background: #ffffff;
+  background: var(--surface-section) ;
   padding: 24px;
   border-radius: 16px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -205,7 +205,7 @@ $text-light: #9ca3af;
     border-radius: 8px;
     font-family: 'Inter', sans-serif;
     font-size: 14px;
-    background: #ffffff;
+    background: var(--surface-section) ;
     transition: all 0.2s;
 
     &:focus {
@@ -262,6 +262,99 @@ $text-light: #9ca3af;
       font-size: 14px;
       font-weight: 600;
       text-align: center;
+    }
+  }
+}
+
+/* Folder Navigation Styles */
+.repo-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  background: $bg-light;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid $border-darker;
+
+  .breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    .crumb {
+      color: $primary-celeste;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      padding: 2px 6px;
+      border-radius: 4px;
+
+      &:hover {
+        color: $primary-celeste-hover;
+        text-decoration: underline;
+      }
+
+      &.drag-over {
+        background: rgba(78, 179, 228, 0.2);
+        color: $primary-celeste-hover;
+        text-decoration: underline;
+      }
+    }
+
+    .separator {
+      color: $text-light;
+      font-size: 14px;
+    }
+  }
+
+  .btn-new-folder {
+    background: var(--surface-section) ;
+    border: 1px solid $border-darker;
+    color: $text-gray;
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: $primary-celeste;
+      color: white;
+      border-color: $primary-celeste;
+    }
+  }
+}
+
+.create-folder-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+
+  input {
+    flex: 1;
+    margin: 0 !important;
+  }
+
+  button {
+    background: $primary-celeste;
+    color: white;
+    border: none;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      background: $primary-celeste-hover;
     }
   }
 }
@@ -335,6 +428,32 @@ $text-light: #9ca3af;
     border-color: $primary-celeste;
   }
 
+  &.is-folder {
+    cursor: pointer;
+    background: var(--surface-section) ;
+    border-color: var(--surface-border);
+
+    &:hover {
+      background: var(--surface-section);
+      border-color: var(--surface-border);
+      transform: translateX(4px);
+    }
+  }
+
+  &.drag-over {
+    border-color: $primary-celeste;
+    background: rgba(78, 179, 228, 0.1);
+    box-shadow: inset 0 0 0 2px rgba(78, 179, 228, 0.5);
+  }
+
+  &[draggable="true"] {
+    cursor: grab;
+    
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
   .item-left {
     display: flex;
     gap: 12px;
@@ -355,7 +474,13 @@ $text-light: #9ca3af;
 
       &.doc {
         background: #e2e8f0;
-        color: #64748b;
+        color: var(--text-color-secondary);
+      }
+
+      &.folder {
+        background: #fef3c7;
+        color: #d97706;
+        font-size: 20px;
       }
     }
 
@@ -363,6 +488,13 @@ $text-light: #9ca3af;
       display: flex;
       flex-direction: column;
       flex: 1;
+
+      .folder-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: $text-dark;
+        margin: 0;
+      }
 
       .title {
         font-size: 14px;
@@ -531,7 +663,7 @@ $text-light: #9ca3af;
     border-radius: 8px;
     font-family: 'Inter', sans-serif;
     font-size: 14px;
-    background: #ffffff;
+    background: var(--surface-section) ;
     transition: all 0.2s;
 
     &:focus {
@@ -551,7 +683,7 @@ $text-light: #9ca3af;
   position: fixed;
   top: 20px;
   right: 20px;
-  background: white;
+  background: var(--surface-section);
   padding: 16px 20px;
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
@@ -636,3 +768,146 @@ $text-light: #9ca3af;
     transform: translateX(0);
   }
 }
+
+/* =====================================================
+   DARK MODE OVERRIDES
+   ===================================================== */
+:host-context(.app-dark) {
+  .contenedor {
+    background: var(--surface-ground) !important;
+    color: var(--text-color) !important;
+  }
+
+  .contenedor h1, .contenedor h2, .contenedor h3, .contenedor h4 {
+    color: var(--text-color-title) !important;
+  }
+
+  .contenedor p, .contenedor span, .contenedor li, .contenedor label {
+    color: var(--text-color) !important;
+  }
+
+  /* Variables SCSS locales sobreescritas via clases destino */
+  /* Todos los elementos que usaban bg-light (#f9fafb) */
+  .folder-section, .folder-header, .folder-row, .file-list,
+  .sidebar-panel, .repo-sidebar, .upload-section,
+  .breadcrumb-bar, .path-bar, .file-explorer,
+  .folder-item, .file-item, .repo-panel,
+  .tab-bar, .tab-header {
+    background: var(--surface-section) !important;
+    color: var(--text-color) !important;
+    border-color: var(--surface-border) !important;
+  }
+
+  /* Textos que usaban text-dark (#111827) */
+  .file-name, .folder-name, .item-name,
+  .repo-title, .file-title, .section-heading {
+    color: var(--text-color-title) !important;
+  }
+
+  /* Textos que usaban text-gray (#6b7280) */
+  .file-meta, .file-size, .file-date,
+  .item-meta, .repo-description, .helper-text {
+    color: var(--text-color-secondary) !important;
+  }
+
+  /* Fondos claros de chips de estado */
+  [class*="--pendiente"]:not([class*="btn"]) { background: rgba(239, 68, 68, 0.2) !important; color: #fca5a5 !important; }
+  [class*="--completado"]:not([class*="btn"]) { background: rgba(20, 128, 61, 0.2) !important; color: #86efac !important; }
+}
+
+:host-context(.app-dark) {
+  /* Modal Overrides */
+  .modal-content {
+    background: var(--surface-section) !important;
+    color: var(--text-color) !important;
+  }
+  .modal-header h3 {
+    color: var(--text-color-title) !important;
+  }
+  .modal-header span {
+    color: var(--text-color-secondary) !important;
+  }
+  .modal-header {
+    border-color: var(--surface-border) !important;
+  }
+  .btn-close {
+    background: var(--surface-ground) !important;
+    color: var(--text-color-secondary) !important;
+  }
+  .btn-close:hover {
+    background: var(--surface-border) !important;
+    color: var(--text-color) !important;
+  }
+  
+  .repo-toolbar {
+    background: var(--surface-ground) !important;
+    border-color: var(--surface-border) !important;
+  }
+  .crumb {
+    color: #4EB3E4 !important;
+  }
+  .separator {
+    color: var(--text-color-secondary) !important;
+  }
+
+  .upload-box label {
+    background: var(--surface-ground) !important;
+    border-color: var(--surface-border) !important;
+  }
+  .upload-box label span {
+    color: var(--text-color) !important;
+  }
+  
+  .create-folder-box input {
+    background: #0d0d0d !important;
+    color: var(--text-color) !important;
+    border-color: var(--surface-border) !important;
+  }
+
+  /* List Items */
+  .item {
+    background: var(--surface-ground) !important;
+    border-color: var(--surface-border) !important;
+  }
+  .item:hover {
+    background: var(--surface-border) !important;
+  }
+  .doc-link, .folder-name {
+    color: var(--text-color-title) !important;
+  }
+  .info .subtitle {
+    color: var(--text-color-secondary) !important;
+  }
+  
+  .social-card {
+    background: var(--surface-ground) !important;
+    border-color: var(--surface-border) !important;
+  }
+  .social-card .title {
+    color: var(--text-color-title) !important;
+  }
+  .social-card .subtitle {
+    color: var(--text-color-secondary) !important;
+  }
+  .empty-state p {
+    color: var(--text-color-secondary) !important;
+  }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .contenedor {
+    padding: 15px;
+    margin: 10px;
+  }
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .repo-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+

@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 import { SidebarComponent } from '../../components/sidebar/sidebar'; // <-- IMPORTAMOS EL SIDEBAR
 import { NavbarComponent } from '../../components/navbar/navbar.component';
+import { LayoutService } from '../../services/layout.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -11,4 +13,19 @@ import { NavbarComponent } from '../../components/navbar/navbar.component';
   templateUrl: './main-layout.html',
   styleUrls: ['./main-layout.scss']
 })
-export class MainLayoutComponent {}
+export class MainLayoutComponent implements OnInit {
+  layoutService = inject(LayoutService);
+  private router = inject(Router);
+
+  ngOnInit() {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.layoutService.closeSidebarMobile();
+    });
+  }
+
+  closeMenu() {
+    this.layoutService.closeSidebarMobile();
+  }
+}

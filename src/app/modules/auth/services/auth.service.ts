@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap, of } from 'rxjs';
 import { User, LoginResponse } from '../../../shared/models/user.model';
+import { SecureStorageService } from '../../../core/services/secure-storage.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +14,7 @@ export class AuthService {
   private userKey = 'calma_user';
 
   private http = inject(HttpClient);
+  private secureStorage = inject(SecureStorageService);
 
   login(email: string, password: string): Observable<LoginResponse> {
     const body = { email, password };
@@ -20,8 +22,8 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, body).pipe(
       tap(respuesta => {
         if (respuesta.access_token && respuesta.usuario) {
-          localStorage.setItem(this.tokenKey, respuesta.access_token);
-          localStorage.setItem(this.userKey, JSON.stringify(respuesta.usuario));
+          this.secureStorage.setItem(this.tokenKey, respuesta.access_token);
+          this.secureStorage.setItem(this.userKey, JSON.stringify(respuesta.usuario));
           console.log(`✅ Sesión iniciada para: ${respuesta.usuario.nombre} (${respuesta.usuario.rol})`);
         }
       })
@@ -33,8 +35,8 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/change-password`, body).pipe(
       tap(respuesta => {
         if (respuesta.access_token && respuesta.usuario) {
-          localStorage.setItem(this.tokenKey, respuesta.access_token);
-          localStorage.setItem(this.userKey, JSON.stringify(respuesta.usuario));
+          this.secureStorage.setItem(this.tokenKey, respuesta.access_token);
+          this.secureStorage.setItem(this.userKey, JSON.stringify(respuesta.usuario));
           console.log(`✅ Contraseña cambiada y sesión iniciada para: ${respuesta.usuario.nombre}`);
         }
       })
@@ -53,23 +55,23 @@ export class AuthService {
 
   logout(): void {
     console.log('👋 Cerrando sesión...');
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.userKey);
+    this.secureStorage.removeItem(this.tokenKey);
+    this.secureStorage.removeItem(this.userKey);
     console.log('✅ Sesión cerrada');
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    return this.secureStorage.getItem(this.tokenKey);
   }
 
   getCurrentUser(): User | null {
-    const userJson = localStorage.getItem(this.userKey);
+    const userJson = this.secureStorage.getItem(this.userKey);
     return userJson ? JSON.parse(userJson) : null;
   }
 
   updateCurrentUser(user: Partial<User>): void {
     const current = this.getCurrentUser();
-    localStorage.setItem(this.userKey, JSON.stringify({ ...current, ...user }));
+    this.secureStorage.setItem(this.userKey, JSON.stringify({ ...current, ...user }));
   }
 
   getUserRole(): string | null {

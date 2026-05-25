@@ -1,7 +1,13 @@
 import { Injectable, signal } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { jwtDecode } from 'jwt-decode'; 
+import { Subject } from 'rxjs';
 
+export interface SistemaActualizadoEvent {
+  modulo: string;
+  accion?: string;
+  [key: string]: any;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +15,9 @@ import { jwtDecode } from 'jwt-decode';
 export class CommunicationService {
   private socket: Socket | null = null;
   private jwtToken: string = '';
+
+  // 🔔 Vigilante Global para todo el sistema
+  public sistemaActualizado$ = new Subject<SistemaActualizadoEvent>();
 
   // 🔔 Contador global de mensajes sin leer por canal
   mensajesSinLeerGlobal = signal<Map<number, number>>(new Map());
@@ -51,6 +60,12 @@ export class CommunicationService {
         // Registrar el listener global con referencia nombrada
         this.socket?.off('newMessage', this.globalNewMessageHandler); // Evitar duplicados
         this.socket?.on('newMessage', this.globalNewMessageHandler);
+
+        // Registrar el vigilante global de sistema_actualizado
+        this.socket?.on('sistema_actualizado', (data: SistemaActualizadoEvent) => {
+          this.sistemaActualizado$.next(data);
+        });
+
         resolve();
       });
 

@@ -93,6 +93,10 @@
           </div>
         </article>
 
+        <button type="button" class="kanban-add" *ngIf="actividadesPorEstado(columna.estado).length < totalActividadesPorEstado(columna.estado)" (click)="cargarMasActividades(columna.estado)" style="margin-bottom: 8px;">
+          Mostrar más...
+        </button>
+
         <button type="button" class="kanban-add" (click)="abrirModalNuevaActividad(columna.estado)">
           + A&ntilde;adir Actividad
         </button>
@@ -415,9 +419,9 @@
 
       <div class="activity-form__actions">
         <button type="button" class="activity-form__cancel" (click)="cerrarModalEmpresa()">Cancelar</button>
-        <button type="button" class="activity-form__submit" (click)="guardarEmpresa()" [disabled]="!empresaForm.nombre.trim()">
-          <i class="pi pi-building"></i>
-          {{ empresaEditandoId ? 'Guardar Empresa' : 'Crear Empresa' }}
+        <button type="button" class="activity-form__submit" (click)="guardarEmpresa()" [disabled]="guardandoEmpresa || !empresaForm.nombre.trim()">
+          <i [class]="guardandoEmpresa ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
+          {{ guardandoEmpresa ? 'Guardando...' : (empresaEditandoId ? 'Guardar Empresa' : 'Crear Empresa') }}
         </button>
       </div>
     </div>
@@ -500,9 +504,9 @@
 
       <div class="activity-form__actions">
         <button type="button" class="activity-form__cancel" (click)="cerrarModalProyecto()">Cancelar</button>
-        <button type="button" class="activity-form__submit" (click)="guardarProyecto()" [disabled]="!proyectoForm.titulo.trim()">
-          <i class="pi pi-folder-open"></i>
-          {{ proyectoEditandoId ? 'Guardar Proyecto' : 'Crear Proyecto' }}
+        <button type="button" class="activity-form__submit" (click)="guardarProyecto()" [disabled]="guardandoProyecto || !proyectoForm.titulo.trim()">
+          <i [class]="guardandoProyecto ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
+          {{ guardandoProyecto ? 'Guardando...' : (proyectoEditandoId ? 'Guardar Proyecto' : 'Crear Proyecto') }}
         </button>
       </div>
     </div>

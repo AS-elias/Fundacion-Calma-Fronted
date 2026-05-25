@@ -24,6 +24,11 @@ export class ChangePasswordComponent implements OnInit {
   confirmPassword = '';
   cargando = false;
 
+  hasUppercase(str: string): boolean { return /[A-Z]/.test(str); }
+  hasLowercase(str: string): boolean { return /[a-z]/.test(str); }
+  hasNumber(str: string): boolean { return /\d/.test(str); }
+  hasSymbol(str: string): boolean { return /[@$!%*?&]/.test(str); }
+
   ngOnInit(): void {
     const nav = this.router.getCurrentNavigation();
     if (nav?.extras.state) {
@@ -52,8 +57,9 @@ export class ChangePasswordComponent implements OnInit {
       return;
     }
 
-    if (this.newPassword.length < 8) {
-      alert('La nueva contraseña debe tener al menos 8 caracteres.');
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(this.newPassword)) {
+      alert('La nueva contraseña no cumple con los requisitos de seguridad.');
       return;
     }
 

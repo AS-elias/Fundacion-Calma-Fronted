@@ -1,4 +1,4 @@
-﻿<div
+<div
   *ngIf="notificacion"
   class="toast-notificacion"
   [class.toast-notificacion--error]="notificacion.tipo === 'error'"
@@ -356,9 +356,9 @@
           </tr>
         </thead>
         <tbody>
-          <ng-container *ngFor="let colegio of colegiosFiltrados; let i = index">
+          <ng-container *ngFor="let colegio of colegiosPaginados; let i = index">
             <tr *ngIf="estaEditandoColegio(colegio); else colegioSoloLectura">
-              <td>{{ i + 1 }}</td>
+              <td>{{ (paginaColegios - 1) * itemsPorPagina + i + 1 }}</td>
               <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.codigoModular" /></td>
               <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.nombre" /></td>
               <td><input class="registro-table__cell-input" type="text" [(ngModel)]="colegioBorrador!.correo" /></td>
@@ -390,9 +390,10 @@
                     type="button"
                     class="registro-actions__save"
                     aria-label="Guardar colegio"
+                    [disabled]="guardandoColegio"
                     (click)="guardarColegio()"
                   >
-                    <i class="pi pi-save"></i>
+                    <i [class]="guardandoColegio ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
                   </button>
                   <button
                     type="button"
@@ -408,7 +409,7 @@
 
             <ng-template #colegioSoloLectura>
               <tr>
-                <td>{{ i + 1 }}</td>
+                <td>{{ (paginaColegios - 1) * itemsPorPagina + i + 1 }}</td>
                 <td>{{ colegio.codigoModular }}</td>
                 <td>{{ colegio.nombre }}</td>
                 <td>{{ colegio.correo }}</td>
@@ -479,9 +480,10 @@
                   type="button"
                   class="registro-actions__save"
                   aria-label="Guardar colegio"
+                  [disabled]="guardandoColegio"
                   (click)="guardarColegio()"
                 >
-                  <i class="pi pi-save"></i>
+                  <i [class]="guardandoColegio ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
                 </button>
                 <button
                   type="button"
@@ -502,17 +504,18 @@
       </table>
     </div>
 
-    <footer class="registro-modal__footer">
-      <span>{{ colegiosFiltrados.length }} colegios registrados</span>
-      <button
-        class="registro-add"
-        type="button"
-        [disabled]="!!colegioBorrador"
-        (click)="agregarColegio()"
-      >
-        <i class="pi pi-plus"></i>
-        Agregar Colegio
-      </button>
+    <footer class="registro-modal__footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <div class="paginator" *ngIf="totalPaginasColegios.length > 1" style="display: flex; gap: 10px; align-items: center;">
+        <button class="page-btn" (click)="paginaColegios = paginaColegios - 1" [disabled]="paginaColegios === 1" style="background: var(--surface-card); color: var(--text-color); border: 1px solid var(--surface-border); padding: 4px 8px; border-radius: 4px; cursor: pointer;">Anterior</button>
+        <span style="color: var(--text-color-secondary);">Página {{ paginaColegios }} de {{ totalPaginasColegios.length }}</span>
+        <button class="page-btn" (click)="paginaColegios = paginaColegios + 1" [disabled]="paginaColegios === totalPaginasColegios.length" style="background: var(--surface-card); color: var(--text-color); border: 1px solid var(--surface-border); padding: 4px 8px; border-radius: 4px; cursor: pointer;">Siguiente</button>
+      </div>
+      <div>
+        <span style="margin-right: 15px; color: var(--text-color-secondary);">{{ colegiosFiltrados.length }} colegios registrados</span>
+        <button class="registro-add" type="button" [disabled]="!!colegioBorrador" (click)="agregarColegio()">
+          <i class="pi pi-plus"></i> Agregar Colegio
+        </button>
+      </div>
     </footer>
   </section>
 </div>
@@ -589,9 +592,9 @@
           </tr>
         </thead>
         <tbody>
-          <ng-container *ngFor="let empresa of empresasFiltradas; let i = index">
+          <ng-container *ngFor="let empresa of empresasPaginadas; let i = index">
             <tr *ngIf="estaEditandoEmpresa(empresa); else empresaSoloLectura">
-              <td>{{ i + 1 }}</td>
+              <td>{{ (paginaEmpresas - 1) * itemsPorPagina + i + 1 }}</td>
               <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.ruc" /></td>
               <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.nombre" /></td>
               <td><input class="registro-table__cell-input" type="text" [(ngModel)]="empresaBorrador!.correo" /></td>
@@ -614,9 +617,10 @@
                     type="button"
                     class="registro-actions__save"
                     aria-label="Guardar empresa"
+                    [disabled]="guardandoEmpresa"
                     (click)="guardarEmpresa()"
                   >
-                    <i class="pi pi-save"></i>
+                    <i [class]="guardandoEmpresa ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
                   </button>
                   <button
                     type="button"
@@ -632,7 +636,7 @@
 
             <ng-template #empresaSoloLectura>
               <tr>
-                <td>{{ i + 1 }}</td>
+                <td>{{ (paginaEmpresas - 1) * itemsPorPagina + i + 1 }}</td>
                 <td>{{ empresa.ruc }}</td>
                 <td>{{ empresa.nombre }}</td>
                 <td>{{ empresa.correo }}</td>
@@ -692,9 +696,10 @@
                   type="button"
                   class="registro-actions__save"
                   aria-label="Guardar empresa"
+                  [disabled]="guardandoEmpresa"
                   (click)="guardarEmpresa()"
                 >
-                  <i class="pi pi-save"></i>
+                  <i [class]="guardandoEmpresa ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
                 </button>
                 <button
                   type="button"
@@ -717,17 +722,18 @@
       </table>
     </div>
 
-    <footer class="registro-modal__footer">
-      <span>{{ empresasFiltradas.length }} empresas registradas</span>
-      <button
-        class="registro-add"
-        type="button"
-        [disabled]="!!empresaBorrador"
-        (click)="agregarEmpresa()"
-      >
-        <i class="pi pi-plus"></i>
-        Agregar Empresa
-      </button>
+    <footer class="registro-modal__footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <div class="paginator" *ngIf="totalPaginasEmpresas.length > 1" style="display: flex; gap: 10px; align-items: center;">
+        <button class="page-btn" (click)="paginaEmpresas = paginaEmpresas - 1" [disabled]="paginaEmpresas === 1" style="background: var(--surface-card); color: var(--text-color); border: 1px solid var(--surface-border); padding: 4px 8px; border-radius: 4px; cursor: pointer;">Anterior</button>
+        <span style="color: var(--text-color-secondary);">Página {{ paginaEmpresas }} de {{ totalPaginasEmpresas.length }}</span>
+        <button class="page-btn" (click)="paginaEmpresas = paginaEmpresas + 1" [disabled]="paginaEmpresas === totalPaginasEmpresas.length" style="background: var(--surface-card); color: var(--text-color); border: 1px solid var(--surface-border); padding: 4px 8px; border-radius: 4px; cursor: pointer;">Siguiente</button>
+      </div>
+      <div>
+        <span style="margin-right: 15px; color: var(--text-color-secondary);">{{ empresasFiltradas.length }} empresas registradas</span>
+        <button class="registro-add" type="button" [disabled]="!!empresaBorrador" (click)="agregarEmpresa()">
+          <i class="pi pi-plus"></i> Agregar Empresa
+        </button>
+      </div>
     </footer>
   </section>
 </div>
@@ -803,9 +809,9 @@
           </tr>
         </thead>
         <tbody>
-          <ng-container *ngFor="let venue of venuesFiltrados; let i = index">
+          <ng-container *ngFor="let venue of venuesPaginados; let i = index">
             <tr *ngIf="estaEditandoVenue(venue); else venueSoloLectura">
-              <td>{{ i + 1 }}</td>
+              <td>{{ (paginaVenues - 1) * itemsPorPagina + i + 1 }}</td>
               <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.nombre" /></td>
               <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.departamento" /></td>
               <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.distrito" /></td>
@@ -834,9 +840,10 @@
                     type="button"
                     class="registro-actions__save"
                     aria-label="Guardar venue"
+                    [disabled]="guardandoVenue"
                     (click)="guardarVenue()"
                   >
-                    <i class="pi pi-save"></i>
+                    <i [class]="guardandoVenue ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
                   </button>
                   <button
                     type="button"
@@ -852,7 +859,7 @@
 
             <ng-template #venueSoloLectura>
               <tr>
-                <td>{{ i + 1 }}</td>
+                <td>{{ (paginaVenues - 1) * itemsPorPagina + i + 1 }}</td>
                 <td>{{ venue.nombre }}</td>
                 <td>{{ venue.departamento }}</td>
                 <td>{{ venue.distrito }}</td>
@@ -917,9 +924,10 @@
                   type="button"
                   class="registro-actions__save"
                   aria-label="Guardar venue"
+                  [disabled]="guardandoVenue"
                   (click)="guardarVenue()"
                 >
-                  <i class="pi pi-save"></i>
+                  <i [class]="guardandoVenue ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
                 </button>
                 <button
                   type="button"
@@ -940,17 +948,18 @@
       </table>
     </div>
 
-    <footer class="registro-modal__footer">
-      <span>{{ venuesFiltrados.length }} venues registrados</span>
-      <button
-        class="registro-add"
-        type="button"
-        [disabled]="!!venueBorrador"
-        (click)="agregarVenue()"
-      >
-        <i class="pi pi-plus"></i>
-        Agregar Venue
-      </button>
+    <footer class="registro-modal__footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <div class="paginator" *ngIf="totalPaginasVenues.length > 1" style="display: flex; gap: 10px; align-items: center;">
+        <button class="page-btn" (click)="paginaVenues = paginaVenues - 1" [disabled]="paginaVenues === 1" style="background: var(--surface-card); color: var(--text-color); border: 1px solid var(--surface-border); padding: 4px 8px; border-radius: 4px; cursor: pointer;">Anterior</button>
+        <span style="color: var(--text-color-secondary);">Página {{ paginaVenues }} de {{ totalPaginasVenues.length }}</span>
+        <button class="page-btn" (click)="paginaVenues = paginaVenues + 1" [disabled]="paginaVenues === totalPaginasVenues.length" style="background: var(--surface-card); color: var(--text-color); border: 1px solid var(--surface-border); padding: 4px 8px; border-radius: 4px; cursor: pointer;">Siguiente</button>
+      </div>
+      <div>
+        <span style="margin-right: 15px; color: var(--text-color-secondary);">{{ venuesFiltrados.length }} venues registrados</span>
+        <button class="registro-add" type="button" [disabled]="!!venueBorrador" (click)="agregarVenue()">
+          <i class="pi pi-plus"></i> Agregar Venue
+        </button>
+      </div>
     </footer>
   </section>
 </div>
@@ -1026,9 +1035,9 @@
           </tr>
         </thead>
         <tbody>
-          <ng-container *ngFor="let difusion of difusionesFiltradas; let i = index">
+          <ng-container *ngFor="let difusion of difusionesPaginadas; let i = index">
             <tr *ngIf="estaEditandoDifusion(difusion); else difusionSoloLectura">
-              <td>{{ i + 1 }}</td>
+              <td>{{ (paginaDifusion - 1) * itemsPorPagina + i + 1 }}</td>
               <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.nombre" /></td>
               <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.tipo" /></td>
               <td><input class="registro-table__cell-input" type="text" [(ngModel)]="difusionBorrador!.plataforma" /></td>
@@ -1050,9 +1059,10 @@
                     type="button"
                     class="registro-actions__save"
                     aria-label="Guardar difusión"
+                    [disabled]="guardandoDifusion"
                     (click)="guardarDifusion()"
                   >
-                    <i class="pi pi-save"></i>
+                    <i [class]="guardandoDifusion ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
                   </button>
                   <button
                     type="button"
@@ -1068,7 +1078,7 @@
 
             <ng-template #difusionSoloLectura>
               <tr>
-                <td>{{ i + 1 }}</td>
+                <td>{{ (paginaDifusion - 1) * itemsPorPagina + i + 1 }}</td>
                 <td>{{ difusion.nombre }}</td>
                 <td>{{ difusion.tipo }}</td>
                 <td>{{ difusion.plataforma }}</td>
@@ -1126,9 +1136,10 @@
                   type="button"
                   class="registro-actions__save"
                   aria-label="Guardar difusión"
+                  [disabled]="guardandoDifusion"
                   (click)="guardarDifusion()"
                 >
-                  <i class="pi pi-save"></i>
+                  <i [class]="guardandoDifusion ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
                 </button>
                 <button
                   type="button"
@@ -1151,17 +1162,18 @@
       </table>
     </div>
 
-    <footer class="registro-modal__footer">
-      <span>{{ difusionesFiltradas.length }} medios de comunicaciones registrados</span>
-      <button
-        class="registro-add"
-        type="button"
-        [disabled]="!!difusionBorrador"
-        (click)="agregarDifusion()"
-      >
-        <i class="pi pi-plus"></i>
-        Agregar Difusión
-      </button>
+    <footer class="registro-modal__footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <div class="paginator" *ngIf="totalPaginasDifusion.length > 1" style="display: flex; gap: 10px; align-items: center;">
+        <button class="page-btn" (click)="paginaDifusion = paginaDifusion - 1" [disabled]="paginaDifusion === 1" style="background: var(--surface-card); color: var(--text-color); border: 1px solid var(--surface-border); padding: 4px 8px; border-radius: 4px; cursor: pointer;">Anterior</button>
+        <span style="color: var(--text-color-secondary);">Página {{ paginaDifusion }} de {{ totalPaginasDifusion.length }}</span>
+        <button class="page-btn" (click)="paginaDifusion = paginaDifusion + 1" [disabled]="paginaDifusion === totalPaginasDifusion.length" style="background: var(--surface-card); color: var(--text-color); border: 1px solid var(--surface-border); padding: 4px 8px; border-radius: 4px; cursor: pointer;">Siguiente</button>
+      </div>
+      <div>
+        <span style="margin-right: 15px; color: var(--text-color-secondary);">{{ difusionesFiltradas.length }} difusiones registradas</span>
+        <button class="registro-add" type="button" [disabled]="!!difusionBorrador" (click)="agregarDifusion()">
+          <i class="pi pi-plus"></i> Agregar Difusión
+        </button>
+      </div>
     </footer>
   </section>
 </div>

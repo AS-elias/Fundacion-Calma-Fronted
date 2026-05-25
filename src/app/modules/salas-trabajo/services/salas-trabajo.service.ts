@@ -40,8 +40,8 @@ export class SalasTrabajoService {
     });
   }
 
-  getSalas(): Observable<Sala[]> {
-    return this.http.get<Sala[]>(this.apiUrl, { 
+  getSalas(): Observable<GrupoSalas[]> {
+    return this.http.get<GrupoSalas[]>(this.apiUrl, { 
       headers: this.getHeaders() 
     });
   }
@@ -55,6 +55,12 @@ export class SalasTrabajoService {
   eliminarSala(id: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${id}`, { 
       headers: this.getHeaders() 
+    });
+  }
+
+  editarSala(id: number, sala: any): Observable<Sala> {
+    return this.http.put<Sala>(`${this.apiUrl}/${id}`, sala, {
+      headers: this.getHeaders()
     });
   }
 }

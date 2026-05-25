@@ -4,6 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../auth/services/auth.service';
 import { Bloque, RepositorioService } from '../../services/repositorio.service';
 
+import { Subscription } from 'rxjs';
+import { CommunicationService, SistemaActualizadoEvent } from '../../../../core/services/communication.service';
+
 type TipoToast = 'success' | 'error';
 
 @Component({
@@ -25,9 +28,22 @@ export class Repositorio implements OnInit, OnDestroy {
   nuevoNombre = '';
   nuevoLink = '';
 
+  // Carpetas Navigation
+  historialCarpetas: {id: number | null, nombre: string}[] = [];
+  creandoCarpeta = false;
+  nombreNuevaCarpeta = '';
+
+  // Drag and Drop
+  documentoArrastrado: any = null;
+  carpetaDestinoOverId: number | null | undefined = undefined;
+
+  // Real-time Sync
+  private syncSub?: Subscription;
+
   constructor(
     private repoService: RepositorioService,
     private authService: AuthService,
+    private communicationService: CommunicationService
   ) {}
 
   get puedeEliminarRepositorio(): boolean {
@@ -36,39 +52,165 @@ export class Repositorio implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.cargarBloques();
+
+    const token = this.authService.getToken();
+    if (token) {
+      this.communicationService.connect(token).catch(err => {
+        console.error('Error conectando sockets en repositorio:', err);
+      });
+    }
+
+    this.syncSub = this.communicationService.sistemaActualizado$.subscribe((event: SistemaActualizadoEvent) => {
+      if (event.modulo === 'repositorio') {
+        this.cargarBloques(true); // Recarga silenciosa
+      }
+    });
   }
 
   ngOnDestroy(): void {
     if (this.notificacionTimeout) {
       clearTimeout(this.notificacionTimeout);
     }
+    if (this.syncSub) {
+      this.syncSub.unsubscribe();
+    }
   }
 
-  cargarBloques() {
-    this.cargando = true;
+  cargarBloques(silencioso = false) {
+    if (!silencioso) {
+      this.cargando = true;
+    }
 
     this.repoService.listar().subscribe({
       next: (data) => {
         this.bloques = (data || []).map((bloque) => this.mapearBloque(bloque));
 
+        // Preserve selected block if it exists
         if (this.bloqueSeleccionado) {
-          this.bloqueSeleccionado =
-            this.bloques.find((bloque) => bloque.id === this.bloqueSeleccionado?.id) ?? null;
+          const updatedBlock = this.bloques.find(b => b.id === this.bloqueSeleccionado?.id);
+          if (updatedBlock) {
+            this.bloqueSeleccionado = updatedBlock;
+          }
         }
 
-        this.cargando = false;
+        if (!silencioso) {
+          this.cargando = false;
+        }
       },
       error: (err) => {
         console.error('Error al listar bloques:', err);
+        if (!silencioso) {
+          this.cargando = false;
+        }
         this.bloques = [];
         this.bloqueSeleccionado = null;
-        this.cargando = false;
       },
     });
   }
 
   seleccionarBloque(bloque: Bloque) {
     this.bloqueSeleccionado = bloque;
+    this.historialCarpetas = [{ id: null, nombre: 'Inicio' }];
+    this.creandoCarpeta = false;
+    this.nombreNuevaCarpeta = '';
+  }
+
+  get carpetaActualId(): number | null {
+    if (this.historialCarpetas.length === 0) return null;
+    return this.historialCarpetas[this.historialCarpetas.length - 1].id;
+  }
+
+  get elementosMostrados() {
+    if (!this.bloqueSeleccionado) return [];
+    
+    // Si estamos en un bloque de redes sociales, no aplicamos lógica de carpetas
+    if (this.esRedesSociales()) return this.bloqueSeleccionado.documentos;
+
+    return this.bloqueSeleccionado.documentos.filter(d => 
+      (d.padreId || null) === this.carpetaActualId
+    );
+  }
+
+  entrarCarpeta(doc: any) {
+    if (doc.esCarpeta) {
+      this.historialCarpetas.push({ id: doc.id || 0, nombre: doc.nombre });
+    }
+  }
+
+  irACarpeta(index: number) {
+    this.historialCarpetas = this.historialCarpetas.slice(0, index + 1);
+  }
+
+  toggleCrearCarpeta() {
+    this.creandoCarpeta = !this.creandoCarpeta;
+    this.nombreNuevaCarpeta = '';
+  }
+
+  // --- Drag and Drop Handlers ---
+  onDragStart(event: DragEvent, doc: any) {
+    this.documentoArrastrado = doc;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', doc.id.toString());
+    }
+  }
+
+  onDragOver(event: DragEvent, carpetaDestinoId: number | null | undefined) {
+    if (!this.documentoArrastrado) return;
+    if (this.documentoArrastrado.id === carpetaDestinoId) return; // No mover a sí mismo
+    if ((this.documentoArrastrado.padreId || null) === (carpetaDestinoId || null)) return; // Ya está aquí
+
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    this.carpetaDestinoOverId = carpetaDestinoId;
+  }
+
+  onDragLeave(event: DragEvent) {
+    this.carpetaDestinoOverId = undefined;
+  }
+
+  onDrop(event: DragEvent, carpetaDestinoId: number | null | undefined) {
+    event.preventDefault();
+    this.carpetaDestinoOverId = undefined;
+
+    if (!this.documentoArrastrado) return;
+    const doc = this.documentoArrastrado;
+    this.documentoArrastrado = null;
+
+    if (doc.id === carpetaDestinoId) return;
+    if ((doc.padreId || null) === (carpetaDestinoId || null)) return;
+
+    this.repoService.moverDocumento(doc.id, carpetaDestinoId || null, !!doc.esCarpeta).subscribe({
+      next: () => {
+        this.mostrarNotificacion('success', 'Elemento movido correctamente.');
+        this.cargarBloques(); // Recargar todo para reflejar el estado real
+      },
+      error: (err) => {
+        this.mostrarNotificacion('error', err?.error?.message || 'Error al mover elemento.');
+      }
+    });
+  }
+  // -----------------------------
+
+  crearCarpeta() {
+    if (!this.bloqueSeleccionado || !this.nombreNuevaCarpeta.trim()) return;
+
+    this.repoService.crearCarpeta(
+      this.bloqueSeleccionado.id, 
+      this.nombreNuevaCarpeta.trim(), 
+      this.carpetaActualId
+    ).subscribe({
+      next: () => {
+        this.toggleCrearCarpeta();
+        this.cargarBloques();
+        this.mostrarNotificacion('success', 'Carpeta creada.');
+      },
+      error: (err) => {
+        this.mostrarNotificacion('error', err?.error?.message || 'Error al crear carpeta.');
+      }
+    });
   }
 
   cerrarModal() {
@@ -149,6 +291,31 @@ export class Repositorio implements OnInit, OnDestroy {
     return 'www';
   }
 
+  isDragOverZone = false;
+
+  onFileDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOverZone = true;
+  }
+
+  onFileDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOverZone = false;
+  }
+
+  onFileDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOverZone = false;
+
+    if (event.dataTransfer && event.dataTransfer.files.length > 0) {
+      this.archivoSeleccionado = event.dataTransfer.files[0];
+      this.agregarDocumento(); // Autoupload when dropped
+    }
+  }
+
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -171,13 +338,13 @@ export class Repositorio implements OnInit, OnDestroy {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', this.archivoSeleccionado);
-    formData.append('bloqueId', this.bloqueSeleccionado.id.toString());
-
     this.subiendo = true;
 
-    this.repoService.subirArchivo(formData).subscribe({
+    this.repoService.subirDocumento(
+      this.bloqueSeleccionado.id,
+      this.archivoSeleccionado,
+      this.carpetaActualId
+    ).subscribe({
       next: () => {
         this.archivoSeleccionado = null;
         this.subiendo = false;
@@ -202,7 +369,7 @@ export class Repositorio implements OnInit, OnDestroy {
     const nombre = this.nuevoNombre.trim() || 'Fundacion Calma';
     const url = this.nuevoLink.trim();
 
-    this.repoService.agregarEnlace(bloqueId, nombre, url).subscribe({
+    this.repoService.agregarEnlace(bloqueId, nombre, url, this.carpetaActualId).subscribe({
       next: () => {
         this.nuevoNombre = '';
         this.nuevoLink = '';
@@ -262,6 +429,8 @@ export class Repositorio implements OnInit, OnDestroy {
         url: documento.url,
         icono: documento.icono,
         fecha: documento.fecha,
+        esCarpeta: documento.esCarpeta,
+        padreId: documento.padreId,
       })),
     };
   }

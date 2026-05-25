@@ -1,8 +1,12 @@
 <header class="header">
 
+  <button class="menu-button" (click)="layoutService.toggleSidebarMobile()">
+    <i class="pi pi-bars"></i>
+  </button>
+
   <div class="search-bar">
     <i class="pi pi-search"></i>
-    <input type="text" placeholder="Buscar Recursos, reportes o personal..." />
+    <input type="text" placeholder="Buscar en esta página..." (input)="onSearchInput($event)" />
   </div>
 
   <div class="header-right">

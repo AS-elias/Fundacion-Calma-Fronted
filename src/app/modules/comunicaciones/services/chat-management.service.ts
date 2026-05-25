@@ -27,6 +27,17 @@ export class ChatManagementService {
 
   constructor() {}
 
+  private formatAvatarUrl(url?: string): string | undefined {
+    if (!url) return undefined;
+    if (url.startsWith('http') || url.startsWith('data:image')) {
+      return url;
+    }
+    if (url.startsWith('/')) {
+      return `http://localhost:3005${url}`;
+    }
+    return `http://localhost:3005/${url}`;
+  }
+
   /**
    * Mapea un canal (del backend) a un contacto (del frontend)
    */
@@ -57,7 +68,7 @@ export class ChatManagementService {
       mensajes: mensajesIniciales,
       esGrupo: canal.esGrupo || false,
       participantes: canal.participantes || [],
-      avatarUrl: canal.avatarUrl || canal.imagenUrl || canal.foto || canal.avatarBase64 || undefined
+      avatarUrl: this.formatAvatarUrl(canal.avatarUrl || canal.imagenUrl || canal.foto || canal.avatarBase64)
     } as ContactoChat;
   }
 
@@ -153,18 +164,20 @@ export class ChatManagementService {
 
     // Extraer Avatar del Remitente
     let remitenteAvatarUrl = undefined;
-    if (msg.remitente && (msg.remitente.avatarUrl || msg.remitente.fotoUrl || msg.remitente.foto)) remitenteAvatarUrl = msg.remitente.avatarUrl || msg.remitente.fotoUrl || msg.remitente.foto;
-    else if (msg.usuario && (msg.usuario.avatarUrl || msg.usuario.fotoUrl || msg.usuario.foto)) remitenteAvatarUrl = msg.usuario.avatarUrl || msg.usuario.fotoUrl || msg.usuario.foto;
-    else if (msg.sender && (msg.sender.avatarUrl || msg.sender.fotoUrl || msg.sender.foto)) remitenteAvatarUrl = msg.sender.avatarUrl || msg.sender.fotoUrl || msg.sender.foto;
-    else if (msg.autor && (msg.autor.avatarUrl || msg.autor.fotoUrl || msg.autor.foto)) remitenteAvatarUrl = msg.autor.avatarUrl || msg.autor.fotoUrl || msg.autor.foto;
+    if (msg.remitente && (msg.remitente.avatarUrl || msg.remitente.fotoUrl || msg.remitente.foto_url || msg.remitente.avatar || msg.remitente.foto)) remitenteAvatarUrl = msg.remitente.avatarUrl || msg.remitente.fotoUrl || msg.remitente.foto_url || msg.remitente.avatar || msg.remitente.foto;
+    else if (msg.usuario && (msg.usuario.avatarUrl || msg.usuario.fotoUrl || msg.usuario.foto_url || msg.usuario.avatar || msg.usuario.foto)) remitenteAvatarUrl = msg.usuario.avatarUrl || msg.usuario.fotoUrl || msg.usuario.foto_url || msg.usuario.avatar || msg.usuario.foto;
+    else if (msg.sender && (msg.sender.avatarUrl || msg.sender.fotoUrl || msg.sender.foto_url || msg.sender.avatar || msg.sender.foto)) remitenteAvatarUrl = msg.sender.avatarUrl || msg.sender.fotoUrl || msg.sender.foto_url || msg.sender.avatar || msg.sender.foto;
+    else if (msg.autor && (msg.autor.avatarUrl || msg.autor.fotoUrl || msg.autor.foto_url || msg.autor.avatar || msg.autor.foto)) remitenteAvatarUrl = msg.autor.avatarUrl || msg.autor.fotoUrl || msg.autor.foto_url || msg.autor.avatar || msg.autor.foto;
 
     if (!remitenteAvatarUrl && remitenteId && participantes.length > 0) {
       const part = participantes.find((p: any) => Number(p.id) === Number(remitenteId) || Number(p.usuarioId) === Number(remitenteId));
       if (part) {
         const infoPart = part.usuario || part;
-        remitenteAvatarUrl = infoPart.avatarUrl || infoPart.fotoUrl || infoPart.foto;
+        remitenteAvatarUrl = infoPart.avatarUrl || infoPart.fotoUrl || infoPart.foto_url || infoPart.avatar || infoPart.foto;
       }
     }
+    
+    remitenteAvatarUrl = this.formatAvatarUrl(remitenteAvatarUrl);
 
     // Formatear la hora correctamente buscando todos los campos posibles del backend
     let horaFormateada = '';
@@ -461,7 +474,10 @@ export class ChatManagementService {
           // 🔥 FIX: Asignar el nombre e iniciales del otro usuario para los chats directos
           contacto.nombre = infoOtro.nombreCompleto || infoOtro.nombre_completo || infoOtro.nombre || 'Usuario Desconocido';
           contacto.iniciales = this.generarIniciales(contacto.nombre);
-          if (infoOtro.avatarUrl || infoOtro.fotoUrl) (contacto as any).avatarUrl = infoOtro.avatarUrl || infoOtro.fotoUrl;
+          let avatarExtraido = infoOtro.avatarUrl || infoOtro.fotoUrl || infoOtro.foto_url || infoOtro.avatar;
+          if (avatarExtraido) {
+            (contacto as any).avatarUrl = this.formatAvatarUrl(avatarExtraido);
+          }
         }
       }
 

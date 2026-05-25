@@ -12,10 +12,12 @@ import { interval, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../../modules/auth/services/auth.service';
+import { NavbarSearchService } from '../../services/navbar-search.service';
 import {
   NotificacionesService,
   Notificacion
 } from '../../../modules/notificaciones/services/notificaciones.service';
+import { LayoutService } from '../../services/layout.service';
 
 @Component({
   selector: 'app-navbar',
@@ -32,6 +34,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private notifService = inject(NotificacionesService);
   private router = inject(Router);
+  private navbarSearchService = inject(NavbarSearchService);
+  public layoutService = inject(LayoutService);
 
   nombreUsuario = signal<string>('Usuario');
   rolUsuario = signal<string>('Rol Desconocido');
@@ -55,6 +59,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.pollingSub = interval(15000).subscribe(() => {
       this.cargarNotificaciones();
     });
+  }
+
+  onSearchInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.navbarSearchService.setSearchQuery(input.value);
   }
 
   ngOnDestroy() {

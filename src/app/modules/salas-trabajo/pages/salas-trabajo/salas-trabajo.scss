@@ -15,7 +15,7 @@ $text-light: #9ca3af;
   padding: 30px;
   min-height: calc(100vh - 100px);
   overflow-y: auto;
-  background: #ffffff;
+  background: var(--surface-section) ;
   width: 100%;
   box-sizing: border-box;
   border: 1px solid $border-color;
@@ -145,6 +145,26 @@ $text-light: #9ca3af;
         box-shadow: 0 4px 12px rgba(78, 179, 228, 0.3);
       }
     }
+
+    .btn-edit-general {
+      background: rgba(78, 179, 228, 0.15);
+      color: $primary-celeste;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+
+      &:hover {
+        background: $primary-celeste;
+        color: white;
+        transform: translateY(-2px);
+      }
+    }
   }
 
   /* SECCIÓN DE SALAS */
@@ -169,7 +189,7 @@ $text-light: #9ca3af;
 
   /* TARJETA DE GRUPO */
   .grupo-card {
-    background: white;
+    background: var(--surface-section);
     border: 1px solid $border-darker;
     border-radius: 12px;
     padding: 24px;
@@ -254,6 +274,7 @@ $text-light: #9ca3af;
       }
 
       .sala-item-info {
+        min-width: 0;
         h5 {
           margin: 0;
           font-size: 14px;
@@ -271,6 +292,27 @@ $text-light: #9ca3af;
       align-items: center;
       gap: 8px;
       flex-shrink: 0;
+
+      .btn-edit-small {
+        background: rgba(78, 179, 228, 0.15);
+        color: $primary-celeste;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        font-size: 16px;
+
+        &:hover {
+          background: rgba(78, 179, 228, 0.25);
+          color: $primary-celeste-hover;
+          transform: scale(1.05);
+        }
+      }
 
       .btn-delete-small {
         background: #fee2e2;
@@ -332,7 +374,7 @@ $text-light: #9ca3af;
   font-family: 'Inter', sans-serif;
 
   .modal-box, .modal-content, .modal-clean {
-    background: #ffffff !important;
+    background: var(--surface-section) !important;
     border-radius: 16px !important;
     width: 90% !important;
     max-width: 500px !important;
@@ -399,13 +441,13 @@ $text-light: #9ca3af;
         border-radius: 8px; 
         font-family: 'Inter', sans-serif; 
         font-size: 14px; 
-        background: #ffffff;
+        background: var(--surface-section) ;
         transition: all 0.2s; 
 
         &:focus { 
           outline: none; 
           border-color: $primary-celeste; 
-          background: #ffffff; 
+          background: var(--surface-section) ; 
           box-shadow: 0 0 0 3px rgba(78, 179, 228, 0.1); 
         }
 
@@ -498,3 +540,104 @@ $text-light: #9ca3af;
     opacity: 1; 
   } 
 }
+/* =====================================================
+   DARK MODE OVERRIDES
+   ===================================================== */
+:host-context(.app-dark) {
+  .contenedor {
+    background: var(--surface-ground) !important;
+    color: var(--text-color) !important;
+  }
+
+  .contenedor h1, .contenedor h2, .contenedor h3, .contenedor h4, .contenedor h5 {
+    color: var(--text-color-title) !important;
+  }
+
+  .contenedor p, .contenedor span:not(.badge):not(.chip), .contenedor label {
+    color: var(--text-color) !important;
+  }
+
+  /* Fondos claros usados en salas */
+  .sala-header, .sala-body, .sala-panel,
+  .room-header, .room-body, .room-footer,
+  .member-row, .member-item, .members-list,
+  .add-member-form, .invite-section,
+  .sala-info, .room-info, .sala-links,
+  .sala-resources, .agenda-panel,
+  .kanban-section, .section-panel {
+    background: var(--surface-section) !important;
+    border-color: var(--surface-border) !important;
+    color: var(--text-color) !important;
+  }
+
+  /* bg-light elementos (#f9fafb) */
+  .filter-bar, .toolbar-row, .action-bar,
+  .search-wrapper, .list-wrapper {
+    background: var(--surface-section) !important;
+    color: var(--text-color) !important;
+  }
+
+  /* Textos dark (#111827 / #2c3e50) */
+  .sala-title, .room-title, .member-name,
+  .item-title, .list-title {
+    color: var(--text-color-title) !important;
+  }
+
+  /* Textos gray (#6b7280 / #7f8c8d) */
+  .sala-meta, .room-meta, .member-role,
+  .item-meta, .helper-text, .sub-text {
+    color: var(--text-color-secondary) !important;
+  }
+
+  /* Tooltip/title visible sin hover */
+  [title] { color: var(--text-color) !important; }
+}
+
+  /* Nombres de Salas (Nuevas correcciones) */
+  .sala-item { 
+    background: var(--surface-section) !important; 
+    color: var(--text-color) !important; 
+  }
+  .sala-item-info h5 { 
+    color: var(--text-color-title) !important; 
+  }
+  .grupo-header h4 { 
+    color: var(--text-color-title) !important; 
+  }
+:host-context(.app-dark) {
+  .sala-item { 
+    background: var(--surface-section) !important; 
+    color: var(--text-color) !important; 
+  }
+  .sala-item-info h5 { 
+    color: var(--text-color-title) !important; 
+  }
+  .grupo-header h4 { 
+    color: var(--text-color-title) !important; 
+  }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .contenedor {
+    padding: 15px;
+    margin: 10px;
+  }
+  .contenedor .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .sala-principal {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  .sala-principal .sala-principal-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  .salas-section .grid {
+    grid-template-columns: 1fr;
+  }
+}
+

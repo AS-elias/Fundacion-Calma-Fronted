@@ -42,18 +42,6 @@ export const routes: Routes = [
         path: 'dashboard',
         children: [
           {
-            path: 'admin-dashboard',
-            component: AdminComponent,
-            canActivate: [adminGuard],
-          },
-          {
-            path: 'admin-dashboard/usuarios',
-            loadComponent: () =>
-              import('./modules/dashboard/pages/admin/usuarios/lista-usuarios/lista-usuarios.component')
-                .then(m => m.ListaUsuariosComponent),
-            canActivate: [adminGuard],
-          },
-          {
             path: 'admin-dashboard/usuarios/registro',
             loadComponent: () =>
               import('./modules/dashboard/pages/admin/usuarios/registro/registro-usuario.component')
@@ -65,6 +53,18 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./modules/dashboard/pages/admin/usuarios/editar/editar-usuario.component')
                 .then(m => m.EditarUsuarioComponent),
+            canActivate: [adminGuard],
+          },
+          {
+            path: 'admin-dashboard/usuarios',
+            loadComponent: () =>
+              import('./modules/dashboard/pages/admin/usuarios/lista-usuarios/lista-usuarios.component')
+                .then(m => m.ListaUsuariosComponent),
+            canActivate: [adminGuard],
+          },
+          {
+            path: 'admin-dashboard',
+            component: AdminComponent,
             canActivate: [adminGuard],
           },
           {

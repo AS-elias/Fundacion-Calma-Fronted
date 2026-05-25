@@ -10,6 +10,8 @@ export interface Documento {
   url: string;
   icono?: string;
   fecha?: Date;
+  esCarpeta?: boolean;
+  padreId?: number | null;
 }
 
 export interface Bloque {
@@ -59,6 +61,7 @@ export class RepositorioService {
     bloqueId: number,
     nombre: string,
     url: string,
+    padreId?: number | null
   ): Observable<Documento> {
     return this.http.post<Documento>(
       `${this.apiUrl}/enlace`,
@@ -66,14 +69,32 @@ export class RepositorioService {
         bloqueId,
         nombre,
         url,
+        padreId
       },
       { headers: this.authService.getAuthHeaders() },
     );
   }
 
+  crearCarpeta(
+    bloqueId: number,
+    nombre: string,
+    padreId?: number | null
+  ): Observable<Documento> {
+    return this.http.post<Documento>(
+      `${this.apiUrl}/carpeta`,
+      {
+        bloqueId,
+        nombre,
+        padreId
+      },
+      { headers: this.authService.getAuthHeaders() }
+    );
+  }
+
   subirDocumento(
     bloqueId: number,
-    archivo: File
+    archivo: File,
+    padreId?: number | null
   ): Observable<any> {
 
     const formData = new FormData();
@@ -84,6 +105,10 @@ export class RepositorioService {
       'bloqueId',
       bloqueId.toString()
     );
+
+    if (padreId) {
+      formData.append('padreId', padreId.toString());
+    }
 
     return this.subirArchivo(formData);
   }
@@ -97,6 +122,14 @@ export class RepositorioService {
 
   eliminarDocumento(id: number): Observable<void> {
     return this.eliminar(id);
+  }
+
+  moverDocumento(id: number, padreId: number | null, esCarpeta: boolean): Observable<Documento> {
+    return this.http.put<Documento>(
+      `${this.apiUrl}/${id}/mover`,
+      { padreId, esCarpeta },
+      { headers: this.authService.getAuthHeaders() }
+    );
   }
 
   private normalizarArchivoUrl(url: string): string {

@@ -1,6 +1,6 @@
 <div class="chat-container">
 
-    <aside class="chat-sidebar">
+    <aside class="chat-sidebar" [class.mobile-hidden]="chatManagement.contactoActivo()">
         <div class="sidebar-header">
             <div class="sidebar-title">
                 <h2>Comunicaciones</h2>
@@ -55,6 +55,9 @@
 
         <header class="chat-header">
             <div class="user-info">
+                <button class="icon-btn back-btn mobile-only" (click)="cerrarChatActual()" title="Volver">
+                    <i class="pi pi-arrow-left"></i>
+                </button>
                 <div class="avatar" [ngClass]="chatManagement.contactoActivo()!.colorBg">
                     <img *ngIf="$any(chatManagement.contactoActivo()).avatarUrl" [src]="$any(chatManagement.contactoActivo()).avatarUrl" class="avatar-img">
                     <span *ngIf="!$any(chatManagement.contactoActivo()).avatarUrl">{{ chatManagement.contactoActivo()!.iniciales }}</span>
@@ -288,7 +291,7 @@
     </aside>
     
     <!-- Estado vacío / Placeholder -->
-    <main class="chat-main empty-state-container" *ngIf="!chatManagement.contactoActivo()">
+    <main class="chat-main empty-state-container mobile-hidden" *ngIf="!chatManagement.contactoActivo()">
         <div class="empty-state-content">
             <div class="empty-icon-circle">
                 <i class="pi pi-comments"></i>

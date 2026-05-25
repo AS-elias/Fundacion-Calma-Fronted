@@ -1,5 +1,6 @@
 /* src/styles.scss */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;700;900&display=swap');
 @import "primeicons/primeicons.css";
 
 /* reset box-sizing to prevent accidental overflow */
@@ -22,7 +23,8 @@
 
   --font-family: 'Inter', sans-serif;
   --font-navbar: 'Inter', sans-serif;
-  --font-layout: 'Inria Sans', sans-serif;
+  --font-layout: 'Inter', sans-serif;
+  --font-title: 'Inknut Antiqua', serif;
 
   /* --- Tema Claro (Light Mode) --- */
   --bg-admin: #F4F7F9;
@@ -33,6 +35,8 @@
   /* Fondo de tarjetas, sidebar y header */
   --surface-border: #e6e6e6;
   /* Bordes de secciones */
+  --surface-card: #ffffff;
+  --surface-muted: #f8fafc;
   --text-color: #333333;
   /* Texto principal */
   --text-color-secondary: rgba(0, 0, 0, 0.57);
@@ -40,265 +44,1319 @@
   --text-color-title: #111827;
   /* Títulos fuertes */
   --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-}
-
-/* --- Tema Oscuro (Dark Mode) --- */
+}/* --- Tema Oscuro (Dark Mode) Premium --- */
 :root.app-dark {
-  --bg-admin: #0b0b0c;
-  /* Fondo más oscuro de la página */
-  --surface-ground: #0b0b0c;
-  /* Fondo del layout principal en dark mode */
-  --surface-section: #151517;
-  /* Fondo de tarjetas, sidebar y header oscuros */
-  --surface-border: #2a2a2d;
-  /* Bordes oscuros */
-  --text-color: #e7e7ea;
-  /* Texto principal claro */
-  --text-color-secondary: #a0a0a8;
-  /* Menús oscuros con letras legibles */
-  --text-color-title: #f8fafc;
-  /* Títulos fuertes blancos */
-  --card-shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
+  --bg-admin: #050505; /* Negro profundo */
+  --surface-ground: #0a0a0a; /* Negro base */
+  --surface-section: #141414; /* Gris ultra oscuro para tarjetas */
+  --surface-border: #262626; /* Bordes sutiles */
+  --surface-card: #171717; /* Tarjetas elevadas */
+  --surface-muted: #111111; /* Fondos tenues */
+  --text-color: #e5e5e5; /* Texto claro */
+  --text-color-secondary: #a3a3a3; /* Texto secundario */
+  --text-color-title: #ffffff; /* Títulos blancos puros */
+  --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+  --primary-btn: #4EB3E4;
+  --primary-hover: #3a9bc9;
 }
 
 body {
   margin: 0;
-  font-family: var(--font-family);
-  -webkit-font-smoothing: antialiased;
   font-family: var(--font-layout);
+  -webkit-font-smoothing: antialiased;
   background-color: var(--bg-admin);
   color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  color: var(--text-color-title);
+}
+
+p, span, div, label, input, textarea {
+  font-family: var(--font-layout);
+}
+
+/* Transiciones suaves */
+*, *::before, *::after {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+input, textarea, select {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ============================================================
+   DARK MODE — REGLAS GLOBALES COMPLETAS
+   Cubren todos los colores hardcodeados de componentes individuales
+   ============================================================ */
+
+/* 1. FONDO GENERAL — todas las páginas y contenedores */
 :root.app-dark body,
 :root.app-dark .layout-wrapper,
 :root.app-dark .layout-main,
-:root.app-dark .content-area {
-  background: var(--surface-ground);
-  color: var(--text-color);
-}
-
-:root.app-dark :where(
-  .page-container,
-  .dashboard-container,
-  .user-dashboard-container,
-  .notificaciones-container,
-  .contenedor,
-  .comunidad-container,
-  .container,
-  .analisis-page,
-  .estrategia-page,
-  .chat-container,
-  .registro-container,
-  .edit-container,
-  .lista-container
-) {
+:root.app-dark .content-area,
+:root.app-dark .page-container,
+:root.app-dark .dashboard-container,
+:root.app-dark .user-dashboard-container,
+:root.app-dark .notificaciones-container,
+:root.app-dark .contenedor,
+:root.app-dark .comunidad-container,
+:root.app-dark .container,
+:root.app-dark .analisis-page,
+:root.app-dark .estrategia-page,
+:root.app-dark .chat-container,
+:root.app-dark .registro-container,
+:root.app-dark .edit-container,
+:root.app-dark .lista-container,
+:root.app-dark .repositorio-container,
+:root.app-dark .salas-container,
+:root.app-dark .salas-page,
+:root.app-dark .page-wrapper,
+:root.app-dark .main-content {
   background: var(--surface-ground) !important;
   color: var(--text-color) !important;
 }
 
-:root.app-dark :where(
-  .card,
-  .stat-card,
-  .detail-box,
-  .calendar-card,
-  .task-card,
-  .contact-card,
-  .card-table,
-  .card-form,
-  .form-card,
-  .modal-content,
-  .modal-box,
-  .modal-clean,
-  .modal-detalle-box,
-  .modal-notificacion-box,
-  .confirm-card,
-  .task-detail-modal,
-  .task-form-modal,
-  .registro-modal,
-  .social-card,
-  .item,
-  .empty-state,
-  .panel-card,
-  .board,
-  .task-detail__hero,
-  .task-detail__block,
-  .task-detail__meta,
-  .task-detail__links,
-  .chat-sidebar,
-  .chat-main,
-  .login-card
-) {
+/* 2. TARJETAS Y PANELES */
+:root.app-dark .card,
+:root.app-dark .stat-card,
+:root.app-dark .contact-card,
+:root.app-dark .social-card,
+:root.app-dark .panel-card,
+:root.app-dark .detail-box,
+:root.app-dark .calendar-card,
+:root.app-dark .task-card,
+:root.app-dark .card-table,
+:root.app-dark .card-form,
+:root.app-dark .form-card,
+:root.app-dark .item,
+:root.app-dark .empty-state,
+:root.app-dark .board,
+:root.app-dark .login-card,
+:root.app-dark .chat-sidebar,
+:root.app-dark .chat-main,
+:root.app-dark .task-detail__hero,
+:root.app-dark .task-detail__block,
+:root.app-dark .task-detail__meta,
+:root.app-dark .task-detail__links,
+:root.app-dark .channel-panel,
+:root.app-dark .room-card,
+:root.app-dark .notif-item,
+:root.app-dark .notificacion-item,
+:root.app-dark .repo-card,
+:root.app-dark .sala-card,
+:root.app-dark .user-card,
+:root.app-dark .glass-card,
+:root.app-dark .info-card,
+:root.app-dark .kpi-card,
+:root.app-dark .area-card,
+:root.app-dark .summary-card,
+:root.app-dark .filter-card {
   background: var(--surface-section) !important;
   border-color: var(--surface-border) !important;
   color: var(--text-color) !important;
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--card-shadow) !important;
 }
 
-:root.app-dark :where(
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  .page-title,
-  .title,
-  .doc-link,
-  .header h2,
-  .header-section h1,
-  .header-section h2,
-  .modal-header h3,
-  .modal-detalle-box h3,
-  .modal-notificacion-header h3,
-  .contenido h4,
-  .user-text strong
-) {
+/* 3. TEXTO — título, normal y secundario */
+:root.app-dark h1,
+:root.app-dark h2,
+:root.app-dark h3,
+:root.app-dark h4,
+:root.app-dark h5,
+:root.app-dark h6,
+:root.app-dark .title,
+:root.app-dark .page-title,
+:root.app-dark .section-title,
+:root.app-dark strong,
+:root.app-dark b {
   color: var(--text-color-title) !important;
 }
 
-:root.app-dark :where(
-  p,
-  small,
-  span,
-  label,
-  .subtitle,
-  .subtitulo,
-  .page-subtitle,
-  .mensaje-resumen,
-  .fecha,
-  .fecha-detalle,
-  .muted,
-  .empty,
-  .contador,
-  .form-group label
-) {
-  color: var(--text-color-secondary);
+:root.app-dark p,
+:root.app-dark span,
+:root.app-dark li,
+:root.app-dark td,
+:root.app-dark th,
+:root.app-dark label,
+:root.app-dark .text,
+:root.app-dark .nombre,
+:root.app-dark .name,
+:root.app-dark .area,
+:root.app-dark .role,
+:root.app-dark .rol,
+:root.app-dark .detail {
+  color: var(--text-color) !important;
 }
 
-:root.app-dark :where(
-  input,
-  textarea,
-  select,
-  .search-box,
-  .search-bar,
-  .form,
-  .upload-box label,
-  .mensaje-detalle,
-  .modal-message,
-  .comment-box,
-  .history-panel,
-  .comments-panel,
-  .info-grid input,
-  .info-grid select,
-  .registro-search,
-  .registro-filter,
-  .registro-table__cell-input,
-  .registro-table__cell-select,
-  .task-detail__value,
-  .activity-detail__value,
-  .activity-detail__panel,
-  .activity-detail__link
-) {
-  background: #101012 !important;
+:root.app-dark small,
+:root.app-dark .muted,
+:root.app-dark .subtitle,
+:root.app-dark .fecha,
+:root.app-dark .timestamp,
+:root.app-dark .meta,
+:root.app-dark .caption {
+  color: var(--text-color-secondary) !important;
+}
+
+/* 4. INPUTS, SELECTS, TEXTAREAS */
+:root.app-dark input:not([type='submit']):not([type='button']):not([type='checkbox']):not([type='radio']),
+:root.app-dark textarea,
+:root.app-dark select,
+:root.app-dark .p-inputtext,
+:root.app-dark .p-dropdown,
+:root.app-dark .search-box,
+:root.app-dark .search-bar input {
+  background: #0d0d0d !important;
   border-color: var(--surface-border) !important;
   color: var(--text-color) !important;
 }
 
-:root.app-dark :where(input, textarea, select)::placeholder {
-  color: #777780 !important;
+:root.app-dark input::placeholder,
+:root.app-dark textarea::placeholder {
+  color: #666666 !important;
 }
 
-:root.app-dark :where(
-  table,
-  thead,
-  tbody,
-  tr,
-  th,
-  td,
-  .custom-table,
-  .registro-table
-) {
+/* 5. TABLAS */
+:root.app-dark table,
+:root.app-dark thead,
+:root.app-dark tbody,
+:root.app-dark tr,
+:root.app-dark th,
+:root.app-dark td {
   background: var(--surface-section) !important;
   border-color: var(--surface-border) !important;
   color: var(--text-color) !important;
 }
-
-:root.app-dark :where(thead, th, .registro-table thead) {
-  background: #101012 !important;
+:root.app-dark thead tr,
+:root.app-dark th {
+  background: #0d0d0d !important;
   color: var(--text-color-title) !important;
 }
 
-:root.app-dark :where(
-  .btn-close,
-  .close,
-  .btn-cerrar-x,
-  .btn.cancel,
-  .btn-cancelar,
-  .cancel-btn,
-  .task-detail__back,
-  .task-form__cancel,
-  .activity-form__cancel,
-  .filtro,
-  .tab-btn,
-  .page-tab,
-  .icon-btn.ghost,
-  .empty-icon
-) {
-  background: #101012 !important;
+/* 6. MENSAJES DE CHAT — bubble received */
+:root.app-dark .bubble,
+:root.app-dark .message-bubble,
+:root.app-dark .received .bubble,
+:root.app-dark .received .bubble-row .bubble,
+:root.app-dark .msg-received {
+  background: var(--surface-section) !important;
+  color: var(--text-color) !important;
+}
+
+/* 7. MODALES Y OVERLAYS */
+:root.app-dark .modal-content,
+:root.app-dark .modal-box,
+:root.app-dark .modal-clean,
+:root.app-dark .modal-detalle-box,
+:root.app-dark .modal-notificacion-box,
+:root.app-dark .confirm-card,
+:root.app-dark .task-detail-modal,
+:root.app-dark .task-form-modal,
+:root.app-dark .registro-modal,
+:root.app-dark .p-dialog-content,
+:root.app-dark .p-dialog-header,
+:root.app-dark .p-dialog {
+  background: var(--surface-section) !important;
   border-color: var(--surface-border) !important;
   color: var(--text-color) !important;
 }
 
-:root.app-dark :where(
-  .modal,
-  .overlay,
-  .modal-detalle,
-  .modal-notificacion,
-  .confirm-overlay,
-  .task-form-overlay,
-  .task-detail-overlay,
-  .registro-overlay
-) {
-  background: rgba(2, 6, 23, 0.72) !important;
+/* 8. SIDEBAR Y NAVBAR */
+:root.app-dark .sidebar,
+:root.app-dark .app-sidebar,
+:root.app-dark .layout-sidebar,
+:root.app-dark .navbar,
+:root.app-dark .navbar-container,
+:root.app-dark .header,
+:root.app-dark .app-header {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
 }
 
-:root.app-dark :where(
-  .link-chip,
-  .item-meta span,
-  .modal-icon,
-  .modal-icono,
-  .icono,
-  .item-icon,
-  .upload-icon,
-  .icon.doc,
-  .btn-leido
-) {
-  background: rgba(6, 182, 212, 0.14) !important;
-  color: #67e8f9 !important;
-  border-color: rgba(103, 232, 249, 0.24) !important;
+/* 9. BOTONES NEUTROS (no de acción primaria) */
+:root.app-dark .btn-cancel,
+:root.app-dark .btn-cancelar,
+:root.app-dark .cancel-btn,
+:root.app-dark .tab-btn:not(.active),
+:root.app-dark .page-tab:not(.active),
+:root.app-dark .filtro:not(.active) {
+  background: #1a1a1a !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
 }
 
-:root.app-dark :where(.delete, .btn-eliminar) {
-  background: rgba(239, 68, 68, 0.12) !important;
-  border-color: rgba(248, 113, 113, 0.22) !important;
+/* 10. BADGES Y CHIPS */
+:root.app-dark .area-badge,
+:root.app-dark .role-badge,
+:root.app-dark .badge,
+:root.app-dark .chip,
+:root.app-dark .tag {
+  background: #1a1a1a !important;
+  color: var(--text-color) !important;
+  border-color: var(--surface-border) !important;
+}
+
+/* 11. SCROLLBAR */
+:root.app-dark ::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+:root.app-dark ::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+}
+:root.app-dark ::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+/* 12. LINKS */
+:root.app-dark a:not([class*='btn']):not([class*='button']) {
+  color: #4EB3E4;
+}
+
+/* 13. FONDOS DE COLOR — filas alternas, status pills */
+:root.app-dark [style*="background: #f"],
+:root.app-dark [style*="background-color: #f"],
+:root.app-dark [style*="background:#f"] {
+  background: var(--surface-section) !important;
+}
+
+/* 14. ESTRATEGIA-PAGE DARK MODE ESPECÍFICO */
+/* Modales y diálogos */
+:root.app-dark .estrategia-page .activity-modal__dialog {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+/* Formularios - Inputs */
+:root.app-dark .estrategia-page .activity-form__field input,
+:root.app-dark .estrategia-page .activity-form__field select,
+:root.app-dark .estrategia-page .activity-form__field textarea {
+  background: #0d0d0d !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark .estrategia-page .activity-form__field input::placeholder,
+:root.app-dark .estrategia-page .activity-form__field textarea::placeholder {
+  color: #666666 !important;
+}
+
+:root.app-dark .estrategia-page .activity-form__field p {
+  color: var(--text-color-secondary) !important;
+}
+
+:root.app-dark .estrategia-page .activity-form__field input:focus,
+:root.app-dark .estrategia-page .activity-form__field select:focus,
+:root.app-dark .estrategia-page .activity-form__field textarea:focus {
+  border-color: #6bc4eb !important;
+  box-shadow: 0 0 0 3px rgba(107, 196, 235, 0.18) !important;
+}
+
+/* Botones del formulario */
+:root.app-dark .estrategia-page .activity-form__add-link {
+  background: #3a9bc9 !important;
+  color: #ffffff !important;
+}
+
+:root.app-dark .estrategia-page .activity-form__cancel {
+  background: #1a1a1a !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--surface-border) !important;
+}
+
+:root.app-dark .estrategia-page .activity-form__submit {
+  background: #4EB3E4 !important;
+  color: #050505 !important;
+}
+
+/* Paneles de detalle */
+:root.app-dark .estrategia-page .activity-detail__panel,
+:root.app-dark .estrategia-page .activity-detail__value,
+:root.app-dark .estrategia-page .activity-detail__link {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark .estrategia-page .activity-detail__panel p,
+:root.app-dark .estrategia-page .activity-detail__empty {
+  color: var(--text-color-secondary) !important;
+}
+
+:root.app-dark .estrategia-page .activity-detail__value {
+  color: var(--text-color) !important;
+}
+
+:root.app-dark .estrategia-page .activity-detail__link {
+  color: var(--text-color) !important;
+}
+
+/* Tarjetas de confirmación */
+:root.app-dark .estrategia-page .confirm-card {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark .estrategia-page .confirm-card h4 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark .estrategia-page .confirm-card p {
+  color: var(--text-color) !important;
+}
+
+:root.app-dark .estrategia-page .confirm-card .muted {
+  color: var(--text-color-secondary) !important;
+}
+
+/* Botones de confirmación */
+:root.app-dark .estrategia-page .confirm-actions .cancel-btn {
+  background: #1a1a1a !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--surface-border) !important;
+}
+
+:root.app-dark .estrategia-page .confirm-actions .delete-btn {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+/* Notificaciones Toast */
+:root.app-dark .estrategia-page .toast-notificacion--success {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  color: #86efac !important;
+}
+
+:root.app-dark .estrategia-page .toast-notificacion--error {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
   color: #fca5a5 !important;
 }
 
-:root.app-dark :where(.toast-notificacion--success) {
-  background: #052e2a !important;
-  border-color: #0f766e !important;
-  color: #a7f3d0 !important;
+/* 15. OTROS COMPONENTES CON COLORES HARDCODEADOS */
+/* Navbar */
+:root.app-dark .navbar,
+:root.app-dark .navbar-header,
+:root.app-dark .navbar-menu,
+:root.app-dark .navbar-user,
+:root.app-dark .navbar-search,
+:root.app-dark .navbar-notifications {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
 }
 
-:root.app-dark :where(.toast-notificacion--error) {
-  background: #3b1218 !important;
-  border-color: #b91c1c !important;
-  color: #fecaca !important;
+:root.app-dark .navbar a,
+:root.app-dark .navbar button,
+:root.app-dark .navbar-item {
+  color: var(--text-color) !important;
 }
 
-:root.app-dark a:not(.btn-nueva):not(.btn-add):not(.btn-download):not(.detalle-link):not(.modal-link) {
-  color: #67e8f9;
+:root.app-dark [style*="color: #ffffff"],
+:root.app-dark [style*="color: #fff"],
+:root.app-dark [style*="color: white"] {
+  color: var(--text-color) !important;
 }
+
+/* Textos en botones e items con fondo de color */
+:root.app-dark .btn:not([style*="background: #4EB3E4"]) *,
+:root.app-dark .item-card *,
+:root.app-dark .card-item * {
+  color: var(--text-color) !important;
+}
+
+/* Capturar TODOS los inline styles con colores blancos */
+:root.app-dark [style*="color: #ffffff"],
+:root.app-dark [style*="color: #fff"],
+:root.app-dark [style*="color: white"],
+:root.app-dark [style*="color:#ffffff"],
+:root.app-dark [style*="color:#fff"],
+:root.app-dark [style*="color:white"] {
+  color: var(--text-color) !important;
+}
+
+:root.app-dark [style*="background: #fff"],
+:root.app-dark [style*="background: #ffffff"],
+:root.app-dark [style*="background: white"],
+:root.app-dark [style*="background:#fff"],
+:root.app-dark [style*="background:#ffffff"],
+:root.app-dark [style*="background:white"] {
+  background: var(--surface-section) !important;
+}
+
+/* Capturar colores grisáceos claros que deben ser oscuros */
+:root.app-dark [style*="color: #e5e7eb"],
+:root.app-dark [style*="color: #ececec"],
+:root.app-dark [style*="color: #f3f4f6"],
+:root.app-dark [style*="background: #e5e7eb"],
+:root.app-dark [style*="background: #ececec"],
+:root.app-dark [style*="background: #f3f4f6"],
+:root.app-dark [style*="background: #f9fafb"] {
+  background: var(--surface-section) !important;
+  color: var(--text-color) !important;
+}
+
+/* Capturar colores oscuros que deben ser claros en dark mode */
+:root.app-dark [style*="color: #111"],
+:root.app-dark [style*="color: #222"],
+:root.app-dark [style*="color: #333"] {
+  color: var(--text-color) !important;
+}
+
+/* Fixear colores blanco específicos en selectores comunes */
+:root.app-dark button,
+:root.app-dark a,
+:root.app-dark span,
+:root.app-dark label {
+  /* Solo aplicar si el texto es blanco específicamente */
+}
+
+/* Títulos y headings en dark mode */
+:root.app-dark .page-title,
+:root.app-dark .section-title,
+:root.app-dark .card-title,
+:root.app-dark .modal-title {
+  color: var(--text-color-title) !important;
+}
+
+/* Notificaciones y alertas */
+:root.app-dark .alert,
+:root.app-dark .alert-info,
+:root.app-dark .alert-success,
+:root.app-dark .alert-error,
+:root.app-dark .alert-warning {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+/* Todas las reglas de overlay y modales adicionales */
+:root.app-dark .overlay,
+:root.app-dark .modal-backdrop {
+  background: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* 16. REPOSITORIO Y SALAS DE TRABAJO - COLORES CLAROS */
+/* Fondos muy claros que causan problemas de legibilidad */
+:root.app-dark [style*="background: #f8fcfd"],
+:root.app-dark [style*="background: #f9fafb"],
+:root.app-dark [style*="background: #f3f4f6"],
+:root.app-dark [style*="background:#f8fcfd"],
+:root.app-dark [style*="background:#f9fafb"],
+:root.app-dark [style*="background:#f3f4f6"] {
+  background: var(--surface-section) !important;
+  color: var(--text-color) !important;
+}
+
+/* Kanban columns - Estrategia Comercial */
+:root.app-dark .kanban-column--pendiente,
+:root.app-dark .kanban-column--progreso,
+:root.app-dark .kanban-column--revision,
+:root.app-dark .kanban-column--ejecucion,
+:root.app-dark .kanban-column--finalizado,
+:root.app-dark .kanban-column--paralizado,
+:root.app-dark .kanban-column--completado {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+}
+
+/* Kanban badges */
+:root.app-dark .kanban-badge--pendiente,
+:root.app-dark .kanban-badge--progreso,
+:root.app-dark .kanban-badge--revision,
+:root.app-dark .kanban-badge--ejecucion,
+:root.app-dark .kanban-badge--finalizado,
+:root.app-dark .kanban-badge--paralizado,
+:root.app-dark .kanban-badge--completado {
+  background: var(--surface-muted) !important;
+  color: var(--text-color) !important;
+  border-color: var(--surface-border) !important;
+}
+
+/* Colores específicos para badges que deben mantener su tono pero con mejor contraste */
+:root.app-dark .kanban-badge--progreso {
+  background: rgba(255, 180, 0, 0.2) !important;
+  color: #fbbf24 !important;
+}
+
+:root.app-dark .kanban-badge--revision {
+  background: rgba(255, 146, 45, 0.2) !important;
+  color: #fb923c !important;
+}
+
+:root.app-dark .kanban-badge--ejecucion {
+  background: rgba(61, 187, 194, 0.2) !important;
+  color: #22d3ee !important;
+}
+
+:root.app-dark .kanban-badge--finalizado {
+  background: rgba(168, 140, 114, 0.2) !important;
+  color: #d7ccc8 !important;
+}
+
+:root.app-dark .kanban-badge--paralizado {
+  background: rgba(235, 77, 77, 0.2) !important;
+  color: #fca5a5 !important;
+}
+
+:root.app-dark .kanban-badge--completado {
+  background: rgba(31, 177, 79, 0.2) !important;
+  color: #86efac !important;
+}
+
+/* Repositorio - Títulos y secciones */
+:root.app-dark .repositorio-container,
+:root.app-dark .repo-init,
+:root.app-dark .repo-section {
+  background: var(--surface-ground) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark .repo-init h2,
+:root.app-dark .repo-section h2 {
+  color: var(--text-color-title) !important;
+}
+
+/* Salas de Trabajo - Títulos y fondos */
+:root.app-dark .salas-page h2,
+:root.app-dark .salas-container h2,
+:root.app-dark .sala-title {
+  color: var(--text-color-title) !important;
+}
+
+/* Fondos claros en tablas y listas */
+:root.app-dark .repositorio-container table tbody tr:nth-child(odd),
+:root.app-dark .salas-page table tbody tr:nth-child(odd) {
+  background: var(--surface-muted) !important;
+}
+
+/* Colores de etiquetas/badges de estado */
+:root.app-dark [style*="background: #fee2e2"],
+:root.app-dark [style*="background: #fca5a5"],
+:root.app-dark [style*="background:#fee2e2"],
+:root.app-dark [style*="background:#fca5a5"] {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
+}
+
+/* Tabs y navegación */
+:root.app-dark .nav-tabs,
+:root.app-dark .tab-button,
+:root.app-dark [role="tab"] {
+  background: var(--surface-muted) !important;
+  color: var(--text-color) !important;
+  border-color: var(--surface-border) !important;
+}
+
+:root.app-dark .nav-tabs .active,
+:root.app-dark .tab-button.active,
+:root.app-dark [role="tab"][aria-selected="true"] {
+  background: var(--surface-section) !important;
+  color: var(--text-color-title) !important;
+  border-color: #4EB3E4 !important;
+}
+
+/* Contenedores de análisis */
+:root.app-dark .analisis-page,
+:root.app-dark .analisis-container {
+  background: var(--surface-ground) !important;
+  color: var(--text-color) !important;
+  --panel-border: var(--surface-border);
+  --panel-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+  --text-main: var(--text-color);
+}
+
+:root.app-dark .analisis-page h2,
+:root.app-dark .analisis-container h2 {
+  color: var(--text-color-title) !important;
+}
+
+/* Panel Cards - Análisis */
+:root.app-dark .panel-card {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark .panel-card__body h3 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark .panel-card__body p {
+  color: var(--text-color-secondary) !important;
+}
+
+:root.app-dark .panel-card__link {
+  color: var(--text-color) !important;
+}
+
+:root.app-dark .panel-card__link:hover,
+:root.app-dark .panel-card__link--active {
+  background: rgba(78, 179, 228, 0.15) !important;
+  color: #4EB3E4 !important;
+}
+
+/* Panel Card Icons - Colores claros que necesitan contraste */
+:root.app-dark .panel-card__icon--estrategico,
+:root.app-dark .panel-card__tag--estrategico {
+  background: rgba(22, 147, 229, 0.2) !important;
+  color: #60a5fa !important;
+}
+
+:root.app-dark .panel-card__icon--comercial,
+:root.app-dark .panel-card__tag--comercial {
+  background: rgba(20, 152, 91, 0.2) !important;
+  color: #34d399 !important;
+}
+
+:root.app-dark .panel-card__icon--espacios,
+:root.app-dark .panel-card__tag--espacios {
+  background: rgba(161, 44, 246, 0.2) !important;
+  color: #c084fc !important;
+}
+
+:root.app-dark .panel-card__icon--comunicacion,
+:root.app-dark .panel-card__tag--comunicacion {
+  background: rgba(242, 153, 37, 0.2) !important;
+  color: #fbbf24 !important;
+}
+
+/* Boards */
+:root.app-dark .board {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark .board__header h2 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark .board__content {
+  color: var(--text-color) !important;
+}
+
+/* Colores específicos de fondos claros */
+:root.app-dark [style*="background: #e8f2ff"],
+:root.app-dark [style*="background: #e8f8ee"],
+:root.app-dark [style*="background: #f2e8ff"],
+:root.app-dark [style*="background: #fff1df"],
+:root.app-dark [style*="background: #def1ff"],
+:root.app-dark [style*="background:#e8f2ff"],
+:root.app-dark [style*="background:#e8f8ee"],
+:root.app-dark [style*="background:#f2e8ff"],
+:root.app-dark [style*="background:#fff1df"],
+:root.app-dark [style*="background:#def1ff"] {
+  background: var(--surface-muted) !important;
+  color: var(--text-color) !important;
+}
+
+/* Colores oscuros que necesitan ser claros */
+:root.app-dark [style*="color: #1c2433"],
+:root.app-dark [style*="color: #6b7895"],
+:root.app-dark [style*="color: #5d6980"],
+:root.app-dark [style*="color: #5b6474"],
+:root.app-dark [style*="color: #49566a"],
+:root.app-dark [style*="color:#1c2433"],
+:root.app-dark [style*="color:#6b7895"],
+:root.app-dark [style*="color:#5d6980"],
+:root.app-dark [style*="color:#5b6474"],
+:root.app-dark [style*="color:#49566a"] {
+  color: var(--text-color) !important;
+}
+
+/* Repositorio - Sección Inicio */
+:root.app-dark .repo-init,
+:root.app-dark .repo-inicio,
+:root.app-dark .repo-start {
+  background: var(--surface-ground) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark .repo-init h2,
+:root.app-dark .repo-init h3,
+:root.app-dark .repo-inicio h2,
+:root.app-dark .repo-inicio h3,
+:root.app-dark .repo-start h2,
+:root.app-dark .repo-start h3 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark .repo-init p,
+:root.app-dark .repo-init span,
+:root.app-dark .repo-init label,
+:root.app-dark .repo-inicio p,
+:root.app-dark .repo-inicio span,
+:root.app-dark .repo-inicio label,
+:root.app-dark .repo-start p,
+:root.app-dark .repo-start span,
+:root.app-dark .repo-start label {
+  color: var(--text-color) !important;
+}
+
+/* Salas de Trabajo - Títulos visibles */
+:root.app-dark .salas-page .sala-title,
+:root.app-dark .salas-page .room-title,
+:root.app-dark .salas-page .team-title,
+:root.app-dark .salas-container .sala-title,
+:root.app-dark .salas-container .room-title,
+:root.app-dark .salas-container .team-title {
+  color: var(--text-color-title) !important;
+  background: var(--surface-section) !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Salas de Trabajo - Cards */
+:root.app-dark .salas-page .sala-card,
+:root.app-dark .salas-page .room-card,
+:root.app-dark .salas-page .team-card,
+:root.app-dark .salas-container .sala-card,
+:root.app-dark .salas-container .room-card,
+:root.app-dark .salas-container .team-card {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+/* Salas de Trabajo - Textos en cards */
+:root.app-dark .salas-page .sala-name,
+:root.app-dark .salas-page .room-name,
+:root.app-dark .salas-page .team-name,
+:root.app-dark .salas-container .sala-name,
+:root.app-dark .salas-container .room-name,
+:root.app-dark .salas-container .team-name {
+  color: var(--text-color-title) !important;
+  font-weight: 600 !important;
+}
+
+/* Desarrollo Comercial - Títulos y fondos */
+:root.app-dark .desarrollo-comercial,
+:root.app-dark .desarrollo-comercial-page {
+  background: var(--surface-ground) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark .desarrollo-comercial h2,
+:root.app-dark .desarrollo-comercial h3,
+:root.app-dark .desarrollo-comercial-page h2,
+:root.app-dark .desarrollo-comercial-page h3 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark .desarrollo-comercial p,
+:root.app-dark .desarrollo-comercial span,
+:root.app-dark .desarrollo-comercial-page p,
+:root.app-dark .desarrollo-comercial-page span {
+  color: var(--text-color) !important;
+}
+
+/* Estrategia Comercial - Títulos y fondos */
+:root.app-dark .estrategia-comercial,
+:root.app-dark .estrategia-comercial-page {
+  background: var(--surface-ground) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark .estrategia-comercial h2,
+:root.app-dark .estrategia-comercial h3,
+:root.app-dark .estrategia-comercial-page h2,
+:root.app-dark .estrategia-comercial-page h3 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark .estrategia-comercial p,
+:root.app-dark .estrategia-comercial span,
+:root.app-dark .estrategia-comercial-page p,
+:root.app-dark .estrategia-comercial-page span {
+  color: var(--text-color) !important;
+}
+
+/* SALAS DE TRABAJO - DARK MODE COMPLETO */
+:root.app-dark app-salas-trabajo {
+  background: var(--surface-ground) !important;
+  color: var(--text-color) !important;
+  --text-dark: var(--text-color-title);
+  --text-gray: var(--text-color-secondary);
+  --bg-light: var(--surface-section);
+  --border-color: var(--surface-border);
+  --border-darker: var(--surface-border);
+}
+
+:root.app-dark app-salas-trabajo .contenedor {
+  background: var(--surface-ground) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark app-salas-trabajo .header {
+  border-color: var(--surface-border) !important;
+}
+
+:root.app-dark app-salas-trabajo .header .titulo h2 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark app-salas-trabajo .header .titulo p {
+  color: var(--text-color-secondary) !important;
+}
+
+/* Sala Principal */
+:root.app-dark app-salas-trabajo .sala-principal {
+  background: rgba(78, 179, 228, 0.08) !important;
+  border-color: #4EB3E4 !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark app-salas-trabajo .sala-principal h3 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark app-salas-trabajo .sala-principal p {
+  color: var(--text-color-secondary) !important;
+}
+
+:root.app-dark app-salas-trabajo .sala-principal .btn-entrar,
+:root.app-dark app-salas-trabajo .sala-principal .btn-edit-general,
+:root.app-dark app-salas-trabajo .btn-nueva {
+  background: #4EB3E4 !important;
+  color: #050505 !important;
+}
+
+:root.app-dark app-salas-trabajo .sala-principal .btn-entrar:hover,
+:root.app-dark app-salas-trabajo .sala-principal .btn-edit-general:hover,
+:root.app-dark app-salas-trabajo .btn-nueva:hover {
+  background: #3a9bc9 !important;
+}
+
+/* Cards de salas */
+:root.app-dark app-salas-trabajo .sala-card,
+:root.app-dark app-salas-trabajo .room-card,
+:root.app-dark app-salas-trabajo .grid > div {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark app-salas-trabajo .sala-card h3,
+:root.app-dark app-salas-trabajo .room-card h3,
+:root.app-dark app-salas-trabajo .grid > div h3 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark app-salas-trabajo .sala-card p,
+:root.app-dark app-salas-trabajo .room-card p,
+:root.app-dark app-salas-trabajo .grid > div p {
+  color: var(--text-color-secondary) !important;
+}
+
+:root.app-dark app-salas-trabajo .sala-card h2,
+:root.app-dark app-salas-trabajo .room-card h2 {
+  color: var(--text-color-title) !important;
+}
+
+/* Todos los textos */
+:root.app-dark app-salas-trabajo h1,
+:root.app-dark app-salas-trabajo h2,
+:root.app-dark app-salas-trabajo h3,
+:root.app-dark app-salas-trabajo h4,
+:root.app-dark app-salas-trabajo h5,
+:root.app-dark app-salas-trabajo h6 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark app-salas-trabajo p,
+:root.app-dark app-salas-trabajo span,
+:root.app-dark app-salas-trabajo label,
+:root.app-dark app-salas-trabajo div {
+  color: var(--text-color) !important;
+}
+
+/* DESARROLLO COMERCIAL - DARK MODE COMPLETO */
+:root.app-dark app-desarrollo-comercial {
+  background: var(--surface-ground) !important;
+  color: var(--text-color) !important;
+  --text-dark: var(--text-color-title);
+  --text-gray: var(--text-color-secondary);
+  --text-light: var(--text-color-secondary);
+  --bg-light: var(--surface-section);
+  --border-color: var(--surface-border);
+  --border-darker: var(--surface-border);
+}
+
+:root.app-dark app-desarrollo-comercial .page-container,
+:root.app-dark app-desarrollo-comercial .contenedor {
+  background: var(--surface-ground) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark app-desarrollo-comercial .header {
+  border-color: var(--surface-border) !important;
+}
+
+:root.app-dark app-desarrollo-comercial .header .titulo h2 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark app-desarrollo-comercial .header .titulo p {
+  color: var(--text-color-secondary) !important;
+}
+
+/* Sala Principal */
+:root.app-dark app-desarrollo-comercial .sala-principal {
+  background: rgba(78, 179, 228, 0.08) !important;
+  border-color: #4EB3E4 !important;
+}
+
+:root.app-dark app-desarrollo-comercial .sala-principal h3 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark app-desarrollo-comercial .sala-principal p {
+  color: var(--text-color-secondary) !important;
+}
+
+:root.app-dark app-desarrollo-comercial .sala-principal .btn-entrar,
+:root.app-dark app-desarrollo-comercial .sala-principal .btn-nueva,
+:root.app-dark app-desarrollo-comercial .btn-nueva {
+  background: #4EB3E4 !important;
+  color: #050505 !important;
+}
+
+:root.app-dark app-desarrollo-comercial .sala-principal .btn-entrar:hover,
+:root.app-dark app-desarrollo-comercial .sala-principal .btn-nueva:hover,
+:root.app-dark app-desarrollo-comercial .btn-nueva:hover {
+  background: #3a9bc9 !important;
+}
+
+/* Cards */
+:root.app-dark app-desarrollo-comercial .actividad-card,
+:root.app-dark app-desarrollo-comercial .card,
+:root.app-dark app-desarrollo-comercial .grid > div {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark app-desarrollo-comercial .actividad-card h3,
+:root.app-dark app-desarrollo-comercial .card h3,
+:root.app-dark app-desarrollo-comercial .grid > div h3 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark app-desarrollo-comercial .actividad-card p,
+:root.app-dark app-desarrollo-comercial .card p,
+:root.app-dark app-desarrollo-comercial .grid > div p {
+  color: var(--text-color-secondary) !important;
+}
+
+/* Todos los textos */
+:root.app-dark app-desarrollo-comercial h1,
+:root.app-dark app-desarrollo-comercial h2,
+:root.app-dark app-desarrollo-comercial h3,
+:root.app-dark app-desarrollo-comercial h4,
+:root.app-dark app-desarrollo-comercial h5,
+:root.app-dark app-desarrollo-comercial h6 {
+  color: var(--text-color-title) !important;
+}
+
+:root.app-dark app-desarrollo-comercial p,
+:root.app-dark app-desarrollo-comercial span,
+:root.app-dark app-desarrollo-comercial label,
+:root.app-dark app-desarrollo-comercial div {
+  color: var(--text-color) !important;
+}
+
+/* Search box y otros inputs */
+:root.app-dark app-salas-trabajo .search-box,
+:root.app-dark app-desarrollo-comercial .search-box {
+  background: #0d0d0d !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark app-salas-trabajo .search-box input,
+:root.app-dark app-desarrollo-comercial .search-box input {
+  background: #0d0d0d !important;
+  color: var(--text-color) !important;
+}
+
+/* Fondos claros específicos que aparecen en estos módulos */
+:root.app-dark .salas-trabajo [style*="background: #f9fafb"],
+:root.app-dark .salas-trabajo [style*="background: #f3f4f6"],
+:root.app-dark .salas-trabajo [style*="background:#f9fafb"],
+:root.app-dark .salas-trabajo [style*="background:#f3f4f6"] {
+  background: var(--surface-section) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark .desarrollo-comercial [style*="background: #f9fafb"],
+:root.app-dark .desarrollo-comercial [style*="background: #f3f4f6"],
+:root.app-dark .desarrollo-comercial [style*="background:#f9fafb"],
+:root.app-dark .desarrollo-comercial [style*="background:#f3f4f6"],
+:root.app-dark .desarrollo-comercial-component [style*="background: #f9fafb"],
+:root.app-dark .desarrollo-comercial-component [style*="background: #f3f4f6"],
+:root.app-dark .desarrollo-comercial-component [style*="background:#f9fafb"],
+:root.app-dark .desarrollo-comercial-component [style*="background:#f3f4f6"] {
+  background: var(--surface-section) !important;
+  color: var(--text-color) !important;
+}
+
+/* Colores de texto oscuro que necesitan ser claros */
+:root.app-dark .salas-trabajo [style*="color: #111827"],
+:root.app-dark .salas-trabajo [style*="color: #6b7280"],
+:root.app-dark .salas-trabajo [style*="color: #9ca3af"],
+:root.app-dark .desarrollo-comercial [style*="color: #111827"],
+:root.app-dark .desarrollo-comercial [style*="color: #6b7280"],
+:root.app-dark .desarrollo-comercial [style*="color: #9ca3af"],
+:root.app-dark .desarrollo-comercial-component [style*="color: #111827"],
+:root.app-dark .desarrollo-comercial-component [style*="color: #6b7280"],
+:root.app-dark .desarrollo-comercial-component [style*="color: #9ca3af"] {
+  color: var(--text-color) !important;
+}
+
+/* Colores de borde claros */
+:root.app-dark .salas-trabajo [style*="border-color: #f3f4f6"],
+:root.app-dark .salas-trabajo [style*="border: #f3f4f6"],
+:root.app-dark .desarrollo-comercial [style*="border-color: #f3f4f6"],
+:root.app-dark .desarrollo-comercial [style*="border: #f3f4f6"],
+:root.app-dark .desarrollo-comercial-component [style*="border-color: #f3f4f6"],
+:root.app-dark .desarrollo-comercial-component [style*="border: #f3f4f6"] {
+  border-color: var(--surface-border) !important;
+}
+
+/* Reglas adicionales para app-salas-trabajo y app-desarrollo-comercial */
+:root.app-dark app-salas-trabajo [style*="background: #f9fafb"],
+:root.app-dark app-salas-trabajo [style*="background: #f3f4f6"],
+:root.app-dark app-salas-trabajo [style*="background: #e5e7eb"] {
+  background: var(--surface-section) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark app-desarrollo-comercial [style*="background: #f9fafb"],
+:root.app-dark app-desarrollo-comercial [style*="background: #f3f4f6"],
+:root.app-dark app-desarrollo-comercial [style*="background: #e5e7eb"] {
+  background: var(--surface-section) !important;
+  color: var(--text-color) !important;
+}
+
+:root.app-dark app-salas-trabajo [style*="color: #111827"],
+:root.app-dark app-salas-trabajo [style*="color: #6b7280"],
+:root.app-dark app-salas-trabajo [style*="color: #9ca3af"],
+:root.app-dark app-salas-trabajo [style*="color: #5d5d5d"] {
+  color: var(--text-color) !important;
+}
+
+:root.app-dark app-desarrollo-comercial [style*="color: #111827"],
+:root.app-dark app-desarrollo-comercial [style*="color: #6b7280"],
+:root.app-dark app-desarrollo-comercial [style*="color: #9ca3af"],
+:root.app-dark app-desarrollo-comercial [style*="color: #5d5d5d"] {
+  color: var(--text-color) !important;
+}
+
+/* MODALES Y POPUPS EN DESARROLLO COMERCIAL */
+/* Modales blancos que aparecen dinámicamente */
+:root.app-dark app-desarrollo-comercial .modal,
+:root.app-dark app-desarrollo-comercial .modal-overlay,
+:root.app-dark app-desarrollo-comercial .popup,
+:root.app-dark app-desarrollo-comercial .dialog,
+:root.app-dark app-desarrollo-comercial [role="dialog"],
+:root.app-dark app-desarrollo-comercial .ng-modal-container,
+:root.app-dark app-desarrollo-comercial .form-container,
+:root.app-dark app-desarrollo-comercial .info-panel,
+:root.app-dark app-desarrollo-comercial .detail-panel {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+/* Todos los headings en modales */
+:root.app-dark app-desarrollo-comercial .modal h1,
+:root.app-dark app-desarrollo-comercial .modal h2,
+:root.app-dark app-desarrollo-comercial .modal h3,
+:root.app-dark app-desarrollo-comercial .modal h4,
+:root.app-dark app-desarrollo-comercial .modal-overlay h1,
+:root.app-dark app-desarrollo-comercial .modal-overlay h2,
+:root.app-dark app-desarrollo-comercial .modal-overlay h3,
+:root.app-dark app-desarrollo-comercial .popup h1,
+:root.app-dark app-desarrollo-comercial .popup h2,
+:root.app-dark app-desarrollo-comercial .popup h3,
+:root.app-dark app-desarrollo-comercial .dialog h1,
+:root.app-dark app-desarrollo-comercial .dialog h2,
+:root.app-dark app-desarrollo-comercial .dialog h3,
+:root.app-dark app-desarrollo-comercial [role="dialog"] h1,
+:root.app-dark app-desarrollo-comercial [role="dialog"] h2,
+:root.app-dark app-desarrollo-comercial [role="dialog"] h3 {
+  color: var(--text-color-title) !important;
+}
+
+/* Textos en modales */
+:root.app-dark app-desarrollo-comercial .modal p,
+:root.app-dark app-desarrollo-comercial .modal span,
+:root.app-dark app-desarrollo-comercial .modal label,
+:root.app-dark app-desarrollo-comercial .modal-overlay p,
+:root.app-dark app-desarrollo-comercial .modal-overlay span,
+:root.app-dark app-desarrollo-comercial .modal-overlay label,
+:root.app-dark app-desarrollo-comercial .popup p,
+:root.app-dark app-desarrollo-comercial .popup span,
+:root.app-dark app-desarrollo-comercial .popup label {
+  color: var(--text-color) !important;
+}
+
+/* Botones de cerrar (x) */
+:root.app-dark app-desarrollo-comercial .modal .close,
+:root.app-dark app-desarrollo-comercial .modal .btn-close,
+:root.app-dark app-desarrollo-comercial .modal [aria-label*="close"],
+:root.app-dark app-desarrollo-comercial .modal [aria-label*="cerrar"],
+:root.app-dark app-desarrollo-comercial .modal-overlay .close,
+:root.app-dark app-desarrollo-comercial .modal-overlay .btn-close,
+:root.app-dark app-desarrollo-comercial .popup .close,
+:root.app-dark app-desarrollo-comercial .popup .btn-close {
+  background: transparent !important;
+  color: var(--text-color) !important;
+  border-color: transparent !important;
+}
+
+:root.app-dark app-desarrollo-comercial .modal .close:hover,
+:root.app-dark app-desarrollo-comercial .modal .btn-close:hover {
+  background: var(--surface-muted) !important;
+  color: var(--text-color) !important;
+}
+
+/* Fondos blancos específicos en estos elementos */
+:root.app-dark app-desarrollo-comercial [style*="background: white"],
+:root.app-dark app-desarrollo-comercial [style*="background: #fff"],
+:root.app-dark app-desarrollo-comercial [style*="background: #ffffff"],
+:root.app-dark app-desarrollo-comercial [style*="background-color: white"],
+:root.app-dark app-desarrollo-comercial [style*="background-color: #fff"],
+:root.app-dark app-desarrollo-comercial [style*="background-color: #ffffff"] {
+  background: var(--surface-section) !important;
+  color: var(--text-color) !important;
+}
+
+/* Capas de overlay/modal */
+:root.app-dark app-desarrollo-comercial .modal-backdrop,
+:root.app-dark app-desarrollo-comercial .overlay,
+:root.app-dark app-desarrollo-comercial .ng-modal-overlay {
+  background: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Inputs en modales */
+:root.app-dark app-desarrollo-comercial .modal input:not([type="button"]):not([type="submit"]),
+:root.app-dark app-desarrollo-comercial .modal textarea,
+:root.app-dark app-desarrollo-comercial .modal select,
+:root.app-dark app-desarrollo-comercial .modal-overlay input:not([type="button"]):not([type="submit"]),
+:root.app-dark app-desarrollo-comercial .modal-overlay textarea,
+:root.app-dark app-desarrollo-comercial .modal-overlay select {
+  background: #0d0d0d !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+/* MODALES Y POPUPS EN SALAS DE TRABAJO */
+:root.app-dark app-salas-trabajo .modal,
+:root.app-dark app-salas-trabajo .modal-overlay,
+:root.app-dark app-salas-trabajo .popup,
+:root.app-dark app-salas-trabajo .dialog,
+:root.app-dark app-salas-trabajo [role="dialog"],
+:root.app-dark app-salas-trabajo .ng-modal-container,
+:root.app-dark app-salas-trabajo .form-container,
+:root.app-dark app-salas-trabajo .info-panel,
+:root.app-dark app-salas-trabajo .detail-panel {
+  background: var(--surface-section) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+/* Headings en modales de Salas */
+:root.app-dark app-salas-trabajo .modal h1,
+:root.app-dark app-salas-trabajo .modal h2,
+:root.app-dark app-salas-trabajo .modal h3,
+:root.app-dark app-salas-trabajo .modal h4,
+:root.app-dark app-salas-trabajo .modal-overlay h1,
+:root.app-dark app-salas-trabajo .modal-overlay h2,
+:root.app-dark app-salas-trabajo .modal-overlay h3,
+:root.app-dark app-salas-trabajo .popup h1,
+:root.app-dark app-salas-trabajo .popup h2,
+:root.app-dark app-salas-trabajo .popup h3,
+:root.app-dark app-salas-trabajo .dialog h1,
+:root.app-dark app-salas-trabajo .dialog h2,
+:root.app-dark app-salas-trabajo .dialog h3,
+:root.app-dark app-salas-trabajo [role="dialog"] h1,
+:root.app-dark app-salas-trabajo [role="dialog"] h2,
+:root.app-dark app-salas-trabajo [role="dialog"] h3 {
+  color: var(--text-color-title) !important;
+}
+
+/* Textos en modales de Salas */
+:root.app-dark app-salas-trabajo .modal p,
+:root.app-dark app-salas-trabajo .modal span,
+:root.app-dark app-salas-trabajo .modal label,
+:root.app-dark app-salas-trabajo .modal-overlay p,
+:root.app-dark app-salas-trabajo .modal-overlay span,
+:root.app-dark app-salas-trabajo .modal-overlay label,
+:root.app-dark app-salas-trabajo .popup p,
+:root.app-dark app-salas-trabajo .popup span,
+:root.app-dark app-salas-trabajo .popup label {
+  color: var(--text-color) !important;
+}
+
+/* Botones de cerrar en Salas */
+:root.app-dark app-salas-trabajo .modal .close,
+:root.app-dark app-salas-trabajo .modal .btn-close,
+:root.app-dark app-salas-trabajo .modal [aria-label*="close"],
+:root.app-dark app-salas-trabajo .modal [aria-label*="cerrar"],
+:root.app-dark app-salas-trabajo .modal-overlay .close,
+:root.app-dark app-salas-trabajo .modal-overlay .btn-close,
+:root.app-dark app-salas-trabajo .popup .close,
+:root.app-dark app-salas-trabajo .popup .btn-close {
+  background: transparent !important;
+  color: var(--text-color) !important;
+  border-color: transparent !important;
+}
+
+:root.app-dark app-salas-trabajo .modal .close:hover,
+:root.app-dark app-salas-trabajo .modal .btn-close:hover {
+  background: var(--surface-muted) !important;
+  color: var(--text-color) !important;
+}
+
+/* Fondos blancos en Salas */
+:root.app-dark app-salas-trabajo [style*="background: white"],
+:root.app-dark app-salas-trabajo [style*="background: #fff"],
+:root.app-dark app-salas-trabajo [style*="background: #ffffff"],
+:root.app-dark app-salas-trabajo [style*="background-color: white"],
+:root.app-dark app-salas-trabajo [style*="background-color: #fff"],
+:root.app-dark app-salas-trabajo [style*="background-color: #ffffff"] {
+  background: var(--surface-section) !important;
+  color: var(--text-color) !important;
+}
+
+/* Overlay en Salas */
+:root.app-dark app-salas-trabajo .modal-backdrop,
+:root.app-dark app-salas-trabajo .overlay,
+:root.app-dark app-salas-trabajo .ng-modal-overlay {
+  background: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Inputs en modales de Salas */
+:root.app-dark app-salas-trabajo .modal input:not([type="button"]):not([type="submit"]),
+:root.app-dark app-salas-trabajo .modal textarea,
+:root.app-dark app-salas-trabajo .modal select,
+:root.app-dark app-salas-trabajo .modal-overlay input:not([type="button"]):not([type="submit"]),
+:root.app-dark app-salas-trabajo .modal-overlay textarea,
+:root.app-dark app-salas-trabajo .modal-overlay select {
+  background: #0d0d0d !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
 
 
 /* --- PRIMENG OVERRIDES --- */
@@ -745,5 +1803,394 @@ body {
   .estrategia-page .confirm-actions .cancel-btn,
   .estrategia-page .confirm-actions .delete-btn {
     width: 100%;
+  }
+}
+
+/* =====================================================
+   GLOBAL OVERRIDES PARA MODALES Y CARDS REBELDES
+   (Para asegurar que el modo oscuro se aplique s� o s�)
+   ===================================================== */
+:root.app-dark {
+  /* REPOSITORIO MODAL */
+  app-repositorio {
+    .modal-content {
+      background: var(--surface-section) !important;
+      color: var(--text-color) !important;
+      border: 1px solid var(--surface-border) !important;
+    }
+    .modal-header h3, .folder-name, .doc-link {
+      color: var(--text-color-title) !important;
+    }
+    .modal-header span, .info .subtitle, .separator {
+      color: var(--text-color-secondary) !important;
+    }
+    .modal-header {
+      border-color: var(--surface-border) !important;
+    }
+    .btn-close {
+      background: var(--surface-ground) !important;
+      color: var(--text-color-secondary) !important;
+    }
+    .repo-toolbar, .upload-box label, .item, .social-card {
+      background: var(--surface-ground) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .upload-box label span {
+      color: var(--text-color) !important;
+    }
+    .btn-add {
+      background: #4EB3E4 !important;
+      color: #fff !important;
+    }
+  }
+
+  /* DESARROLLO COMERCIAL CARDS Y MODALES */
+  app-desarrollo-comercial {
+    .convenio-card {
+      background: var(--surface-section) !important;
+      border-color: var(--surface-border) !important;
+      box-shadow: none !important;
+    }
+    .convenio-card *, .info-copy strong {
+      color: var(--text-color) !important;
+    }
+    .convenio-card h4, .inst-header h4 {
+      color: var(--text-color-title) !important;
+    }
+    .convenio-card .info-item {
+      background: var(--surface-ground) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .modal-card {
+      background: var(--surface-ground) !important;
+    }
+    .info-panel, .comments-panel, .history-panel, .comment-box {
+      background: var(--surface-section) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .info-panel h4, .comments-panel h4, .history-panel h4 {
+      color: var(--text-color-title) !important;
+    }
+    .history-panel li, .history-body ul li, .comment-box p {
+      color: var(--text-color) !important;
+    }
+  }
+}
+
+:root.app-dark {
+  /* COMUNICACIONES CHAT SIDEBAR OVERRIDES */
+  app-comunicaciones {
+    .sidebar {
+      background: var(--surface-section) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .search-bar {
+      background: var(--surface-ground) !important;
+    }
+    .search-bar input {
+      background: transparent !important;
+      color: var(--text-color) !important;
+    }
+    .contact-item {
+      border-bottom-color: var(--surface-border) !important;
+      background: var(--surface-section) !important;
+      color: var(--text-color) !important;
+    }
+    .contact-item:hover {
+      background: var(--surface-border) !important;
+    }
+    .contact-item.active {
+      background: #1a1a1a !important; /* Un poco m�s oscuro para resaltar que est� seleccionado */
+      border-left: 4px solid #4EB3E4 !important;
+    }
+    .contact-info .name {
+      color: var(--text-color-title) !important;
+    }
+    .contact-info .preview {
+      color: var(--text-color-secondary) !important;
+    }
+    .contact-info .time {
+      color: var(--text-color-secondary) !important;
+    }
+    
+    .channel-list-container {
+      background: var(--surface-section) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .channel-list-container .header {
+      background: var(--surface-section) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .channel-list-container .header h3 {
+      color: var(--text-color-title) !important;
+    }
+    .channel-item {
+      background: var(--surface-section) !important;
+    }
+    .channel-item.active {
+      background: #1a1a1a !important;
+    }
+    .channel-item:hover {
+      background: var(--surface-border) !important;
+    }
+    .channel-info .font-medium {
+      color: var(--text-color-title) !important;
+    }
+    .channel-info .text-xs, .channel-info .text-sm {
+      color: var(--text-color-secondary) !important;
+    }
+    .search-box input {
+      background: var(--surface-ground) !important;
+      color: var(--text-color) !important;
+      border-color: var(--surface-border) !important;
+    }
+  }
+  
+  /* CHAT AREA OVERRIDES EXTRAS */
+  app-chat-area {
+    .header {
+      background: var(--surface-section) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .header h3 {
+      color: var(--text-color-title) !important;
+    }
+    .header span {
+      color: var(--text-color-secondary) !important;
+    }
+    .message-bubble.bg-white {
+      background: var(--surface-card) !important;
+      color: var(--text-color) !important;
+    }
+    .chat-area {
+      background: var(--surface-ground) !important;
+    }
+    .message-bubble.bg-white p {
+      color: var(--text-color) !important;
+    }
+  }
+}
+
+:root.app-dark {
+  /* OVERRIDES PARA EL PERFIL DE USUARIO */
+  app-perfil {
+    .perfil-card {
+      background: var(--surface-section) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .perfil-hero {
+      background: var(--surface-ground) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .perfil-content {
+      background: transparent !important;
+    }
+    .info-item, .info-item--wide {
+      background: var(--surface-ground) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .perfil-title h1, .section-title h2, .info-item strong {
+      color: var(--text-color-title) !important;
+    }
+    .perfil-title span, .perfil-title p, .section-title p, .info-item span, .info-item small {
+      color: var(--text-color-secondary) !important;
+    }
+    .info-item--wide p {
+      color: var(--text-color-secondary) !important;
+    }
+    .info-item i {
+      color: #4EB3E4 !important;
+    }
+    .edit-button {
+      background: var(--surface-card) !important;
+      color: var(--text-color) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .edit-button:hover {
+      background: var(--surface-hover) !important;
+    }
+    
+    /* Modo Edici�n */
+    .edit-title h2 { color: var(--text-color-title) !important; }
+    .edit-title p { color: var(--text-color-secondary) !important; }
+    .photo-editor.form-panel, .locked-email.form-panel {
+      background: var(--surface-ground) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .photo-editor strong, .locked-email strong { color: var(--text-color-title) !important; }
+    .photo-editor p, .locked-email p, .locked-email span { color: var(--text-color-secondary) !important; }
+    .photo-upload {
+      background: var(--surface-section) !important;
+      border-color: var(--surface-border) !important;
+      color: var(--text-color) !important;
+    }
+    .photo-upload:hover {
+      background: var(--surface-hover) !important;
+    }
+    .perfil-form label { color: var(--text-color-secondary) !important; }
+    .perfil-form input, .perfil-form textarea {
+      background: #0d0d0d !important;
+      color: var(--text-color) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .perfil-actions .secondary-button {
+      background: var(--surface-ground) !important;
+      color: var(--text-color) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .perfil-actions .secondary-button:hover {
+      background: var(--surface-hover) !important;
+    }
+  }
+}
+
+:root.app-dark {
+  /* COLORES PARA LOS ESTADOS DE CONVENIO (DESARROLLO COMERCIAL) */
+  app-desarrollo-comercial {
+    .status.pendiente {
+      background: rgba(200, 16, 46, 0.25) !important;
+      border: 1px solid rgba(200, 16, 46, 0.5) !important;
+      color: #ff768b !important;
+    }
+    .status.proceso {
+      background: rgba(244, 180, 0, 0.25) !important;
+      border: 1px solid rgba(244, 180, 0, 0.5) !important;
+      color: #ffd54f !important;
+    }
+    .status.paralizado, .status.cancelado {
+      background: rgba(107, 114, 128, 0.25) !important;
+      border: 1px solid rgba(107, 114, 128, 0.5) !important;
+      color: #9ca3af !important;
+    }
+    .status.convenio {
+      background: rgba(30, 102, 217, 0.25) !important;
+      border: 1px solid rgba(30, 102, 217, 0.5) !important;
+      color: #74b9ff !important;
+    }
+    .status.reunion {
+      background: rgba(5, 181, 112, 0.25) !important;
+      border: 1px solid rgba(5, 181, 112, 0.5) !important;
+      color: #55efc4 !important;
+    }
+    .status.firmado {
+      background: rgba(20, 128, 61, 0.25) !important;
+      border: 1px solid rgba(20, 128, 61, 0.5) !important;
+      color: #86efac !important;
+    }
+  }
+}
+
+:root.app-dark {
+  /* COLORES PARA LOS CHIPS (BOTONES DE FILTRO) EN DESARROLLO COMERCIAL */
+  app-desarrollo-comercial {
+    /* Estado: PENDIENTE */
+    .chip.pendiente { background: rgba(200, 16, 46, 0.15) !important; border: 1px solid rgba(200, 16, 46, 0.4) !important; color: #ff768b !important; }
+    .chip.pendiente.active { background: rgba(200, 16, 46, 0.5) !important; color: #fff !important; }
+
+    /* Estado: PROCESO */
+    .chip.proceso { background: rgba(244, 180, 0, 0.15) !important; border: 1px solid rgba(244, 180, 0, 0.4) !important; color: #ffd54f !important; }
+    .chip.proceso.active { background: rgba(244, 180, 0, 0.5) !important; color: #fff !important; }
+
+    /* Estado: PARALIZADO / CANCELADO */
+    .chip.paralizado, .chip.cancelado { background: rgba(107, 114, 128, 0.15) !important; border: 1px solid rgba(107, 114, 128, 0.4) !important; color: #9ca3af !important; }
+    .chip.paralizado.active, .chip.cancelado.active { background: rgba(107, 114, 128, 0.5) !important; color: #fff !important; }
+
+    /* Estado: CONVENIO */
+    .chip.convenio { background: rgba(30, 102, 217, 0.15) !important; border: 1px solid rgba(30, 102, 217, 0.4) !important; color: #74b9ff !important; }
+    .chip.convenio.active { background: rgba(30, 102, 217, 0.5) !important; color: #fff !important; }
+
+    /* Estado: REUNI�N */
+    .chip.reunion { background: rgba(5, 181, 112, 0.15) !important; border: 1px solid rgba(5, 181, 112, 0.4) !important; color: #55efc4 !important; }
+    .chip.reunion.active { background: rgba(5, 181, 112, 0.5) !important; color: #fff !important; }
+
+    /* Estado: FIRMADO */
+    .chip.firmado { background: rgba(20, 128, 61, 0.15) !important; border: 1px solid rgba(20, 128, 61, 0.4) !important; color: #86efac !important; }
+    .chip.firmado.active { background: rgba(20, 128, 61, 0.5) !important; color: #fff !important; }
+  }
+}
+
+:root.app-dark {
+  /* FIX PROACTIVO PARA MODALES EN AN�LISIS DE DATOS Y ESTRATEGIA COMERCIAL */
+  app-analisis-datos {
+    .registro-modal, .confirm-card {
+      background: var(--surface-section) !important;
+      border: 1px solid var(--surface-border) !important;
+      color: var(--text-color) !important;
+    }
+    .registro-modal__header, .registro-modal__footer, .registro-toolbar {
+      border-color: var(--surface-border) !important;
+    }
+    .registro-modal__header h2, .confirm-card h4 {
+      color: var(--text-color-title) !important;
+    }
+    .registro-search input, .registro-filter {
+      background: #0d0d0d !important;
+      color: var(--text-color) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .registro-table {
+      background: transparent !important;
+    }
+    .registro-table th {
+      background: var(--surface-card) !important;
+      color: var(--text-color-title) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .registro-table td {
+      border-color: var(--surface-border) !important;
+      color: var(--text-color) !important;
+      background: transparent !important;
+    }
+    .registro-table tr:hover td {
+      background: var(--surface-hover) !important;
+    }
+    .registro-table__cell-input, .registro-table__cell-select {
+      background: #0d0d0d !important;
+      color: var(--text-color) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .confirm-actions .cancel-btn {
+      background: transparent !important;
+      color: var(--text-color) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .confirm-actions .cancel-btn:hover {
+      background: var(--surface-hover) !important;
+    }
+  }
+
+  app-estrategia-comercial {
+    .activity-modal__dialog, .confirm-card {
+      background: var(--surface-section) !important;
+      border: 1px solid var(--surface-border) !important;
+      color: var(--text-color) !important;
+    }
+    .activity-modal__dialog h2, .confirm-card h4 {
+      color: var(--text-color-title) !important;
+    }
+    .activity-detail__panel, .activity-detail__field, .activity-detail__links-list {
+      background: var(--surface-ground) !important;
+      border-color: var(--surface-border) !important;
+      color: var(--text-color) !important;
+    }
+    .activity-detail__value, .activity-detail__panel h3, .activity-detail__panel p {
+      color: var(--text-color) !important;
+    }
+    .activity-detail__label {
+      color: var(--text-color-secondary) !important;
+    }
+    .activity-form__field input, .activity-form__field textarea, .activity-form__field select {
+      background: #0d0d0d !important;
+      color: var(--text-color) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .activity-form__cancel, .confirm-actions .cancel-btn {
+      background: transparent !important;
+      color: var(--text-color) !important;
+      border-color: var(--surface-border) !important;
+    }
+    .activity-form__cancel:hover, .confirm-actions .cancel-btn:hover {
+      background: var(--surface-hover) !important;
+    }
   }
 }

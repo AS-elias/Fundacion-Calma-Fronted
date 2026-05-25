@@ -35,7 +35,7 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
   
   // Inyección de servicios
   private communicationService = inject(CommunicationService);
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
   private comunidadService = inject(ComunidadService);
   private activatedRoute = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
@@ -142,6 +142,24 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
       this.cerrarChatActual();
       return;
     }
+  }
+
+  get miAvatarUrl(): string | null {
+    const user = this.authService.getCurrentUser();
+    let url = user?.foto_url || user?.fotoUrl;
+    if (!url) return null;
+    if (url.startsWith('http') || url.startsWith('data:image')) {
+      return url;
+    }
+    if (url.startsWith('/')) {
+      return `http://localhost:3005${url}`;
+    }
+    return `http://localhost:3005/${url}`;
+  }
+
+  get miIniciales(): string {
+    const user = this.authService.getCurrentUser();
+    return this.chatManagement.generarIniciales(user?.nombre || 'U');
   }
 
   ngOnInit() {
@@ -606,7 +624,13 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
            if (otro) {
               contactoMapeado.nombre = otro.nombre || this.pendingChatContactoNombre || 'Usuario';
               contactoMapeado.iniciales = this.chatManagement.generarIniciales(contactoMapeado.nombre);
-              if (otro.avatar) (contactoMapeado as any).avatarUrl = otro.avatar;
+              if (otro.avatar) {
+                let url = otro.avatar;
+                if (url && !url.startsWith('http') && !url.startsWith('data:image')) {
+                  url = url.startsWith('/') ? `http://localhost:3005${url}` : `http://localhost:3005/${url}`;
+                }
+                (contactoMapeado as any).avatarUrl = url;
+              }
            }
         }
 

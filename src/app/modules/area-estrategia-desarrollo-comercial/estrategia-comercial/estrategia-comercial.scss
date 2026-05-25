@@ -1,7 +1,7 @@
 .estrategia-page {
   min-height: 100vh;
   padding: 18px 14px 28px;
-  background: #fff;
+  background: var(--surface-section) ;
   color: #111;
 }
 
@@ -31,7 +31,7 @@
   border: 1px solid #cfcfcf;
   border-radius: 12px;
   padding: 3px;
-  background: #fff;
+  background: var(--surface-section) ;
 }
 
 .page-tab {
@@ -244,7 +244,7 @@
 .kanban-card {
   min-height: 88px;
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface-section) ;
   padding: 10px 9px;
   cursor: pointer;
 
@@ -277,7 +277,7 @@
   width: 28px;
   height: 28px;
   border: 1px solid #ececec;
-  background: #fff;
+  background: var(--surface-section) ;
   color: #111;
   font-size: 16px;
   box-shadow: inset 0 0 0 1px #f6f6f6;
@@ -305,7 +305,7 @@
   padding: 0 8px;
   border: 1px solid #ececec;
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface-section) ;
   color: #5a5a5a;
 }
 
@@ -385,7 +385,7 @@
   border: 0;
   border-radius: 8px;
   background: #27b8f0;
-  color: #000;
+  color: var(--text-color) ;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -571,3 +571,81 @@
     flex-direction: column;
   }
 }
+
+/* =====================================================
+   DARK MODE OVERRIDES — Estrategia Comercial
+   ===================================================== */
+:host-context(.app-dark) {
+  .estrategia-page {
+    background: var(--surface-ground) !important;
+    color: var(--text-color) !important;
+  }
+
+  .estrategia-page h1, .estrategia-page h2,
+  .estrategia-page h3, .estrategia-page h4 {
+    color: var(--text-color-title) !important;
+  }
+
+  .estrategia-page p, .estrategia-page span,
+  .estrategia-page label, .estrategia-page li {
+    color: var(--text-color) !important;
+  }
+
+  /* Tabs */
+  .page-tabs {
+    background: var(--surface-section) !important;
+    border-color: var(--surface-border) !important;
+  }
+  .page-tab { color: var(--text-color) !important; }
+  .page-tab--active { background: #4EB3E4 !important; color: #fff !important; }
+
+  /* Kanban columns — fondos pastel muy claros */
+  .kanban-column--pendiente  { background: #1a1a1a !important; }
+  .kanban-column--progreso   { background: #1a150a !important; }
+  .kanban-column--revision   { background: #1a1008 !important; }
+  .kanban-column--ejecucion  { background: #051a1b !important; }
+  .kanban-column--finalizado { background: #141210 !important; }
+  .kanban-column--paralizado { background: #1a0808 !important; }
+  .kanban-column--completado { background: #081a0d !important; }
+
+  /* Kanban cards */
+  .kanban-card {
+    background: var(--surface-section) !important;
+    border: 1px solid var(--surface-border) !important;
+    color: var(--text-color) !important;
+  }
+  .kanban-card h3 { color: var(--text-color-title) !important; }
+  .kanban-card p  { color: var(--text-color-secondary) !important; }
+
+  .kanban-card__meta-icon { background: var(--surface-section) !important; border-color: var(--surface-border) !important; color: var(--text-color) !important; }
+  .kanban-card__meta-chip { background: var(--surface-section) !important; border-color: var(--surface-border) !important; color: var(--text-color-secondary) !important; }
+
+  /* Search/filter */
+  .search-field input, .filter-field select {
+    background: #0d0d0d !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--surface-border) !important;
+  }
+  .search-field i { color: var(--text-color-secondary) !important; }
+
+  /* Company cards */
+  .company-card {
+    background: var(--surface-section) !important;
+    border-color: var(--surface-border) !important;
+  }
+  .company-card__info p     { color: var(--text-color-secondary) !important; }
+  .company-card__meta       { color: var(--text-color-secondary) !important; }
+  .company-card__projects   { border-color: var(--surface-border) !important; }
+  .company-card__icons button { color: var(--text-color) !important; }
+
+  /* Project items */
+  .project-item {
+    background: var(--surface-section) !important;
+    border-color: var(--surface-border) !important;
+  }
+  .project-item__description { color: var(--text-color-secondary) !important; }
+
+  /* New project button */
+  .new-project { background: rgba(78,179,228,0.2) !important; color: #4EB3E4 !important; }
+}
+

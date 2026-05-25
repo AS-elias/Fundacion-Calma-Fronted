@@ -129,8 +129,38 @@
       </ng-container>
 
       <ng-template #docsForm>
+        <div class="repo-toolbar">
+          <div class="breadcrumbs">
+            <ng-container *ngFor="let carpeta of historialCarpetas; let i = index">
+              <span 
+                class="crumb" 
+                (click)="irACarpeta(i)"
+                (dragover)="onDragOver($event, carpeta.id)"
+                (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event, carpeta.id)"
+                [class.drag-over]="carpetaDestinoOverId === carpeta.id"
+              >{{ carpeta.nombre }}</span>
+              <span class="separator" *ngIf="i < historialCarpetas.length - 1">/</span>
+            </ng-container>
+          </div>
+          
+          <div class="toolbar-actions">
+            <button class="btn-new-folder" type="button" (click)="toggleCrearCarpeta()" [title]="creandoCarpeta ? 'Cancelar' : 'Nueva Carpeta'">
+              <i class="pi" [ngClass]="creandoCarpeta ? 'pi-times' : 'pi-folder-plus'"></i>
+            </button>
+          </div>
+        </div>
 
-        <div class="upload-box">
+        <div class="create-folder-box" *ngIf="creandoCarpeta">
+          <input type="text" [(ngModel)]="nombreNuevaCarpeta" placeholder="Nombre de la nueva carpeta" (keyup.enter)="crearCarpeta()">
+          <button type="button" (click)="crearCarpeta()" [disabled]="!nombreNuevaCarpeta.trim()">Crear</button>
+        </div>
+
+        <div class="upload-box" *ngIf="!creandoCarpeta"
+             [ngClass]="{'drag-over': isDragOverZone}"
+             (dragover)="onFileDragOver($event)"
+             (dragleave)="onFileDragLeave($event)"
+             (drop)="onFileDrop($event)">
 
           <input
             type="file"
@@ -140,14 +170,14 @@
 
           <label for="fileInput">
             <div class="upload-icon">
-              UP
+              <i class="pi pi-upload"></i>
             </div>
 
             <span>
               {{
                 archivoSeleccionado
                   ? archivoSeleccionado.name
-                  : 'Seleccionar documento'
+                  : 'Subir archivo aquí'
               }}
             </span>
           </label>
@@ -155,12 +185,13 @@
         </div>
 
         <button
+          *ngIf="!creandoCarpeta"
           class="btn-add"
           type="button"
           (click)="agregarDocumento()"
           [disabled]="!archivoSeleccionado || subiendo"
         >
-          {{ subiendo ? 'Subiendo...' : '+ Subir documento' }}
+          {{ subiendo ? 'Subiendo...' : '+ Confirmar subida' }}
         </button>
 
       </ng-template>
@@ -231,25 +262,37 @@
 
         <div
           class="empty-state"
-          *ngIf="!bloqueSeleccionado.documentos.length"
+          *ngIf="!elementosMostrados.length"
         >
-          <div class="empty-icon">DOC</div>
-          <p>No hay documentos subidos en este bloque.</p>
+          <div class="empty-icon">
+            <i class="pi pi-folder-open"></i>
+          </div>
+          <p>Esta carpeta está vacía.</p>
         </div>
 
         <div
           class="item"
-          *ngFor="let doc of bloqueSeleccionado.documentos; let i = index"
+          *ngFor="let doc of elementosMostrados; let i = index"
+          (dblclick)="entrarCarpeta(doc)"
+          [class.is-folder]="doc.esCarpeta"
+          [class.drag-over]="doc.esCarpeta && carpetaDestinoOverId === doc.id"
+          draggable="true"
+          (dragstart)="onDragStart($event, doc)"
+          (dragover)="doc.esCarpeta ? onDragOver($event, doc.id) : null"
+          (dragleave)="doc.esCarpeta ? onDragLeave($event) : null"
+          (drop)="doc.esCarpeta ? onDrop($event, doc.id) : null"
         >
 
-          <div class="item-left">
+          <div class="item-left" (click)="doc.esCarpeta ? entrarCarpeta(doc) : null">
 
-            <div class="icon doc">
-              {{ obtenerExtension(doc.nombre) }}
+            <div class="icon" [ngClass]="doc.esCarpeta ? 'folder' : 'doc'">
+              <i class="pi" [ngClass]="doc.esCarpeta ? 'pi-folder' : 'pi-file'"></i>
+              <span *ngIf="!doc.esCarpeta">{{ obtenerExtension(doc.nombre) }}</span>
             </div>
 
             <div class="info">
               <a
+                *ngIf="!doc.esCarpeta; else folderName"
                 [href]="doc.url"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -257,8 +300,11 @@
               >
                 {{ doc.nombre }}
               </a>
+              <ng-template #folderName>
+                <span class="folder-name">{{ doc.nombre }}</span>
+              </ng-template>
 
-              <span class="subtitle">
+              <span class="subtitle" *ngIf="!doc.esCarpeta">
                 {{ obtenerNombreArchivo(doc.url) }}
               </span>
             </div>
@@ -267,6 +313,7 @@
 
           <div class="acciones">
             <a
+              *ngIf="!doc.esCarpeta"
               [href]="doc.url"
               target="_blank"
               rel="noopener noreferrer"
@@ -282,9 +329,9 @@
               *ngIf="puedeEliminarRepositorio"
               class="delete"
               type="button"
-              (click)="eliminarDocumento(i)"
+              (click)="eliminarDocumento(i); $event.stopPropagation()"
               title="Eliminar"
-              aria-label="Eliminar documento"
+              aria-label="Eliminar elemento"
             >
               <i class="pi pi-trash"></i>
             </button>

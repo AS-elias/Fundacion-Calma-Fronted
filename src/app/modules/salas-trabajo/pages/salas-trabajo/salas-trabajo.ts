@@ -1,14 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { GrupoSalas, Sala, SalasTrabajoService } from '../../services/salas-trabajo.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../auth/services/auth.service';
+import { Subscription } from 'rxjs';
+import { MessageService } from 'primeng/api';
+import { CommunicationService, SistemaActualizadoEvent } from '../../../../core/services/communication.service';
 
 interface NuevaSala {
+  id?: number;
   nombre: string;
   area: string;
   link: string;
   descripcion: string;
   es_privada: boolean;
+  es_general?: boolean;
 }
 
 @Component({
@@ -17,7 +23,7 @@ interface NuevaSala {
   templateUrl: './salas-trabajo.html',
   styleUrl: './salas-trabajo.scss',
 })
-export class SalasTrabajo implements OnInit {
+export class SalasTrabajo implements OnInit, OnDestroy {
 
   salaGeneral?: Sala;
   grupos: GrupoSalas[] = [];
@@ -26,17 +32,65 @@ export class SalasTrabajo implements OnInit {
     area: '',
     link: '',
     descripcion: '',
-    es_privada: false
+    es_privada: false,
+    es_general: false
   };
 
   mostrarModalAgregar = false;
+  modoEdicion = false;
   mostrarConfirmacionEliminar = false;
   salaAEliminar: { grupoIndex: number, salaIndex: number, id?: number } | null = null;
 
-  constructor(private salasTrabajoService: SalasTrabajoService) {}
+  areasSugeridas: string[] = [];
+  mostrarInputArea = false;
+
+  // Real-time Sync
+  private syncSub?: Subscription;
+
+  constructor(
+    private salasTrabajoService: SalasTrabajoService,
+    private authService: AuthService,
+    private communicationService: CommunicationService,
+    private messageService: MessageService
+  ) {}
+
+  get puedeModificarSalas(): boolean {
+    return this.authService.isAdmin() || this.authService.isDirector();
+  }
+
+  verificarArea(event: any) {
+    if (event.target.value === 'OTRA') {
+      this.mostrarInputArea = true;
+      this.nuevaSala.area = '';
+    }
+  }
+
+  cancelarNuevaArea() {
+    this.mostrarInputArea = false;
+    this.nuevaSala.area = '';
+  }
 
   ngOnInit(): void {
     this.cargarSalas();
+
+    const token = this.authService.getToken();
+    if (token) {
+      this.communicationService.connect(token).catch(err => {
+        console.error('Error conectando sockets en salas:', err);
+      });
+    }
+
+    this.syncSub = this.communicationService.sistemaActualizado$.subscribe((event: SistemaActualizadoEvent) => {
+      if (event.modulo === 'salas') {
+        this.cargarSalas(); // Recarga automática al detectar cambios
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.syncSub) {
+      this.syncSub.unsubscribe();
+    }
   }
 
   cargarSalas(): void {
@@ -48,22 +102,13 @@ export class SalasTrabajo implements OnInit {
     });
 
     this.salasTrabajoService.getSalas().subscribe({
-      next: (salas) => {
-        const salasNormales = salas.filter((s: Sala) => !s.es_general);
-        
-        const gruposMap = new Map<string, Sala[]>();
-        salasNormales.forEach((sala: Sala) => {
-          const areaNombre = sala.area || 'Otras Salas';
-          if (!gruposMap.has(areaNombre)) {
-            gruposMap.set(areaNombre, []);
-          }
-          gruposMap.get(areaNombre)!.push(sala);
-        });
+      next: (gruposDesdeBackend) => {
+        this.grupos = gruposDesdeBackend;
 
-        this.grupos = Array.from(gruposMap.keys()).map(area => ({
-          area,
-          salas: gruposMap.get(area)!
-        }));
+        // Combinar áreas dinámicas
+        const todasLasAreas = new Set<string>(this.areasSugeridas);
+        this.grupos.forEach(g => todasLasAreas.add(g.area));
+        this.areasSugeridas = Array.from(todasLasAreas).sort();
       },
       error: (err) => console.error('Error cargando las salas:', err)
     });
@@ -78,6 +123,30 @@ export class SalasTrabajo implements OnInit {
   }
 
   abrirModalAgregar() {
+    this.modoEdicion = false;
+    this.mostrarInputArea = false;
+    this.cancelarFormulario();
+    this.mostrarModalAgregar = true;
+  }
+
+  abrirModalEditar(sala: Sala) {
+    this.modoEdicion = true;
+    this.nuevaSala = {
+      id: sala.id,
+      nombre: sala.nombre,
+      area: sala.area || '',
+      link: sala.link,
+      descripcion: sala.descripcion,
+      es_privada: sala.es_privada || false,
+      es_general: sala.es_general || false
+    };
+    
+    if (!this.nuevaSala.es_general && this.nuevaSala.area && !this.areasSugeridas.includes(this.nuevaSala.area)) {
+      this.mostrarInputArea = true;
+    } else {
+      this.mostrarInputArea = false;
+    }
+    
     this.mostrarModalAgregar = true;
   }
 
@@ -86,40 +155,60 @@ export class SalasTrabajo implements OnInit {
     this.cancelarFormulario();
   }
 
-  crearSala() {
-    if (!this.nuevaSala.nombre || !this.nuevaSala.descripcion || !this.nuevaSala.area || !this.nuevaSala.link) {
-      alert('Por favor, completa los campos requeridos (*).');
+  guardarSala() {
+    if (!this.nuevaSala.nombre || (!this.nuevaSala.es_general && !this.nuevaSala.area) || !this.nuevaSala.link) {
+      this.messageService.add({severity:'warn', summary:'Atención', detail:'Por favor, completa los campos requeridos (*).'});
       return;
     }
 
-    const payload = {
+    const payload: any = {
       nombre: this.nuevaSala.nombre,
       descripcion: this.nuevaSala.descripcion,
-      es_privada: this.nuevaSala.es_privada,
-      area: this.nuevaSala.area,
       link: this.nuevaSala.link
     };
+    
+    if (!this.nuevaSala.es_general) {
+      payload.area = this.nuevaSala.area;
+    }
 
-    this.salasTrabajoService.crearSala(payload).subscribe({
-      next: (salaCreada) => {
-        const area = salaCreada.area || this.nuevaSala.area;
-        const grupoExistente = this.grupos.find(g => g.area === area);
-        if (grupoExistente) {
-          grupoExistente.salas.push(salaCreada);
-        } else {
-          this.grupos.push({ area, salas: [salaCreada] });
-        }
-        this.cerrarModalAgregar();
-      },
-      error: (err) => {
-        console.error('Error al crear sala:', err);
-        alert('Ocurrió un error al crear la sala.');
+    if (this.modoEdicion) {
+      if (!this.nuevaSala.id) {
+        console.error('Error Crítico: No se encontró el ID de la sala a editar.', this.nuevaSala);
+        this.messageService.add({severity:'error', summary:'Error', detail:'Ocurrió un error al intentar editar. Por favor, recarga la página.'});
+        return;
       }
-    });
+
+      // EDICIÓN
+      this.salasTrabajoService.editarSala(this.nuevaSala.id, payload).subscribe({
+        next: (salaEditada) => {
+          this.cargarSalas(); // Recargar todo para reordenar grupos si cambió de área
+          this.cerrarModalAgregar();
+          this.messageService.add({severity:'success', summary:'Éxito', detail:'Sala editada correctamente.'});
+        },
+        error: (err) => {
+          console.error('Error al editar sala:', err);
+          this.messageService.add({severity:'error', summary:'Error', detail:'Ocurrió un error al editar la sala.'});
+        }
+      });
+    } else {
+      // CREACIÓN
+      this.salasTrabajoService.crearSala(payload).subscribe({
+        next: (salaCreada) => {
+          this.cargarSalas(); // Recargar para mantener el estado fresco
+          this.cerrarModalAgregar();
+          this.messageService.add({severity:'success', summary:'Éxito', detail:'Sala creada correctamente.'});
+        },
+        error: (err) => {
+          console.error('Error al crear sala:', err);
+          this.messageService.add({severity:'error', summary:'Error', detail:'Ocurrió un error al crear la sala.'});
+        }
+      });
+    }
   }
 
   cancelarFormulario() {
     this.nuevaSala = {
+      id: undefined,
       nombre: '',
       area: '',
       link: '',
@@ -149,10 +238,11 @@ export class SalasTrabajo implements OnInit {
             this.grupos.splice(grupoIndex, 1);
           }
           this.cerrarConfirmacionEliminar();
+          this.messageService.add({severity:'success', summary:'Éxito', detail:'Sala eliminada correctamente.'});
         },
         error: (err) => {
           console.error('Error al eliminar sala:', err);
-          alert('Ocurrió un error al eliminar la sala.');
+          this.messageService.add({severity:'error', summary:'Error', detail:'Ocurrió un error al eliminar la sala.'});
           this.cerrarConfirmacionEliminar();
         }
       });

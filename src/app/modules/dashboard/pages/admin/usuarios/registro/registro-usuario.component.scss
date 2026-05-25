@@ -4,7 +4,7 @@
 /* Variables */
 $primary-cyan: #4EB3E4;
 $bg-light: #f9fafb;
-$border-color: #e5e7eb;
+$border-color: var(--surface-border);
 $text-dark: #111827;
 $text-gray: #6b7280;
 $error-red: #ef4444;
@@ -41,7 +41,7 @@ $error-red: #ef4444;
 }
 
 .card-form {
-  background: white;
+  background: var(--surface-section);
   border-radius: 12px;
   border: 1px solid $border-color;
   padding: 30px 40px;
@@ -84,7 +84,7 @@ $error-red: #ef4444;
 
     &:focus {
       border-color: $primary-cyan;
-      background: white;
+      background: var(--surface-section);
       box-shadow: 0 0 0 3px rgba(78, 179, 228, 0.1);
     }
 
