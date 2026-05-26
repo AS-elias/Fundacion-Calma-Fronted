@@ -218,16 +218,36 @@
 
       </div>
 
+      <div class="form-group">
+
+        <label>Enlace (opcional)</label>
+
+        <input
+          [(ngModel)]="form.enlace"
+          placeholder="https://..."
+        />
+
+      </div>
+
       <div class="form-row">
 
         <div class="form-group">
 
-          <label>Enlace (opcional)</label>
+          <label>Despedida</label>
 
           <input
-            [(ngModel)]="form.enlace"
-            placeholder="https://..."
+            [(ngModel)]="form.despedida"
+            list="despedidas-predeterminadas"
+            placeholder="Ej. Atte., Saludos..."
           />
+          <datalist id="despedidas-predeterminadas">
+            <option value="Atte."></option>
+            <option value="Atentamente,"></option>
+            <option value="Saludos cordiales,"></option>
+            <option value="Cordialmente,"></option>
+            <option value="Un cordial saludo,"></option>
+            <option value="Con cariño,"></option>
+          </datalist>
 
         </div>
 
@@ -237,7 +257,7 @@
 
           <input
             [(ngModel)]="form.firma"
-            placeholder="Atte..."
+            placeholder="Nombre o entidad..."
           />
 
         </div>

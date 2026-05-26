@@ -88,6 +88,7 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
   fotoGrupoBase64 = signal<string | null>(null);
   esModoAgregarMiembro = signal(false);
   esModoEditarGrupo = signal(false);
+  cargandoMensajes = signal(false);
 
   // Modal de Alertas y Confirmaciones
   dialogVisible = signal(false);
@@ -363,34 +364,42 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
       try {
         console.log("✅ recentMessages recibido");
         
-        if (!this.chatManagement.contactoActivo()) {
+        const contacto = this.chatManagement.contactoActivo();
+        if (!contacto) {
           console.warn('⚠️ No hay contacto activo');
+          this.cargandoMensajes.set(false);
           return;
         }
 
         let messagesArray = Array.isArray(data) ? data : (data?.messages || []);
         const receivedCanalId = Array.isArray(data) ? null : data?.canalId;
-        
-        console.log("🔍 DEBUG: Primer mensaje recibido del backend:", messagesArray[0]);
 
-        if (receivedCanalId && receivedCanalId !== this.chatManagement.contactoActivo()?.id) {
-          console.warn(`⚠️ Mensajes para canal ${receivedCanalId}, pero el activo es ${this.chatManagement.contactoActivo()?.id}`);
+        if (receivedCanalId && receivedCanalId !== contacto.id) {
+          console.warn(`⚠️ Mensajes para canal ${receivedCanalId}, pero el activo es ${contacto.id}`);
           return;
         }
 
-        localStorage.setItem(`messages_raw_${this.chatManagement.contactoActivo()?.id}`, JSON.stringify(messagesArray));
-        
-        const contacto = this.chatManagement.contactoActivo();
-        if (contacto) {
-          contacto.mensajes = messagesArray.map((msg: BaseMessageData) => 
-            this.chatManagement.mapMessageToMensaje(msg, this.currentUserId, contacto.participantes)
-          );
-        }
-        
-        setTimeout(() => this.scrollToBottom(), 50); // Hacemos scroll al cargar historial
+        contacto.mensajes = messagesArray.map((msg: BaseMessageData) => 
+          this.chatManagement.mapMessageToMensaje(msg, this.currentUserId, contacto.participantes)
+        );
+
+        // Sincronizar la referencia del contacto activo con el array principal
+        const contactoActualizado = {...contacto} as ContactoChat;
+        this.chatManagement.contactoActivo.set(contactoActualizado);
+        const nuevosContactos = this.chatManagement.contactos().map(c =>
+          c.id === contactoActualizado.id ? contactoActualizado : c
+        );
+        this.chatManagement.contactos.set(nuevosContactos);
+
+        this.cargandoMensajes.set(false);
         this.cdr.detectChanges();
+        // Scroll con requestAnimationFrame para garantizar que Angular terminó de renderizar
+        requestAnimationFrame(() => {
+          setTimeout(() => this.scrollToBottom(), 30);
+        });
       } catch (error) {
         console.error('❌ Error procesando recentMessages:', error);
+        this.cargandoMensajes.set(false);
       }
     });
 
@@ -481,7 +490,9 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
               usuarioId: this.currentUserId,
             });
           }
-          setTimeout(() => this.scrollToBottom(), 50);
+          requestAnimationFrame(() => {
+            setTimeout(() => this.scrollToBottom(), 30);
+          });
         } else if (!nuevoMsg.enviadoPorMi) {
           this.chatManagement.incrementarMensajesSinLeer(canal.id);
         }
@@ -693,7 +704,8 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
   private scrollToBottom(): void {
     try {
       if (this.messagesContainer) {
-        this.messagesContainer.nativeElement.scrollTop = this.messagesContainer.nativeElement.scrollHeight;
+        const el = this.messagesContainer.nativeElement;
+        el.scrollTop = el.scrollHeight;
       }
     } catch (err) { }
   }
@@ -714,10 +726,19 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
   // ===== Chat Methods =====
   
   seleccionarContacto(contacto: ContactoChat) {
+    // Si ya estamos en este chat, no hacer nada
+    if (this.chatManagement.contactoActivo()?.id === contacto.id) return;
+
     this.chatManagement.seleccionarContacto(contacto, this.currentUserId);
     this.chatManagement.nuevoMensaje.set(''); // Limpiar texto al cambiar de chat
     this.mostrarEmojis.set(false); // Cerrar panel de emojis si estaba abierto
     this.cancelarEdicion(); // Limpiar el estado de edición
+
+    // Si el contacto NO tiene mensajes cargados, mostrar loading
+    if (!contacto.mensajes || contacto.mensajes.length === 0) {
+      this.cargandoMensajes.set(true);
+    }
+
     this.communicationService.getRecentMessages({ canalId: contacto.id, limit: 50 });
     
     // MARCAR TODOS LOS MENSAJES COMO LEÍDOS AL ENTRAR AL CHAT
@@ -727,8 +748,11 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
       usuarioId: this.currentUserId 
     });
 
-    setTimeout(() => this.scrollToBottom(), 50);
     this.cdr.detectChanges();
+    // Scroll después de que Angular renderice los mensajes cacheados
+    requestAnimationFrame(() => {
+      setTimeout(() => this.scrollToBottom(), 30);
+    });
   }
 
   verInfoContacto(): void {

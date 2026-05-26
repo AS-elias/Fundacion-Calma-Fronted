@@ -47,6 +47,7 @@ export class Notificaciones implements OnInit, OnDestroy {
     titulo: '',
     mensaje: '',
     enlace: '',
+    despedida: 'Atte.',
     firma: 'Fundacion Calma',
     tipo: 'comunicados' as TipoNotificacion,
     imagen: null as string | null,
@@ -201,6 +202,7 @@ export class Notificaciones implements OnInit, OnDestroy {
         titulo: '',
         mensaje: '',
         enlace: '',
+        despedida: 'Atte.',
         firma: 'Fundacion Calma',
         tipo: 'comunicados',
         imagen: null,
@@ -254,6 +256,7 @@ export class Notificaciones implements OnInit, OnDestroy {
           titulo: '',
           mensaje: '',
           enlace: '',
+          despedida: 'Atte.',
           firma: 'Fundacion Calma',
           tipo: 'comunicados',
           imagen: null,
@@ -349,7 +352,10 @@ export class Notificaciones implements OnInit, OnDestroy {
 
   firmaNotificacion(n: Notificacion | null): string | null {
     const linea = this.obtenerLinea(n, (value) => this.esLineaFirma(value));
-    return linea ? linea.replace(/^Atte\.?\s*/i, '').trim() : null;
+    if (!linea) {
+      return null;
+    }
+    return linea.replace(/^(Atte\.?|Atentamente,?|Saludos cordiales,?|Saludos,?|Cordialmente,?|Un cordial saludo,?|Con cariño,?)\s+/i, '').trim();
   }
 
   enlaceNotificacion(n: Notificacion | null): string | null {
@@ -432,11 +438,12 @@ export class Notificaciones implements OnInit, OnDestroy {
 
   private construirMensaje(): string {
     const partes = [this.form.mensaje.trim()];
+    const despedida = this.form.despedida.trim();
     const firma = this.form.firma.trim();
     const enlace = this.normalizarUrl(this.form.enlace.trim());
 
-    if (firma) {
-      partes.push(`Atte. ${firma}`);
+    if (despedida || firma) {
+      partes.push(`${despedida} ${firma}`.trim());
     }
 
     if (enlace) {
@@ -462,7 +469,7 @@ export class Notificaciones implements OnInit, OnDestroy {
   }
 
   private esLineaFirma(linea: string): boolean {
-    return /^Atte\.?\s+/i.test(linea.trim());
+    return /^(Atte\.?|Atentamente,?|Saludos cordiales,?|Saludos,?|Cordialmente,?|Un cordial saludo,?|Con cariño,?)\s+/i.test(linea.trim());
   }
 
   private esLineaEnlace(linea: string): boolean {
