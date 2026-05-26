@@ -25,6 +25,12 @@ export class CommunicationService {
   // Referencia nombrada del listener global para poder re-adjuntarlo después del socket.off del componente
   private readonly globalNewMessageHandler = (data: any) => {
     if (!data?.canalId) return;
+    const remitenteId = Number(
+      data.remitenteId ?? data.emisor_id ?? data.senderId ?? 0,
+    );
+    const myId = this.getCurrentUserId();
+    if (remitenteId > 0 && remitenteId === myId) return;
+
     const canalId = Number(data.canalId);
     if (isNaN(canalId)) return;
     const mapa = new Map(this.mensajesSinLeerGlobal());
@@ -268,6 +274,41 @@ export class CommunicationService {
   // M) Marcar Mensaje como Leído
   readMessage(data: { canalId: number, mensajeId: number, usuarioId: number }): void {
     this.socket?.emit('readMessage', data);
+  }
+
+  /** Sincroniza el mapa global sin perder conteos en memoria (toma el máximo por canal) */
+  syncUnreadFromChannels(channels: unknown[]): void {
+    if (!Array.isArray(channels)) return;
+    const mapa = new Map(this.mensajesSinLeerGlobal());
+    channels.forEach((item: any) => {
+      const id = Number(item?.canalId ?? item?.id ?? 0);
+      const unread = Number(item?.unreadCount ?? item?.mensajesSinLeer ?? 0);
+      if (id > 0 && unread > 0) {
+        mapa.set(id, Math.max(mapa.get(id) || 0, unread));
+      }
+    });
+    this.mensajesSinLeerGlobal.set(mapa);
+  }
+
+  /** Conecta el socket y carga contadores de no leídos para el sidebar */
+  ensureUnreadBadgeSync(): void {
+    const token =
+      localStorage.getItem('calma_token') ||
+      localStorage.getItem('token') ||
+      this.jwtToken;
+    if (!token) return;
+
+    const syncHandler = (data: unknown) => this.syncUnreadFromChannels(data as unknown[]);
+
+    this.connect(token)
+      .then(() => {
+        const socket = this.getSocket();
+        if (!socket) return;
+        socket.off('userChannels', syncHandler);
+        socket.on('userChannels', syncHandler);
+        this.getUserChannels({ usuarioId: this.getCurrentUserId() });
+      })
+      .catch(() => {});
   }
 
   // N) Añadir Participante

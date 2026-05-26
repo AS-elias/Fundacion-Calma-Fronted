@@ -60,7 +60,10 @@ export class EditarUsuarioComponent implements OnInit {
 
   ngOnInit(): void {
     const hoy = new Date();
-    this.minDate = hoy.toISOString().split('T')[0];
+    // Permitir fechas antiguas (10 años atrás) para trabajadores antiguos
+    const minDate = new Date();
+    minDate.setFullYear(minDate.getFullYear() - 10);
+    this.minDate = minDate.toISOString().split('T')[0];
     const maxDate = new Date();
     maxDate.setFullYear(maxDate.getFullYear() + 10);
     this.maxDate = maxDate.toISOString().split('T')[0];
@@ -234,6 +237,9 @@ export class EditarUsuarioComponent implements OnInit {
         
         this.editarForm.get('fecha_fin_contrato')?.setValue(`${outAño}-${outMes}-${outDia}`, { emitEvent: false });
       }
+    } else if (!meses) {
+      // Si se selecciona "Indefinido/Personalizado", limpiar la fecha para permitir edición manual
+      this.editarForm.get('fecha_fin_contrato')?.setValue('', { emitEvent: false });
     }
   }
 
@@ -255,7 +261,7 @@ export class EditarUsuarioComponent implements OnInit {
       estado: formValues.estado,
       fecha_ingreso: formValues.fecha_ingreso || '',
       duracion_meses: formValues.duracion_meses ? Number(formValues.duracion_meses) : null,
-      fecha_fin_contrato: formValues.fecha_fin_contrato ? formValues.fecha_fin_contrato : null
+      fecha_fin_contrato: formValues.fecha_fin_contrato && formValues.fecha_fin_contrato.trim() ? formValues.fecha_fin_contrato : null
     };
 
     const permisos: AreaPermiso[] = this.areasSeleccionadas.map(id => ({

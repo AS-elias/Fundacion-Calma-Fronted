@@ -96,7 +96,7 @@ export class SalasTrabajo implements OnInit, OnDestroy {
   cargarSalas(): void {
     this.salasTrabajoService.getSalaGeneral().subscribe({
       next: (sala) => {
-        this.salaGeneral = sala;
+        this.salaGeneral = { ...sala, es_general: true };
       },
       error: (err) => console.error('Error cargando sala general:', err)
     });
@@ -131,14 +131,15 @@ export class SalasTrabajo implements OnInit, OnDestroy {
 
   abrirModalEditar(sala: Sala) {
     this.modoEdicion = true;
+    const esGeneral = sala.es_general === true || sala === this.salaGeneral;
     this.nuevaSala = {
-      id: sala.id,
+      id: sala.id ?? this.salaGeneral?.id,
       nombre: sala.nombre,
       area: sala.area || '',
       link: sala.link,
       descripcion: sala.descripcion,
       es_privada: sala.es_privada || false,
-      es_general: sala.es_general || false
+      es_general: esGeneral
     };
     
     if (!this.nuevaSala.es_general && this.nuevaSala.area && !this.areasSugeridas.includes(this.nuevaSala.area)) {
@@ -167,9 +168,7 @@ export class SalasTrabajo implements OnInit, OnDestroy {
       link: this.nuevaSala.link
     };
     
-    if (this.nuevaSala.es_general) {
-      payload.es_general = true;
-    } else {
+    if (!this.nuevaSala.es_general) {
       payload.area = this.nuevaSala.area;
     }
 

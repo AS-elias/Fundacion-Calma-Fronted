@@ -38,6 +38,102 @@ export class ChatManagementService {
     return `https://fundacion-calma-backend.onrender.com/${url}`;
   }
 
+  /** ID de usuario en un registro de participante (no confundir con id de fila participantes_canal) */
+  obtenerUsuarioIdParticipante(p: any): number {
+    const explicit =
+      p?.usuarioId ??
+      p?.usuario_id ??
+      p?.userId ??
+      p?.user_id ??
+      p?.usuarios?.id;
+    if (explicit != null && explicit !== '') {
+      return Number(explicit);
+    }
+    if (p?.id != null && p?.canal_id == null && p?.canalId == null) {
+      return Number(p.id);
+    }
+    return 0;
+  }
+
+  obtenerOtroParticipante(participantes: any[], currentUserId: number): any | undefined {
+    if (!participantes?.length) return undefined;
+    const yo = Number(currentUserId);
+    return participantes.find(
+      (p) => this.obtenerUsuarioIdParticipante(p) !== yo,
+    );
+  }
+
+  /**
+   * En chats 1 a 1 el nombre del canal en BD suele ser el del otro usuario visto por quien creó el chat.
+   * Siempre mostramos el nombre del otro participante, nunca el propio.
+   */
+  private asignarNombreDesdeParticipante(
+    contacto: ContactoChat,
+    participante: any,
+  ): void {
+    const info = participante.usuario || participante.usuarios || participante;
+    const nombreOtro =
+      info.nombreCompleto ||
+      info.nombre_completo ||
+      info.nombre ||
+      participante.nombre ||
+      '';
+
+    if (!nombreOtro) return;
+
+    contacto.nombre = nombreOtro;
+    contacto.iniciales = this.generarIniciales(nombreOtro);
+    const avatarExtraido =
+      info.avatarUrl ||
+      info.fotoUrl ||
+      info.foto_url ||
+      info.avatar ||
+      participante.avatar;
+    if (avatarExtraido) {
+      contacto.avatarUrl = this.formatAvatarUrl(avatarExtraido);
+    }
+    if (
+      info.enLinea === true ||
+      info.isOnline === true ||
+      participante.isOnline === true
+    ) {
+      contacto.enLinea = true;
+    }
+  }
+
+  aplicarNombreChatDirecto(
+    contacto: ContactoChat,
+    currentUserId: number,
+    canalRaw?: any,
+  ): void {
+    if (contacto.esGrupo === true) return;
+
+    const yo = Number(currentUserId);
+    if (!yo) return;
+
+    const otro = this.obtenerOtroParticipante(
+      contacto.participantes || [],
+      yo,
+    );
+    if (otro) {
+      this.asignarNombreDesdeParticipante(contacto, otro);
+      return;
+    }
+
+    const ultimo = canalRaw?.ultimoMensaje;
+    const remitenteId = Number(
+      ultimo?.remitenteId ?? ultimo?.emisor_id ?? 0,
+    );
+    if (remitenteId > 0 && remitenteId !== yo) {
+      const part = contacto.participantes?.find(
+        (p) => this.obtenerUsuarioIdParticipante(p) === remitenteId,
+      );
+      if (part) {
+        this.asignarNombreDesdeParticipante(contacto, part);
+      }
+    }
+  }
+
   /**
    * Mapea un canal (del backend) a un contacto (del frontend)
    */
@@ -58,7 +154,7 @@ export class ChatManagementService {
       mensajesIniciales.push(this.mapMessageToMensaje(canal.ultimoMensaje, currentUserId, canal.participantes || []));
     }
     
-    return {
+    const contacto: ContactoChat = {
       id: idNumero,
       nombre: canal.nombre || 'Sin nombre',
       iniciales: this.generarIniciales(canal.nombre || 'SN'),
@@ -66,10 +162,13 @@ export class ChatManagementService {
       enLinea: false,
       mensajesSinLeer: canal.mensajesSinLeer || canal.unreadCount || canal.mensajesNoLeidos || canal.unreadMessages || 0,
       mensajes: mensajesIniciales,
-      esGrupo: canal.esGrupo || false,
+      esGrupo: canal.esGrupo === true || canal.es_grupo === true,
       participantes: canal.participantes || [],
       avatarUrl: this.formatAvatarUrl(canal.avatarUrl || canal.imagenUrl || canal.foto || canal.avatarBase64)
-    } as ContactoChat;
+    };
+
+    this.aplicarNombreChatDirecto(contacto, currentUserId, canal);
+    return contacto;
   }
 
   /**
@@ -273,21 +372,23 @@ export class ChatManagementService {
   /**
    * Selecciona un contacto activo
    */
-  seleccionarContacto(contacto: ContactoChat): void {
+  seleccionarContacto(contacto: ContactoChat, currentUserId?: number): void {
+    if (currentUserId) {
+      this.aplicarNombreChatDirecto(contacto, currentUserId);
+    }
+
     const nuevosContactos = this.contactos().map(c => {
       if (c.id === contacto.id) {
-        return { ...c, mensajesSinLeer: 0 };
+        return { ...contacto, mensajesSinLeer: 0 };
       }
       return c;
     });
     this.contactos.set(nuevosContactos);
-    
-    // Limpiar el contador global para este canal
+
     const mapaGlobal = new Map(this.commService.mensajesSinLeerGlobal());
     mapaGlobal.delete(contacto.id);
     this.commService.mensajesSinLeerGlobal.set(mapaGlobal);
-    
-    // Asignar el objeto actualizado al activo para mantener referencias sincronizadas
+
     const contactoActualizado = nuevosContactos.find(c => c.id === contacto.id);
     if (contactoActualizado) {
       this.contactoActivo.set(contactoActualizado);
@@ -314,6 +415,17 @@ export class ChatManagementService {
     }
   }
 
+  /** Conteo efectivo: máximo entre lista local y mapa global del sidebar */
+  obtenerMensajesSinLeer(contacto: ContactoChat | number): number {
+    const id = typeof contacto === 'number' ? contacto : contacto.id;
+    const local =
+      typeof contacto === 'number'
+        ? this.contactos().find((c) => c.id === id)?.mensajesSinLeer || 0
+        : contacto.mensajesSinLeer || 0;
+    const global = this.commService.mensajesSinLeerGlobal().get(id) || 0;
+    return Math.max(local, global);
+  }
+
   /**
    * Incrementa el contador de mensajes sin leer
    */
@@ -322,13 +434,17 @@ export class ChatManagementService {
     const idx = lista.findIndex(c => c.id === contactoId);
     if (idx === -1) return;
 
-    // Actualizar contador y mover al tope (estilo WhatsApp)
-    const actualizado = { ...lista[idx], mensajesSinLeer: (lista[idx].mensajesSinLeer || 0) + 1 };
+    const nuevoConteo = this.obtenerMensajesSinLeer(lista[idx]) + 1;
+    const actualizado = { ...lista[idx], mensajesSinLeer: nuevoConteo };
     const nuevosContactos = [
       actualizado,
       ...lista.filter((_, i) => i !== idx)
     ];
     this.contactos.set(nuevosContactos);
+
+    const mapaGlobal = new Map(this.commService.mensajesSinLeerGlobal());
+    mapaGlobal.set(contactoId, nuevoConteo);
+    this.commService.mensajesSinLeerGlobal.set(mapaGlobal);
   }
 
   /**
@@ -361,24 +477,22 @@ export class ChatManagementService {
    * Verifica si un contacto tiene a un usuario específico como participante
    */
   contactoTieneParticipante(contacto: ContactoChat, usuarioId: number): boolean {
-    return contacto.participantes?.some((p: any) =>
-      Number(p.id) === Number(usuarioId) ||
-      Number(p.usuarioId) === Number(usuarioId)
-    ) || false;
+    return (
+      contacto.participantes?.some(
+        (p: any) => this.obtenerUsuarioIdParticipante(p) === Number(usuarioId),
+      ) || false
+    );
   }
 
   /**
    * Obtiene el ID del otro participante en un chat directo
    */
   obtenerOtroParticipanteId(contacto: ContactoChat, currentUserId: number): number {
-    if (!contacto.participantes || contacto.participantes.length === 0) {
-      return 0;
-    }
-    const otro = contacto.participantes.find((p: any) =>
-      Number(p.id) !== Number(currentUserId) &&
-      Number(p.usuarioId) !== Number(currentUserId)
+    const otro = this.obtenerOtroParticipante(
+      contacto.participantes || [],
+      currentUserId,
     );
-    return Number(otro?.id || otro?.usuarioId || 0);
+    return this.obtenerUsuarioIdParticipante(otro);
   }
 
   /**
@@ -451,6 +565,7 @@ export class ChatManagementService {
 
     console.log(`Canales filtrados para usuario ${currentUserId}:`, canalesFiltrados.length, 'de', canales.length);
     
+    const mapaGlobal = this.commService.mensajesSinLeerGlobal();
     const contactosMapeados = canalesFiltrados.map(canal => {
       const contacto = this.mapChannelToContacto(canal, currentUserId);
       
@@ -458,38 +573,39 @@ export class ChatManagementService {
       const contactoExistente = this.contactos().find(c => c.id === contacto.id);
       if (contactoExistente && contactoExistente.mensajes && contactoExistente.mensajes.length > 0) {
         contacto.mensajes = [...contactoExistente.mensajes];
-        // También preservamos la cantidad de mensajes sin leer si es mayor al que viene del servidor
-        if (contactoExistente.mensajesSinLeer > contacto.mensajesSinLeer) {
-          contacto.mensajesSinLeer = contactoExistente.mensajesSinLeer;
-        }
       }
 
-      // Calcular estado en línea inicial para chats directos
-      if (!contacto.esGrupo && contacto.participantes) {
-        const otro = contacto.participantes.find((p: any) => Number(p.id) !== currentUserId && Number(p.usuarioId) !== currentUserId);
-        if (otro) {
-          const infoOtro = otro.usuario || otro;
-          contacto.enLinea = infoOtro.enLinea === true || infoOtro.isOnline === true || infoOtro.online === true || false;
-          
-          // 🔥 FIX: Asignar el nombre e iniciales del otro usuario para los chats directos
-          contacto.nombre = infoOtro.nombreCompleto || infoOtro.nombre_completo || infoOtro.nombre || 'Usuario Desconocido';
-          contacto.iniciales = this.generarIniciales(contacto.nombre);
-          let avatarExtraido = infoOtro.avatarUrl || infoOtro.fotoUrl || infoOtro.foto_url || infoOtro.avatar;
-          if (avatarExtraido) {
-            (contacto as any).avatarUrl = this.formatAvatarUrl(avatarExtraido);
-          }
-        }
-      }
+      const previoLocal = contactoExistente?.mensajesSinLeer || 0;
+      const previoGlobal = mapaGlobal.get(contacto.id) || 0;
+      contacto.mensajesSinLeer = Math.max(
+        contacto.mensajesSinLeer || 0,
+        previoLocal,
+        previoGlobal,
+      );
 
-      // 🔔 Absorber conteos del contador global (mensajes recibidos mientras el usuario estaba fuera)
-      const mapaGlobal = this.commService.mensajesSinLeerGlobal();
-      if (mapaGlobal.has(contacto.id)) {
-        contacto.mensajesSinLeer = (contacto.mensajesSinLeer || 0) + (mapaGlobal.get(contacto.id) || 0);
-      }
+      this.aplicarNombreChatDirecto(contacto, currentUserId, canal);
 
       return contacto;
     });
+
+    // Ordenar los contactos para que el chat con el mensaje más reciente aparezca siempre primero (arriba)
+    contactosMapeados.sort((a, b) => {
+      const timeA = a.mensajes && a.mensajes.length > 0 
+        ? new Date((a.mensajes[a.mensajes.length - 1] as any).timestampReal || (a.mensajes[a.mensajes.length - 1] as any).fechaISO || 0).getTime() 
+        : 0;
+      const timeB = b.mensajes && b.mensajes.length > 0 
+        ? new Date((b.mensajes[b.mensajes.length - 1] as any).timestampReal || (b.mensajes[b.mensajes.length - 1] as any).fechaISO || 0).getTime() 
+        : 0;
+      return timeB - timeA;
+    });
+
     this.contactos.set(contactosMapeados);
+    this.commService.syncUnreadFromChannels(
+      contactosMapeados.map((c) => ({
+        canalId: c.id,
+        unreadCount: c.mensajesSinLeer,
+      })),
+    );
   }
 
   /**

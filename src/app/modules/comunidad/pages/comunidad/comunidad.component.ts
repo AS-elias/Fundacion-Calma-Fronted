@@ -104,11 +104,13 @@ export class ComunidadComponent implements OnInit, OnDestroy {
       socket.off('userOffline');
 
       socket.on('userOnline', (data: any) => {
-        if (data?.userId) this.actualizarEstadoUsuario(data.userId, true);
+        const uid = data?.userId || data?.usuarioId;
+        if (uid) this.actualizarEstadoUsuario(uid, true);
       });
 
       socket.on('userOffline', (data: any) => {
-        if (data?.userId) this.actualizarEstadoUsuario(data.userId, false);
+        const uid = data?.userId || data?.usuarioId;
+        if (uid) this.actualizarEstadoUsuario(uid, false);
       });
 
       // Recibir lista de todos los usuarios online al conectar
@@ -117,6 +119,9 @@ export class ComunidadComponent implements OnInit, OnDestroy {
           data.forEach(uid => this.actualizarEstadoUsuario(uid, true));
         }
       });
+
+      // Solicitar inmediatamente la lista de usuarios online al inicializar el componente
+      this.solicitarUsuariosConectados();
 
       // Pedir lista actual de conectados
       socket.emit('getConnectedUsers', {}, (response: any) => {

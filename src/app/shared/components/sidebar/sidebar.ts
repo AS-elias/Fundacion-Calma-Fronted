@@ -61,6 +61,7 @@ export class SidebarComponent implements OnInit {
   ngOnInit(): void {
     this.isAdminUser = this.authService.isAdmin();
     this.cargarAreas();
+    this.commService.ensureUnreadBadgeSync();
   }
 
   /** Carga las áreas permitidas para este usuario desde el backend */

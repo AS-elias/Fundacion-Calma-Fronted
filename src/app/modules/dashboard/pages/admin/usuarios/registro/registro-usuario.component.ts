@@ -84,7 +84,10 @@ export class RegistroUsuarioComponent implements OnInit {
 
   ngOnInit(): void {
     const hoy = new Date();
-    this.minDate = hoy.toISOString().split('T')[0];
+    // Permitir fechas antiguas (10 años atrás) para trabajadores antiguos
+    const minDate = new Date();
+    minDate.setFullYear(minDate.getFullYear() - 10);
+    this.minDate = minDate.toISOString().split('T')[0];
     const maxDate = new Date();
     maxDate.setFullYear(maxDate.getFullYear() + 10);
     this.maxDate = maxDate.toISOString().split('T')[0];
@@ -187,6 +190,9 @@ export class RegistroUsuarioComponent implements OnInit {
         
         this.registroForm.get('fecha_fin_contrato')?.setValue(`${outAño}-${outMes}-${outDia}`, { emitEvent: false });
       }
+    } else if (!meses) {
+      // Si se selecciona "Indefinido/Personalizado", limpiar la fecha para permitir edición manual
+      this.registroForm.get('fecha_fin_contrato')?.setValue('', { emitEvent: false });
     }
   }
 
@@ -232,7 +238,7 @@ export class RegistroUsuarioComponent implements OnInit {
       puesto: formulario.puesto?.trim() || '',
       fecha_ingreso: formulario.fecha_ingreso || '',
       duracion_meses: formulario.duracion_meses ? Number(formulario.duracion_meses) : null,
-      fecha_fin_contrato: formulario.fecha_fin_contrato || '',
+      fecha_fin_contrato: formulario.fecha_fin_contrato ? formulario.fecha_fin_contrato : null,
       estado: 'ACTIVO'
     } as any;
 

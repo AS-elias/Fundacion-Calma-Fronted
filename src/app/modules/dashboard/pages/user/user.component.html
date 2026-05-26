@@ -30,7 +30,7 @@
           </div>
         </ng-container>
 
-        <ng-container *ngIf="stats.desempenoEquipo !== undefined && stats.desempenoEquipo !== null">
+        <ng-container *ngIf="!esAdmin && stats.desempenoEquipo !== undefined && stats.desempenoEquipo !== null">
           <div class="stat-card">
               <div class="stat-icon bg-purple"><i class="pi pi-users"></i></div>
               <div class="stat-data">

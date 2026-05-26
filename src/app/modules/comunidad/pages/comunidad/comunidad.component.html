@@ -98,6 +98,11 @@
           [style]="{width: '90%', maxWidth: '450px'}" styleClass="perfil-modal" (onHide)="cerrarPerfil()">
     
     <div class="perfil-modal-content" *ngIf="contactoSeleccionado">
+        <!-- Botón X para cerrar -->
+        <button class="btn-cerrar-perfil" (click)="cerrarPerfil()" type="button" aria-label="Cerrar perfil">
+            <i class="pi pi-times"></i>
+        </button>
+
         <div class="perfil-header-bg"></div>
         
         <div class="perfil-avatar-section">

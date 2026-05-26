@@ -5,6 +5,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { DashboardService, UserDashboardStats } from '../../services/dashboard.service';
 import { DashboardSocketService } from '../../services/dashboard-socket.service';
+import { AuthService } from '../../../auth/services/auth.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -28,7 +29,12 @@ export class UserComponent implements OnInit, OnDestroy {
 
   private dashboardService = inject(DashboardService);
   private dashboardSocket = inject(DashboardSocketService);
+  private authService = inject(AuthService);
   private socketSub?: Subscription;
+
+  get esAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
 
   ngOnInit(): void {
     this.loadDashboardData();

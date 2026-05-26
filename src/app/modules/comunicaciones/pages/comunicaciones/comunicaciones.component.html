@@ -26,7 +26,7 @@
             </div>
 
             <!-- Listado con filtro -->
-            <div class="contact-item" *ngFor="let contacto of contactosFiltrados()"
+            <div class="contact-item" *ngFor="let contacto of contactosFiltrados(); trackBy: trackByContacto"
                 [class.active]="chatManagement.contactoActivo()?.id === contacto.id" (click)="seleccionarContacto(contacto)">
 
                 <div class="avatar" [ngClass]="contacto.colorBg">
@@ -45,7 +45,9 @@
                     <span class="time" *ngIf="contacto.mensajes.length > 0">
                         {{ contacto.mensajes[contacto.mensajes.length - 1].hora }}
                     </span>
-                    <span class="badge" *ngIf="contacto.mensajesSinLeer > 0">{{ contacto.mensajesSinLeer }}</span>
+                    <ng-container *ngIf="{ n: sinLeerEnContacto(contacto) } as unread">
+                        <span class="badge" *ngIf="unread.n > 0">{{ unread.n > 99 ? '99+' : unread.n }}</span>
+                    </ng-container>
                 </div>
             </div>
         </div>

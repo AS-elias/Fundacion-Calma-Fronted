@@ -17,4 +17,5 @@ export interface ContactoChat {
   mensajes: Mensaje[];
   esGrupo?: boolean;
   participantes?: any[];
+  avatarUrl?: string;
 }

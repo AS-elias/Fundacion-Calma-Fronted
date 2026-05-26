@@ -130,6 +130,7 @@
             <input id="fecha_ingreso" type="date" formControlName="fecha_ingreso" 
                    [min]="minDate" [max]="maxDate" [class.is-invalid]="registroForm.get('fecha_ingreso')?.invalid && registroForm.get('fecha_ingreso')?.touched">
           </div>
+          <small class="info-text">Puedes registrar trabajadores antiguos con fechas pasadas.</small>
         </div>
 
         <!-- Duración del Contrato -->
@@ -141,7 +142,7 @@
             <option value="6">6 Meses</option>
             <option value="12">12 Meses</option>
           </select>
-          <small class="info-text">Selecciona los meses para calcular automáticamente la fecha de fin.</small>
+          <small class="info-text">Si selecciona una duración, se calcularán los meses. Si es "Indefinido", edite manualmente la fecha fin.</small>
         </div>
 
         <!-- Fecha Fin de Contrato -->

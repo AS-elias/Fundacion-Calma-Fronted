@@ -101,6 +101,8 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
 
   // Computed para contactos filtrados - AQUÍ está la lógica
   contactosFiltrados = computed(() => {
+    // Dependencia explícita para que OnPush actualice badges al cambiar el mapa global
+    this.communicationService.mensajesSinLeerGlobal();
     const texto = this.textoBusqueda().toLowerCase();
     return texto.trim() === '' 
       ? this.chatManagement.contactos()
@@ -108,6 +110,15 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
           c.nombre.toLowerCase().includes(texto)
         );
   });
+
+  sinLeerEnContacto(contacto: ContactoChat): number {
+    return this.chatManagement.obtenerMensajesSinLeer(contacto);
+  }
+
+  // Método trackBy para evitar el parpadeo de la lista de contactos
+  trackByContacto(index: number, contacto: ContactoChat): number {
+    return contacto.id;
+  }
 
   // ===== ACCESO DIRECTO A SERVICIOS (Sin getters redundantes) =====
   // Usar directamente en templates: chatManagement.contacto() en lugar de getter
@@ -198,8 +209,13 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
         });
       };
 
-      // Obtener ID con validación garantizada
-      let userId = this.communicationService.getCurrentUserId();
+      const resolverUserId = (): number => {
+        const user = this.authService.getCurrentUser();
+        if (user?.id) return Number(user.id);
+        return this.communicationService.getCurrentUserId();
+      };
+
+      let userId = resolverUserId();
       if (userId === 0) {
         const user = this.authService.getCurrentUser();
         if (user && user.id) {
@@ -224,7 +240,19 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.communicationService.disconnect();
+    const socket = this.communicationService.getSocket();
+    if (socket) {
+      socket.off('userChannels');
+      socket.off('channelCreated');
+      socket.off('userOnline');
+      socket.off('userOffline');
+      socket.off('recentMessages');
+      socket.off('newMessage');
+      socket.off('messageEdited');
+      socket.off('messageRead');
+      socket.off('messagesRead');
+      this.communicationService.reattachGlobalListeners();
+    }
     this.chatManagement.limpiar();
     this.onlineUsers.clear();
   }
@@ -379,7 +407,17 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
         const canal = this.chatManagement.contactos().find((c: ContactoChat) => c.id === data.canalId);
         
         if (!canal) {
-          console.warn('⚠️ Canal no encontrado en lista local:', data.canalId, '- Contador global activo.');
+          console.warn('⚠️ Canal no encontrado en lista local:', data.canalId, '- recargando canales.');
+          const remitenteId = Number(data.remitenteId ?? data.emisor_id ?? 0);
+          const esMio = remitenteId > 0 && remitenteId === this.currentUserId;
+          if (!esMio) {
+            const mapaGlobal = new Map(this.communicationService.mensajesSinLeerGlobal());
+            const canalId = Number(data.canalId);
+            mapaGlobal.set(canalId, (mapaGlobal.get(canalId) || 0) + 1);
+            this.communicationService.mensajesSinLeerGlobal.set(mapaGlobal);
+          }
+          this.communicationService.getUserChannels({ usuarioId: this.currentUserId });
+          this.cdr.detectChanges();
           return;
         }
 
@@ -421,30 +459,30 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
         }
 
         if (this.chatManagement.contactoActivo()?.id === canal.id) {
-          // Si el chat está activo, el usuario lo está leyendo. Limpiar global map para este canal.
           const mapaGlobal = new Map(this.communicationService.mensajesSinLeerGlobal());
           mapaGlobal.delete(canal.id);
           this.communicationService.mensajesSinLeerGlobal.set(mapaGlobal);
 
-          // FORZAR ACTUALIZACIÓN REACTIVA Y SUBIR AL TOPE
           const canalActualizado = {...canal} as ContactoChat;
           this.chatManagement.contactoActivo.set(canalActualizado);
-          // Subir al tope también cuando es el chat abierto
           const listaActual = this.chatManagement.contactos();
           const reordenados = [
             canalActualizado,
             ...listaActual.filter(c => c.id !== canalActualizado.id)
           ];
           this.chatManagement.contactos.set(reordenados);
-          
-          this.communicationService.readMessage({ 
-            canalId: canal.id, 
-            mensajeId: data.id || 0, 
-            usuarioId: this.currentUserId 
-          });
-          setTimeout(() => this.scrollToBottom(), 50); // Hacemos scroll si llega mensaje en nuestro chat actual
-        } else {
-          // Incrementar el badge del sidebar para este canal (ya sube al tope internamente)
+
+          const remitenteId = Number(data.remitenteId ?? data.emisor_id ?? 0);
+          const esMio = remitenteId > 0 && remitenteId === this.currentUserId;
+          if (!esMio) {
+            this.communicationService.readMessage({
+              canalId: canal.id,
+              mensajeId: data.id || 0,
+              usuarioId: this.currentUserId,
+            });
+          }
+          setTimeout(() => this.scrollToBottom(), 50);
+        } else if (!nuevoMsg.enviadoPorMi) {
           this.chatManagement.incrementarMensajesSinLeer(canal.id);
         }
         this.cdr.detectChanges();
@@ -504,19 +542,20 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
       try {
         const canal = this.chatManagement.contactos().find((c: ContactoChat) => c.id === data.canalId);
         if (canal) {
-          if (data.mensajeId) {
-            canal.mensajes = canal.mensajes.map((m: any) => 
-              m.id === data.mensajeId ? { ...m, leido: true } : m
+          if (data.mensajeId > 0) {
+            canal.mensajes = canal.mensajes.map((m: any) =>
+              m.id === data.mensajeId && m.enviadoPorMi ? { ...m, leido: true } : m
             );
           } else {
-            canal.mensajes = canal.mensajes.map((m: any) => ({ ...m, leido: true }));
+            canal.mensajes = canal.mensajes.map((m: any) =>
+              m.enviadoPorMi ? { ...m, leido: true } : m
+            );
           }
-          
-          // Si el canal actualizado es el activo, forzar actualización
+
           if (this.chatManagement.contactoActivo()?.id === canal.id) {
             this.chatManagement.contactoActivo.set({...canal} as ContactoChat);
           }
-          
+
           this.cdr.detectChanges();
         }
       } catch (error) {}
@@ -526,8 +565,10 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
       try {
         const canal = this.chatManagement.contactos().find((c: ContactoChat) => c.id === data.canalId);
         if (canal) {
-          canal.mensajes = canal.mensajes.map((m: any) => ({ ...m, leido: true }));
-          
+          canal.mensajes = canal.mensajes.map((m: any) =>
+            m.enviadoPorMi ? { ...m, leido: true } : m
+          );
+
           if (this.chatManagement.contactoActivo()?.id === canal.id) {
             this.chatManagement.contactoActivo.set({...canal} as ContactoChat);
           }
@@ -595,7 +636,7 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     );
 
     if (existingChat) {
-      this.chatManagement.seleccionarContacto(existingChat);
+      this.chatManagement.seleccionarContacto(existingChat, this.currentUserId);
       this.clearPendingChat();
       return;
     }
@@ -618,23 +659,21 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
         // Mapear el canal devuelto para seleccionarlo de inmediato
         const contactoMapeado = this.chatManagement.mapChannelToContacto(nuevoCanal, this.currentUserId);
         
-        // Actualizamos información de la otra persona
-        if (contactoMapeado.participantes) {
-           const otro = contactoMapeado.participantes.find((p: any) => Number(p.usuarioId) !== this.currentUserId);
-           if (otro) {
-              contactoMapeado.nombre = otro.nombre || this.pendingChatContactoNombre || 'Usuario';
-              contactoMapeado.iniciales = this.chatManagement.generarIniciales(contactoMapeado.nombre);
-              if (otro.avatar) {
-                let url = otro.avatar;
-                if (url && !url.startsWith('http') && !url.startsWith('data:image')) {
-                  url = url.startsWith('/') ? `https://fundacion-calma-backend.onrender.com${url}` : `https://fundacion-calma-backend.onrender.com/${url}`;
-                }
-                (contactoMapeado as any).avatarUrl = url;
-              }
-           }
+        this.chatManagement.aplicarNombreChatDirecto(
+          contactoMapeado,
+          this.currentUserId,
+        );
+        if (
+          !contactoMapeado.esGrupo &&
+          (contactoMapeado.nombre === 'Sin nombre' || !contactoMapeado.nombre)
+        ) {
+          contactoMapeado.nombre =
+            this.pendingChatContactoNombre || 'Usuario';
+          contactoMapeado.iniciales =
+            this.chatManagement.generarIniciales(contactoMapeado.nombre);
         }
 
-        this.chatManagement.seleccionarContacto(contactoMapeado);
+        this.chatManagement.seleccionarContacto(contactoMapeado, this.currentUserId);
         
       } catch (error) {
         console.warn('❌ Error creando canal:', error);
@@ -675,7 +714,7 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
   // ===== Chat Methods =====
   
   seleccionarContacto(contacto: ContactoChat) {
-    this.chatManagement.seleccionarContacto(contacto);
+    this.chatManagement.seleccionarContacto(contacto, this.currentUserId);
     this.chatManagement.nuevoMensaje.set(''); // Limpiar texto al cambiar de chat
     this.mostrarEmojis.set(false); // Cerrar panel de emojis si estaba abierto
     this.cancelarEdicion(); // Limpiar el estado de edición

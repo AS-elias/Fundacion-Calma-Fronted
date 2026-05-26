@@ -21,6 +21,8 @@ export interface BaseMessageData {
   id?: number;
   canalId?: number;
   remitenteId?: number;
+  /** Alias que envía Prisma / el backend en algunos eventos */
+  emisor_id?: number;
   tipo?: 'text' | 'file' | 'image' | 'system';
   contenido?: string;
   texto?: string;

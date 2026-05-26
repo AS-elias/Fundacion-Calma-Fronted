@@ -59,6 +59,8 @@ export class EditarService {
       puesto: datos.puesto ?? '',
       rol_id: Number(datos.rol_id),
       estado: datos.estado,
+      fecha_ingreso: datos.fecha_ingreso ?? '',
+      duracion_meses: datos.duracion_meses,
       // Si no hay fecha, mandamos null explícitamente
       fecha_fin_contrato: datos.fecha_fin_contrato ? datos.fecha_fin_contrato : null
     };
