@@ -37,7 +37,7 @@
                 <div class="contact-info">
                     <span class="name">{{ contacto.nombre }}</span>
                     <span class="last-msg" *ngIf="contacto.mensajes.length > 0">
-                        {{ contacto.mensajes[contacto.mensajes.length - 1].texto }}
+                        <ng-container *ngIf="contacto.mensajes[contacto.mensajes.length - 1].enviadoPorMi">Tú: </ng-container>{{ contacto.mensajes[contacto.mensajes.length - 1].texto }}
                     </span>
                 </div>
 

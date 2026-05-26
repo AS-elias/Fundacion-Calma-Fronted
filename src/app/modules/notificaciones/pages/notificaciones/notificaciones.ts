@@ -43,6 +43,9 @@ export class Notificaciones implements OnInit, OnDestroy {
   archivoImagen: File | null = null;
   guardando = false;
 
+  paginaActual = 1;
+  notificacionesPorPagina = 6;
+
   form = {
     titulo: '',
     mensaje: '',
@@ -67,6 +70,7 @@ export class Notificaciones implements OnInit, OnDestroy {
     this.service.listar().subscribe({
       next: (data) => {
         this.notificaciones = data;
+        this.paginaActual = 1;
       },
       error: (err) => console.error('Error al cargar notificaciones:', err),
     });
@@ -74,6 +78,31 @@ export class Notificaciones implements OnInit, OnDestroy {
 
   get cantidadNoLeidas(): number {
     return this.notificaciones.filter((n) => !n.leido).length;
+  }
+
+  get totalPaginas(): number {
+    return Math.ceil(this.notificacionesFiltradas.length / this.notificacionesPorPagina);
+  }
+
+  get paginasArray(): number[] {
+    const total = this.totalPaginas;
+    const array = [];
+    for (let i = 1; i <= total; i++) {
+      array.push(i);
+    }
+    return array;
+  }
+
+  cambiarPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginas) {
+      this.paginaActual = pagina;
+    }
+  }
+
+  get notificacionesPaginadas(): Notificacion[] {
+    const inicio = (this.paginaActual - 1) * this.notificacionesPorPagina;
+    const fin = inicio + this.notificacionesPorPagina;
+    return this.notificacionesFiltradas.slice(inicio, fin);
   }
 
   get notificacionesFiltradas(): Notificacion[] {
@@ -98,6 +127,7 @@ export class Notificaciones implements OnInit, OnDestroy {
     if (filtro === 'favoritos') {
       if (this.filtroSeleccionado === 'favoritos') {
         this.filtroSeleccionado = this.filtroAntesFavoritos;
+        this.paginaActual = 1;
         return;
       }
 
@@ -109,12 +139,14 @@ export class Notificaciones implements OnInit, OnDestroy {
     if (filtro !== 'favoritos') {
       this.filtroAntesFavoritos = filtro;
     }
+    this.paginaActual = 1;
   }
 
   limpiarFiltroFecha(): void {
     this.fechaDesde = '';
     this.fechaHasta = '';
     this.mostrarFiltroFecha = false;
+    this.paginaActual = 1;
   }
 
   toggleFiltroFecha(): void {

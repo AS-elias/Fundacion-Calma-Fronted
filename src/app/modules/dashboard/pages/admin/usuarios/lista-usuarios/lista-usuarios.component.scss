@@ -73,7 +73,7 @@
 }
 
 .card-table {
-  background: var(--surface-section);
+  background: var(--surface-card, #ffffff);
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   overflow-x: auto; /* Responsive tables */
@@ -264,6 +264,87 @@
           color: white;
         }
       }
+    }
+  }
+
+  .vencido {
+    color: #e74c3c !important;
+    font-weight: 600;
+
+    .vencido-tag {
+      background: rgba(231, 76, 60, 0.1);
+      color: #e74c3c;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-left: 0.4rem;
+      text-transform: uppercase;
+    }
+  }
+
+  .user-vencido {
+    background-color: rgba(231, 76, 60, 0.02) !important;
+    
+    td {
+      color: #7f8c8d !important;
+    }
+  }
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--surface-border, #eee);
+
+  .btn-page {
+    background: white;
+    color: var(--calma-text-dark, #2c3e50);
+    border: 1px solid var(--surface-border, #e0e0e0);
+    padding: 0.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+
+    &:hover:not([disabled]) {
+      background: var(--calma-primary-light, #e6f3f8);
+      color: var(--calma-primary, #048abf);
+      border-color: var(--calma-primary, #048abf);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(4, 138, 191, 0.15);
+    }
+
+    &.active {
+      background: var(--calma-primary, #048abf);
+      color: white;
+      border-color: var(--calma-primary, #048abf);
+      box-shadow: 0 4px 10px rgba(4, 138, 191, 0.3);
+      transform: translateY(-2px);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #f8f9fa;
+      color: #adb5bd;
+      border-color: #dee2e6;
+      box-shadow: none;
+    }
+    
+    i {
+      font-size: 0.9rem;
     }
   }
 }

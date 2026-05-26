@@ -36,10 +36,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngIf="usuarios.length === 0">
+        <tr *ngIf="usuariosOrdenados.length === 0">
           <td colspan="6" class="empty-state">No hay usuarios registrados aún.</td>
         </tr>
-        <tr *ngFor="let u of usuarios">
+        <tr *ngFor="let u of usuariosPaginados" [class.user-vencido]="isContratoVencido(u)">
           <td>
             <div class="user-cell">
               <div class="avatar">{{ u.nombre_completo.charAt(0) | uppercase }}</div>
@@ -56,8 +56,9 @@
             </span>
           </td>
           <td>
-            <span *ngIf="u.fecha_fin_contrato" class="date-text">
-              <i class="pi pi-calendar"></i> {{ u.fecha_fin_contrato | date:'shortDate' }}
+            <span *ngIf="u.fecha_fin_contrato" class="date-text" [class.vencido]="isContratoVencido(u)">
+              <i class="pi pi-calendar"></i> {{ u.fecha_fin_contrato | date:'dd/MM/yyyy' }}
+              <span *ngIf="isContratoVencido(u)" class="vencido-tag">Vencido</span>
             </span>
             <span *ngIf="!u.fecha_fin_contrato" class="date-text indefinite">Indefinido</span>
           </td>
@@ -89,5 +90,33 @@
         </tr>
       </tbody>
     </table>
+
+    <!-- Controles de Paginación -->
+    <div *ngIf="!cargando && !error && totalPaginas > 1" class="pagination-controls">
+      <button 
+        class="btn-page" 
+        [disabled]="paginaActual === 1" 
+        (click)="cambiarPagina(paginaActual - 1)"
+        title="Página Anterior">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+      
+      <ng-container *ngFor="let p of paginasArray">
+        <button 
+          class="btn-page" 
+          [class.active]="p === paginaActual" 
+          (click)="cambiarPagina(p)">
+          {{ p }}
+        </button>
+      </ng-container>
+
+      <button 
+        class="btn-page" 
+        [disabled]="paginaActual === totalPaginas" 
+        (click)="cambiarPagina(paginaActual + 1)"
+        title="Página Siguiente">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
   </div>
 </div>

@@ -18,6 +18,7 @@ import {
   Notificacion
 } from '../../../modules/notificaciones/services/notificaciones.service';
 import { LayoutService } from '../../services/layout.service';
+import { CommunicationService } from '../../../core/services/communication.service';
 
 @Component({
   selector: 'app-navbar',
@@ -36,6 +37,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private navbarSearchService = inject(NavbarSearchService);
   public layoutService = inject(LayoutService);
+  private commService = inject(CommunicationService);
 
   nombreUsuario = signal<string>('Usuario');
   rolUsuario = signal<string>('Rol Desconocido');
@@ -48,6 +50,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
   notificacionSeleccionada: Notificacion | null = null;
   private cambiosSub?: Subscription;
   private pollingSub?: Subscription;
+  private commSub?: Subscription;
+
+  private IDsConocidos = new Set<number>();
+  notificacionToast = signal<Notificacion | null>(null);
+  campanaAnimada = signal<boolean>(false);
+  private toastTimeout: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit() {
     this.inicializarTema();
@@ -56,7 +64,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.cambiosSub = this.notifService.cambios$.subscribe(() => {
       this.cargarNotificaciones();
     });
-    this.pollingSub = interval(15000).subscribe(() => {
+    this.pollingSub = interval(5000).subscribe(() => {
+      this.cargarNotificaciones();
+    });
+    this.commSub = this.commService.sistemaActualizado$.subscribe(() => {
       this.cargarNotificaciones();
     });
   }
@@ -69,6 +80,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.cambiosSub?.unsubscribe();
     this.pollingSub?.unsubscribe();
+    this.commSub?.unsubscribe();
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+    }
   }
 
   cargarDatosUsuario() {
@@ -111,10 +126,60 @@ export class NavbarComponent implements OnInit, OnDestroy {
   cargarNotificaciones() {
     this.notifService.listar().subscribe({
       next: (data: Notificacion[]) => {
+        // Detectar nuevas notificaciones no leídas
+        if (this.IDsConocidos.size > 0) {
+          const nuevas = data.filter(n => !n.leido && !this.IDsConocidos.has(n.id));
+          if (nuevas.length > 0) {
+            const masReciente = nuevas.reduce((prev, curr) => (curr.id > prev.id ? curr : prev), nuevas[0]);
+            this.mostrarBurbujaToast(masReciente);
+          }
+        } else {
+          // Primera carga: si hay notificaciones sin leer, mostrar la más reciente de inmediato
+          const pendientes = data.filter(n => !n.leido);
+          if (pendientes.length > 0) {
+            const masReciente = pendientes.reduce((prev, curr) => (curr.id > prev.id ? curr : prev), pendientes[0]);
+            // Esperar un momento corto (e.g. 500ms) para que la página renderice completamente antes del toast
+            setTimeout(() => {
+              this.mostrarBurbujaToast(masReciente);
+            }, 500);
+          }
+        }
+
+        // Registrar IDs conocidos
+        data.forEach(n => this.IDsConocidos.add(n.id));
         this.notificaciones.set(data);
       },
       error: (err) => console.error(err)
     });
+  }
+
+  mostrarBurbujaToast(n: Notificacion) {
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+    }
+    this.notificacionToast.set(n);
+    this.campanaAnimada.set(true);
+
+    setTimeout(() => {
+      this.campanaAnimada.set(false);
+    }, 1500);
+
+    this.toastTimeout = setTimeout(() => {
+      this.notificacionToast.set(null);
+    }, 6000);
+  }
+
+  cerrarToast(event: MouseEvent) {
+    event.stopPropagation();
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+    }
+    this.notificacionToast.set(null);
+  }
+
+  hacerClicEnToast(n: Notificacion) {
+    this.abrirNotificacion(n);
+    this.notificacionToast.set(null);
   }
 
   toggleDropdown() {

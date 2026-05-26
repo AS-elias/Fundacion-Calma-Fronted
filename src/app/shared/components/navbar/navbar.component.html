@@ -29,7 +29,7 @@
         type="button"
         (click)="toggleDropdown(); $event.stopPropagation()"
       >
-        <i class="pi pi-bell"></i>
+        <i class="pi pi-bell" [class.shake]="campanaAnimada()"></i>
 
         <span
           *ngIf="noLeidas() > 0"
@@ -100,6 +100,28 @@
       </div>
 
     </button>
+
+    <!-- Burbuja Flotante de Nueva Notificación -->
+    <div
+      *ngIf="notificacionToast() as toast"
+      class="global-toast"
+      (click)="hacerClicEnToast(toast)"
+    >
+      <div class="toast-indicator-bar"></div>
+      <div class="toast-icon">
+        <i class="pi pi-bell"></i>
+      </div>
+      <div class="toast-body">
+        <div class="toast-header-row">
+          <span class="toast-category">{{ etiquetaTipo(toast) }}</span>
+          <span class="toast-title">{{ toast.titulo }}</span>
+        </div>
+        <p class="toast-desc">{{ resumenMensaje(toast) }}</p>
+      </div>
+      <button class="toast-close" type="button" (click)="cerrarToast($event)">
+        ✕
+      </button>
+    </div>
 
   </div>
 

@@ -96,12 +96,12 @@
       >
         <label>
           Desde
-          <input type="date" [(ngModel)]="fechaDesde" />
+          <input type="date" [(ngModel)]="fechaDesde" (ngModelChange)="paginaActual = 1" />
         </label>
 
         <label>
           Hasta
-          <input type="date" [(ngModel)]="fechaHasta" />
+          <input type="date" [(ngModel)]="fechaHasta" (ngModelChange)="paginaActual = 1" />
         </label>
 
         <button
@@ -119,7 +119,7 @@
   <div class="lista-notificaciones">
 
     <div
-      *ngFor="let n of notificacionesFiltradas"
+      *ngFor="let n of notificacionesPaginadas"
       class="card-notificacion"
       [class.leido]="n.leido"
       (click)="abrirDetalle(n)"
@@ -178,6 +178,34 @@
         </button>
       </div>
 
+    </div>
+
+    <!-- Controles de Paginación -->
+    <div *ngIf="totalPaginas > 1" class="pagination-controls">
+      <button 
+        class="btn-page" 
+        [disabled]="paginaActual === 1" 
+        (click)="cambiarPagina(paginaActual - 1)"
+        title="Página Anterior">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+      
+      <ng-container *ngFor="let p of paginasArray">
+        <button 
+          class="btn-page" 
+          [class.active]="p === paginaActual" 
+          (click)="cambiarPagina(p)">
+          {{ p }}
+        </button>
+      </ng-container>
+
+      <button 
+        class="btn-page" 
+        [disabled]="paginaActual === totalPaginas" 
+        (click)="cambiarPagina(paginaActual + 1)"
+        title="Página Siguiente">
+        <i class="pi pi-chevron-right"></i>
+      </button>
     </div>
   </div>
 </div>
