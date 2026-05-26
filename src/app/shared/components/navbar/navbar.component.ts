@@ -153,12 +153,44 @@ export class NavbarComponent implements OnInit, OnDestroy {
     });
   }
 
+  playNotificationSound() {
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
+      const now = ctx.currentTime;
+      
+      const playNote = (freq: number, startTime: number, duration: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+        
+        gain.gain.setValueAtTime(0.12, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      };
+      
+      playNote(550, now, 0.3);
+      playNote(880, now + 0.12, 0.45);
+    } catch (e) {
+      console.warn('AudioContext sound blocked or unsupported:', e);
+    }
+  }
+
   mostrarBurbujaToast(n: Notificacion) {
     if (this.toastTimeout) {
       clearTimeout(this.toastTimeout);
     }
     this.notificacionToast.set(n);
     this.campanaAnimada.set(true);
+    this.playNotificationSound();
 
     setTimeout(() => {
       this.campanaAnimada.set(false);

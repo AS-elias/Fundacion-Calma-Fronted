@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrateg
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CommunicationService } from '../../../../core/services/communication.service';
 import { AuthService } from '../../../auth/services/auth.service';
@@ -78,6 +78,13 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
 
   // Referencia al contenedor de mensajes en el HTML para el auto-scroll
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
+
+  // Estados para "Escribiendo..." y "Drag & Drop"
+  private localTyping = false;
+  private localTypingTimeout: any;
+  private typingSub?: Subscription;
+  usuariosEscribiendo = signal<Map<number, Set<string>>>(new Map());
+  dragActivo = signal(false);
 
   // Señales para template
   textoBusqueda = signal('');
@@ -206,7 +213,12 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
           console.log('Solicitando canales para el usuario:', this.currentUserId);
           this.communicationService.getUserChannels({ usuarioId: this.currentUserId });
           this.cargarUsuariosSistema();
-        this.cargarEmojis(); // Descargar Emojis de API Externa
+          this.cargarEmojis(); // Descargar Emojis de API Externa
+
+          // Suscribirse al evento de escritura de WebSocket
+          this.typingSub = this.communicationService.typing$.subscribe((data) => {
+            this.actualizarUsuariosEscribiendo(data.canalId, data.usuarioId, data.isTyping);
+          });
         });
       };
 
@@ -256,6 +268,12 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     }
     this.chatManagement.limpiar();
     this.onlineUsers.clear();
+    
+    // Desvincular suscripción y timeout de escritura
+    this.typingSub?.unsubscribe();
+    if (this.localTypingTimeout) {
+      clearTimeout(this.localTypingTimeout);
+    }
   }
 
   private setupWebsocketListeners() {
@@ -776,6 +794,13 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     const canalActivo = this.chatManagement.contactoActivo();
     if (!mensaje || !canalActivo) return;
 
+    // Detener estado "escribiendo..." de inmediato al enviar
+    if (this.localTyping) {
+      this.localTyping = false;
+      if (this.localTypingTimeout) clearTimeout(this.localTypingTimeout);
+      this.communicationService.sendTyping(canalActivo.id, false);
+    }
+
     // --- FLUJO DE EDICIÓN ---
     const msjEditando = this.mensajeEnEdicion();
     if (msjEditando) {
@@ -843,6 +868,144 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
       tipo: 'text',
       archivoUrl: null
     });
+  }
+
+  // ===== Métodos para "Escribiendo..." y "Drag & Drop" =====
+
+  onInputMessage(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.chatManagement.nuevoMensaje.set(input.value);
+
+    const canalActivo = this.chatManagement.contactoActivo();
+    if (canalActivo) {
+      if (!this.localTyping) {
+        this.localTyping = true;
+        this.communicationService.sendTyping(canalActivo.id, true);
+      }
+
+      if (this.localTypingTimeout) clearTimeout(this.localTypingTimeout);
+      this.localTypingTimeout = setTimeout(() => {
+        this.localTyping = false;
+        this.communicationService.sendTyping(canalActivo.id, false);
+      }, 2000);
+    }
+  }
+
+  actualizarUsuariosEscribiendo(canalId: number, usuarioId: number, isTyping: boolean) {
+    if (usuarioId === this.currentUserId) return;
+
+    let nombre = 'Alguien';
+    const contactos = this.chatManagement.contactos();
+    const contacto = contactos.find(c => c.id === canalId);
+    if (contacto) {
+      if (contacto.esGrupo) {
+        const part = contacto.participantes?.find(p => p.id === usuarioId || p.usuarioId === usuarioId);
+        if (part?.nombre) {
+          nombre = part.nombre;
+        }
+      } else {
+        nombre = contacto.nombre;
+      }
+    }
+
+    const mapa = new Map(this.usuariosEscribiendo());
+    let set = mapa.get(canalId);
+    if (!set) {
+      set = new Set<string>();
+      mapa.set(canalId, set);
+    }
+
+    if (isTyping) {
+      set.add(nombre);
+    } else {
+      set.delete(nombre);
+    }
+
+    this.usuariosEscribiendo.set(mapa);
+    this.cdr.detectChanges();
+  }
+
+  get contactoActivoEscribiendo(): string | null {
+    const canalActivo = this.chatManagement.contactoActivo();
+    if (!canalActivo) return null;
+    const escribiendoSet = this.usuariosEscribiendo().get(canalActivo.id);
+    if (!escribiendoSet || escribiendoSet.size === 0) return null;
+    
+    const lista = Array.from(escribiendoSet);
+    if (lista.length === 1) {
+      return `${lista[0]} está escribiendo...`;
+    } else {
+      return `Varios están escribiendo...`;
+    }
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dragActivo.set(true);
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dragActivo.set(false);
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dragActivo.set(false);
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.procesarArchivoArrastrado(files[0]);
+    }
+  }
+
+  async procesarArchivoArrastrado(file: File): Promise<void> {
+    const canal = this.chatManagement.contactoActivo();
+    if (!file || !canal) return;
+    
+    console.log('Subiendo archivo arrastrado:', file.name);
+    this.subiendoArchivo.set(true);
+    
+    try {
+      const isImage = file.type.startsWith('image/');
+      const tipoStr = isImage ? 'image' : 'file';
+      const placeholderMsg = isImage ? '📷 Imagen adjunta' : `📄 Archivo: ${file.name}`;
+
+      const response = await this.communicationService.uploadFile(canal.id, file);
+      const urlFina = response?.url || response?.archivoUrl || response?.fileUrl || response?.path || response?.data?.url || response?.data?.path;
+      
+      if (!urlFina) throw new Error('El servidor no devolvió una URL válida');
+
+      const horaFormateada = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const nuevoMsg: any = {
+        texto: placeholderMsg,
+        hora: horaFormateada,
+        timestampReal: new Date().toISOString(),
+        enviadoPorMi: true,
+        tipo: tipoStr,
+        archivoUrl: urlFina,
+        leido: false
+      };
+      canal.mensajes = [...canal.mensajes, nuevoMsg];
+      this.cdr.detectChanges();
+      setTimeout(() => this.scrollToBottom(), 50);
+
+      this.communicationService.sendMessage({
+        canalId: canal.id,
+        remitenteId: this.currentUserId,
+        contenido: placeholderMsg,
+        tipo: tipoStr,
+        archivoUrl: urlFina
+      });
+    } catch (error: any) {
+      console.error('Error al procesar el archivo arrastrado:', error);
+      this.mostrarAlerta(`No se pudo adjuntar el archivo. Asegúrate de que el servidor lo permite.`);
+    } finally {
+      this.subiendoArchivo.set(false);
+    }
   }
 
   // ===== Helper Methods =====

@@ -38,8 +38,9 @@ export class Notificaciones implements OnInit, OnDestroy {
 
   notificaciones: Notificacion[] = [];
   notificacionSeleccionada: Notificacion | null = null;
-
   mostrarFormulario = false;
+  soloNoLeidas = false;
+
   archivoImagen: File | null = null;
   guardando = false;
 
@@ -108,15 +109,19 @@ export class Notificaciones implements OnInit, OnDestroy {
   get notificacionesFiltradas(): Notificacion[] {
     const dentroDeFechas = (n: Notificacion) => this.cumpleFiltroFecha(n);
 
+    let filtered = this.notificaciones;
+
     if (this.filtroSeleccionado === 'favoritos') {
-      return this.notificaciones.filter((n) =>
-        n.favorito && dentroDeFechas(n),
-      );
+      filtered = filtered.filter((n) => n.favorito && dentroDeFechas(n));
+    } else {
+      filtered = filtered.filter((n) => n.tipo === this.filtroSeleccionado && dentroDeFechas(n));
     }
 
-    return this.notificaciones.filter((n) =>
-      n.tipo === this.filtroSeleccionado && dentroDeFechas(n),
-    );
+    if (this.soloNoLeidas) {
+      filtered = filtered.filter((n) => !n.leido);
+    }
+
+    return filtered;
   }
 
   get puedeCrearNotificacion(): boolean {
@@ -139,6 +144,11 @@ export class Notificaciones implements OnInit, OnDestroy {
     if (filtro !== 'favoritos') {
       this.filtroAntesFavoritos = filtro;
     }
+    this.paginaActual = 1;
+  }
+
+  toggleSoloNoLeidas(): void {
+    this.soloNoLeidas = !this.soloNoLeidas;
     this.paginaActual = 1;
   }
 

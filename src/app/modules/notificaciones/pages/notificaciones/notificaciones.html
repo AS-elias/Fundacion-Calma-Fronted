@@ -77,6 +77,17 @@
       <i class="pi pi-star"></i>
     </button>
 
+    <button
+      class="btn-secundario"
+      type="button"
+      [class.activo]="soloNoLeidas"
+      (click)="toggleSoloNoLeidas()"
+      style="display: flex; align-items: center; gap: 6px; padding: 0 12px; height: 36px; font-weight: 500; font-size: 14px; border-radius: 8px;"
+    >
+      <i class="pi" [ngClass]="soloNoLeidas ? 'pi-eye-slash' : 'pi-eye'"></i>
+      <span>Solo No Leídas</span>
+    </button>
+
     <div class="filtro-fecha-wrap">
       <button
         class="btn-secundario btn-secundario--icono"

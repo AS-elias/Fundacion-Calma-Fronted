@@ -19,6 +19,9 @@ export class CommunicationService {
   // 🔔 Vigilante Global para todo el sistema
   public sistemaActualizado$ = new Subject<SistemaActualizadoEvent>();
 
+  // 🔔 Canal de estado de escritura "Escribiendo..."
+  public typing$ = new Subject<{ canalId: number; usuarioId: number; isTyping: boolean }>();
+
   // 🔔 Contador global de mensajes sin leer por canal
   mensajesSinLeerGlobal = signal<Map<number, number>>(new Map());
 
@@ -70,6 +73,11 @@ export class CommunicationService {
         // Registrar el vigilante global de sistema_actualizado
         this.socket?.on('sistema_actualizado', (data: SistemaActualizadoEvent) => {
           this.sistemaActualizado$.next(data);
+        });
+
+        // Registrar evento typing
+        this.socket?.on('typing', (data: { canalId: number; usuarioId: number; isTyping: boolean }) => {
+          this.typing$.next(data);
         });
 
         resolve();
@@ -167,6 +175,12 @@ export class CommunicationService {
     console.log('📤 Emitiendo mensaje:', data);
     this.socket.emit('sendMessage', data);
     // UI debe actualizarse localmente de inmediato
+  }
+
+  // C2) Enviar Estado Escribiendo
+  sendTyping(canalId: number, isTyping: boolean): void {
+    if (!this.socket) return;
+    this.socket.emit('typing', { canalId, isTyping });
   }
 
   // D) Obtener Canales del Usuario

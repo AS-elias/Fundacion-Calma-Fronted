@@ -53,7 +53,19 @@
         </div>
     </aside>
 
-    <main class="chat-main" *ngIf="chatManagement.contactoActivo()">
+    <main class="chat-main" *ngIf="chatManagement.contactoActivo()"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+          [class.drag-active]="dragActivo()">
+
+        <!-- Drag & Drop Overlay -->
+        <div class="drag-drop-overlay" *ngIf="dragActivo()">
+            <div class="overlay-box">
+                <i class="pi pi-upload" style="font-size: 2.5rem; color: #4eb3e4; margin-bottom: 12px;"></i>
+                <p>Suelta tu archivo aquí para enviarlo de inmediato</p>
+            </div>
+        </div>
 
         <header class="chat-header">
             <div class="user-info">
@@ -66,12 +78,21 @@
                 </div>
                 <div class="details">
                     <span class="name">{{ chatManagement.contactoActivo()!.nombre }}</span>
-                    <!-- Estado para Chats Directos -->
-                    <span class="status" *ngIf="!chatManagement.contactoActivo()!.esGrupo && chatManagement.contactoActivo()!.enLinea"><span class="dot"></span> En línea</span>
-                    <span class="status offline" *ngIf="!chatManagement.contactoActivo()!.esGrupo && !chatManagement.contactoActivo()!.enLinea">Desconectado</span>
                     
-                    <!-- Estado para Grupos -->
-                    <span class="status group-status" *ngIf="chatManagement.contactoActivo()!.esGrupo">
+                    <!-- Estado Escribiendo... -->
+                    <span class="status typing-state" *ngIf="contactoActivoEscribiendo">
+                        <span class="typing-dot-animation">
+                            <span></span><span></span><span></span>
+                        </span>
+                        {{ contactoActivoEscribiendo }}
+                    </span>
+
+                    <!-- Estado para Chats Directos (se oculta al escribir) -->
+                    <span class="status" *ngIf="!contactoActivoEscribiendo && !chatManagement.contactoActivo()!.esGrupo && chatManagement.contactoActivo()!.enLinea"><span class="dot"></span> En línea</span>
+                    <span class="status offline" *ngIf="!contactoActivoEscribiendo && !chatManagement.contactoActivo()!.esGrupo && !chatManagement.contactoActivo()!.enLinea">Desconectado</span>
+                    
+                    <!-- Estado para Grupos (se oculta al escribir) -->
+                    <span class="status group-status" *ngIf="!contactoActivoEscribiendo && chatManagement.contactoActivo()!.esGrupo">
                         <i class="pi pi-users" style="font-size: 0.8rem; margin-right: 4px;"></i>
                         {{ chatManagement.contactoActivo()!.participantes?.length || 0 }} participantes
                     </span>
@@ -267,7 +288,7 @@
 
             <input type="text" 
                    [value]="chatManagement.nuevoMensaje()"
-                   (input)="chatManagement.nuevoMensaje.set($any($event.target).value)"
+                   (input)="onInputMessage($event)"
                    (keyup.enter)="enviarMensaje()"
                    placeholder="Escribe un mensaje..." 
                    class="msg-input" />
