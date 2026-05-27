@@ -286,8 +286,7 @@
           <div class="item-left" (click)="doc.esCarpeta ? entrarCarpeta(doc) : null">
 
             <div class="icon" [ngClass]="doc.esCarpeta ? 'folder' : 'doc'">
-              <i class="pi" [ngClass]="doc.esCarpeta ? 'pi-folder' : 'pi-file'"></i>
-              <span *ngIf="!doc.esCarpeta">{{ obtenerExtension(doc.nombre) }}</span>
+              <i class="pi" [ngClass]="obtenerIconoPrime(doc.nombre, doc.esCarpeta)"></i>
             </div>
 
             <div class="info">
@@ -298,6 +297,7 @@
                 class="doc-link"
               >
                 {{ doc.nombre }}
+                <span class="badge-pendiente" *ngIf="doc.estado === 'pendiente'">Pendiente</span>
               </a>
               <ng-template #folderName>
                 <span class="folder-name">{{ doc.nombre }}</span>
@@ -322,8 +322,32 @@
               <i class="pi pi-eye"></i>
             </a>
 
+            <!-- Aprobación -->
             <button
-              *ngIf="puedeEliminarRepositorio"
+              *ngIf="doc.estado === 'pendiente' && puedeAprobarRepositorio && !doc.esCarpeta"
+              class="btn-approve"
+              type="button"
+              (click)="aprobarDocumento(doc, i)"
+              title="Aprobar"
+              aria-label="Aprobar documento"
+            >
+              <i class="pi pi-check"></i>
+            </button>
+
+            <button
+              *ngIf="doc.estado === 'pendiente' && puedeAprobarRepositorio && !doc.esCarpeta"
+              class="btn-reject delete"
+              type="button"
+              (click)="rechazarDocumento(doc, i)"
+              title="Rechazar"
+              aria-label="Rechazar documento"
+            >
+              <i class="pi pi-times"></i>
+            </button>
+
+            <!-- Eliminar General -->
+            <button
+              *ngIf="puedeEliminarRepositorio && doc.estado !== 'pendiente'"
               class="delete"
               type="button"
               (click)="eliminarDocumento(i); $event.stopPropagation()"

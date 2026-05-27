@@ -563,19 +563,25 @@ $text-light: #9ca3af;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
-      font-weight: 700;
+      font-size: 20px;
       flex-shrink: 0;
 
       &.doc {
-        background: #e2e8f0;
+        background: transparent;
         color: var(--text-color-secondary);
+
+        i.pdf-icon { color: #ef4444; }
+        i.word-icon { color: #2563eb; }
+        i.excel-icon { color: #16a34a; }
+        i.image-icon { color: #d946ef; }
+        i.zip-icon { color: #f59e0b; }
+        i.video-icon { color: #8b5cf6; }
+        i.generic-icon { color: #64748b; }
       }
 
       &.folder {
         background: #fef3c7;
         color: #d97706;
-        font-size: 20px;
       }
     }
 
@@ -631,26 +637,68 @@ $text-light: #9ca3af;
     }
   }
 
-  .delete {
+  .acciones {
     display: flex;
+    gap: 8px;
     align-items: center;
-    gap: 6px;
-    background: #fee2e2;
-    border: none;
-    color: #ef4444;
-    font-size: 12px;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
 
-    &:hover {
-      background: #fca5a5;
-      color: #b91c1c;
+    .btn-download,
+    .btn-approve,
+    .delete {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .btn-download {
+      background: $bg-light;
+      color: $text-gray;
+
+      &:hover {
+        background: $border-darker;
+        color: $text-dark;
+      }
+    }
+
+    .btn-approve {
+      background: #dcfce7;
+      color: #16a34a;
+
+      &:hover {
+        background: #bbf7d0;
+        color: #15803d;
+      }
+    }
+
+    .delete {
+      background: #fee2e2;
+      color: #ef4444;
+
+      &:hover {
+        background: #fca5a5;
+        color: #b91c1c;
+      }
     }
   }
+}
+
+.badge-pendiente {
+  background: #ffedd5;
+  color: #ea580c;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  margin-left: 8px;
+  font-weight: 700;
+  vertical-align: middle;
 }
 
 .empty-state {

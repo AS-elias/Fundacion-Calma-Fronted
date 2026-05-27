@@ -57,6 +57,10 @@ export class Repositorio implements OnInit, OnDestroy {
     return !this.authService.isPracticante();
   }
 
+  get puedeAprobarRepositorio(): boolean {
+    return !this.authService.isPracticante();
+  }
+
   ngOnInit() {
     this.cargarBloques();
 
@@ -133,9 +137,18 @@ export class Repositorio implements OnInit, OnDestroy {
     // Si estamos en un bloque de redes sociales, no aplicamos lógica de carpetas
     if (this.esRedesSociales()) return this.bloqueSeleccionado.documentos;
 
-    return this.bloqueSeleccionado.documentos.filter(d => 
+    // Filtrar por carpeta actual
+    let docs = this.bloqueSeleccionado.documentos.filter(d => 
       (d.padreId || null) === this.carpetaActualId
     );
+
+    // Filtrar pendientes si es practicante
+    if (this.authService.isPracticante()) {
+      const currentUserId = this.authService.getCurrentUser()?.id;
+      docs = docs.filter(d => d.esCarpeta || d.estado !== 'pendiente' || d.subidoPor === currentUserId);
+    }
+
+    return docs;
   }
 
   entrarCarpeta(doc: any) {
@@ -259,8 +272,33 @@ export class Repositorio implements OnInit, OnDestroy {
   }
 
   obtenerExtension(nombre: string): string {
-    const extension = nombre.split('.').pop()?.trim().toUpperCase();
-    return extension && extension.length <= 5 ? extension : 'DOC';
+    const extension = nombre.split('.').pop()?.trim().toLowerCase();
+    return extension && extension.length <= 5 ? extension : 'doc';
+  }
+
+  obtenerIconoPrime(nombre: string, esCarpeta: boolean = false): string {
+    if (esCarpeta) return 'pi-folder folder-icon';
+    
+    const ext = this.obtenerExtension(nombre);
+    switch (ext) {
+      case 'pdf': return 'pi-file-pdf pdf-icon';
+      case 'doc':
+      case 'docx': return 'pi-file-word word-icon';
+      case 'xls':
+      case 'xlsx':
+      case 'csv': return 'pi-file-excel excel-icon';
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'webp': return 'pi-image image-icon';
+      case 'zip':
+      case 'rar': return 'pi-box zip-icon';
+      case 'mp4':
+      case 'avi':
+      case 'mkv': return 'pi-video video-icon';
+      default: return 'pi-file generic-icon';
+    }
   }
 
   obtenerNombreArchivo(url: string): string {
@@ -443,6 +481,32 @@ export class Repositorio implements OnInit, OnDestroy {
     });
   }
 
+  aprobarDocumento(doc: any, index: number) {
+    if (!doc.id || !this.puedeAprobarRepositorio) return;
+    this.repoService.cambiarEstado(doc.id, 'aprobado').subscribe({
+      next: () => {
+        doc.estado = 'aprobado';
+        this.mostrarNotificacion('success', 'Documento aprobado correctamente.');
+      },
+      error: (err) => {
+        this.mostrarNotificacion('error', err?.error?.message || 'Error al aprobar documento.');
+      }
+    });
+  }
+
+  rechazarDocumento(doc: any, index: number) {
+    if (!doc.id || !this.puedeAprobarRepositorio) return;
+    this.repoService.cambiarEstado(doc.id, 'rechazado').subscribe({
+      next: () => {
+        this.bloqueSeleccionado?.documentos.splice(index, 1);
+        this.mostrarNotificacion('success', 'Documento rechazado y eliminado.');
+      },
+      error: (err) => {
+        this.mostrarNotificacion('error', err?.error?.message || 'Error al rechazar documento.');
+      }
+    });
+  }
+
   eliminarRed(index: number) {
     this.eliminarDocumento(index);
   }
@@ -461,6 +525,8 @@ export class Repositorio implements OnInit, OnDestroy {
         fecha: documento.fecha,
         esCarpeta: documento.esCarpeta,
         padreId: documento.padreId,
+        estado: documento.estado,
+        subidoPor: documento.subidoPor,
       })),
     };
   }

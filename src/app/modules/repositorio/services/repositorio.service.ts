@@ -12,6 +12,8 @@ export interface Documento {
   fecha?: Date;
   esCarpeta?: boolean;
   padreId?: number | null;
+  estado?: string;
+  subidoPor?: number | null;
 }
 
 export interface Bloque {
@@ -128,6 +130,14 @@ export class RepositorioService {
     return this.http.put<Documento>(
       `${this.apiUrl}/${id}/mover`,
       { padreId, esCarpeta },
+      { headers: this.authService.getAuthHeaders() }
+    );
+  }
+
+  cambiarEstado(id: number, estado: 'aprobado' | 'rechazado'): Observable<any> {
+    return this.http.put<any>(
+      `${this.apiUrl}/${id}/estado`,
+      { estado },
       { headers: this.authService.getAuthHeaders() }
     );
   }
