@@ -113,7 +113,7 @@
     <ng-template #areaSimple>
       <li class="menu-item">
         <a [routerLink]="getAreaLink(area)" routerLinkActive="active">
-          <i class="pi pi-building"></i>
+          <i class="pi" [ngClass]="getAreaIcon(area)"></i>
           {{ getAreaLabel(area) }}
         </a>
       </li>

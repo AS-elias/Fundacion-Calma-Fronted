@@ -77,7 +77,15 @@ export class SidebarComponent implements OnInit {
 
     this.http.get<Area[]>(url, { headers }).subscribe({
       next: (data) => {
-        this.areas.set(data);
+        // Aplanar áreas que tienen exactamente 1 sub-área
+        const procesadas = data.map(area => {
+          if (area.subareas && area.subareas.length === 1) {
+            return { ...area.subareas[0], subareas: [] };
+          }
+          return area;
+        });
+
+        this.areas.set(procesadas);
         this.cargandoAreas.set(false);
         console.log(`✅ Sidebar: ${data.length} área(s) cargada(s) para este usuario`);
       },
