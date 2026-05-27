@@ -1,7 +1,8 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { jwtDecode } from 'jwt-decode'; 
 import { Subject } from 'rxjs';
+import { SecureStorageService } from './secure-storage.service';
 
 export interface SistemaActualizadoEvent {
   modulo: string;
@@ -15,6 +16,7 @@ export interface SistemaActualizadoEvent {
 export class CommunicationService {
   private socket: Socket | null = null;
   private jwtToken: string = '';
+  private secureStorage = inject(SecureStorageService);
 
   // 🔔 Vigilante Global para todo el sistema
   public sistemaActualizado$ = new Subject<SistemaActualizadoEvent>();
@@ -119,7 +121,7 @@ export class CommunicationService {
   }
 
   getCurrentUserId(): number {
-    const token = localStorage.getItem('calma_token') || localStorage.getItem('token') || this.jwtToken;
+    const token = this.secureStorage.getItem('calma_token') || localStorage.getItem('token') || this.jwtToken;
     if (!token) return 0;
     try {
       const decoded: any = jwtDecode(token);
@@ -307,7 +309,7 @@ export class CommunicationService {
   /** Conecta el socket y carga contadores de no leídos para el sidebar */
   ensureUnreadBadgeSync(): void {
     const token =
-      localStorage.getItem('calma_token') ||
+      this.secureStorage.getItem('calma_token') ||
       localStorage.getItem('token') ||
       this.jwtToken;
     if (!token) return;

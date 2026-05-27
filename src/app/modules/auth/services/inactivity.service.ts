@@ -1,6 +1,7 @@
 import { Injectable, NgZone, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
+import { MessageService } from 'primeng/api';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ export class InactivityService {
   private router = inject(Router);
   private authService = inject(AuthService);
   private ngZone = inject(NgZone);
+  private messageService = inject(MessageService);
 
   // Eventos que reinician el temporizador
   private readonly eventos = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
@@ -55,8 +57,14 @@ export class InactivityService {
   private cerrarSesionPorInactividad(): void {
     if (this.authService.isAuthenticated()) {
       this.authService.logout();
-      // Mostramos un alert estándar porque es un evento forzado y no estamos en un componente específico
-      alert('Tu sesión ha expirado por seguridad debido a 15 minutos de inactividad.');
+      
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Sesión Expirada',
+        detail: 'Tu sesión ha expirado por seguridad debido a 15 minutos de inactividad.',
+        life: 10000,
+        sticky: true
+      });
     }
   }
 }

@@ -6,6 +6,7 @@ import { Bloque, RepositorioService } from '../../services/repositorio.service';
 
 import { Subscription } from 'rxjs';
 import { CommunicationService, SistemaActualizadoEvent } from '../../../../core/services/communication.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 type TipoToast = 'success' | 'error';
 
@@ -37,13 +38,19 @@ export class Repositorio implements OnInit, OnDestroy {
   documentoArrastrado: any = null;
   carpetaDestinoOverId: number | null | undefined = undefined;
 
+  // Visor
+  documentoAVisualizar: any = null;
+  urlVisorSegura: SafeResourceUrl | null = null;
+  tipoVisor: 'imagen' | 'iframe' | 'nativo' | null = null;
+
   // Real-time Sync
   private syncSub?: Subscription;
 
   constructor(
     private repoService: RepositorioService,
     private authService: AuthService,
-    private communicationService: CommunicationService
+    private communicationService: CommunicationService,
+    private sanitizer: DomSanitizer
   ) {}
 
   get puedeEliminarRepositorio(): boolean {
@@ -220,6 +227,29 @@ export class Repositorio implements OnInit, OnDestroy {
     this.nuevoLink = '';
   }
 
+  abrirVisor(doc: any) {
+    this.documentoAVisualizar = doc;
+    const ext = this.obtenerExtension(doc.nombre).toLowerCase();
+    
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) {
+      this.tipoVisor = 'imagen';
+      this.urlVisorSegura = this.sanitizer.bypassSecurityTrustResourceUrl(doc.url);
+    } else if (['pdf', 'mp4', 'webm'].includes(ext)) {
+      this.tipoVisor = 'nativo'; 
+      this.urlVisorSegura = this.sanitizer.bypassSecurityTrustResourceUrl(doc.url);
+    } else {
+      const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(doc.url)}&embedded=true`;
+      this.tipoVisor = 'iframe';
+      this.urlVisorSegura = this.sanitizer.bypassSecurityTrustResourceUrl(viewerUrl);
+    }
+  }
+
+  cerrarVisor() {
+    this.documentoAVisualizar = null;
+    this.urlVisorSegura = null;
+    this.tipoVisor = null;
+  }
+
   esRedesSociales(): boolean {
     return this.bloqueSeleccionado ? this.esBloqueRedes(this.bloqueSeleccionado) : false;
   }
@@ -269,26 +299,26 @@ export class Repositorio implements OnInit, OnDestroy {
     return 'web';
   }
 
-  etiquetaRedSocial(url: string): string {
+  iconoRedSocial(url: string): string {
     const tipo = this.claseRedSocial(url);
 
     if (tipo === 'facebook') {
-      return 'f';
+      return 'pi pi-facebook';
     }
 
     if (tipo === 'instagram') {
-      return 'IG';
+      return 'pi pi-instagram';
     }
 
     if (tipo === 'tiktok') {
-      return 'TK';
+      return 'pi pi-tiktok';
     }
 
     if (tipo === 'linkedin') {
-      return 'in';
+      return 'pi pi-linkedin';
     }
 
-    return 'www';
+    return 'pi pi-link';
   }
 
   isDragOverZone = false;

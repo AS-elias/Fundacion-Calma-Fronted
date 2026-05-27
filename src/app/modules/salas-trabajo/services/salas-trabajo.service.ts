@@ -35,13 +35,15 @@ export class SalasTrabajoService {
   }
 
   getSalaGeneral(): Observable<Sala> {
-    return this.http.get<Sala>(`${this.apiUrl}/general`, { 
+    const timestamp = new Date().getTime();
+    return this.http.get<Sala>(`${this.apiUrl}/general?t=${timestamp}`, { 
       headers: this.getHeaders() 
     });
   }
 
   getSalas(): Observable<GrupoSalas[]> {
-    return this.http.get<GrupoSalas[]>(this.apiUrl, { 
+    const timestamp = new Date().getTime();
+    return this.http.get<GrupoSalas[]>(`${this.apiUrl}?t=${timestamp}`, { 
       headers: this.getHeaders() 
     });
   }

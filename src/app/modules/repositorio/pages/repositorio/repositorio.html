@@ -227,7 +227,7 @@
               rel="noopener noreferrer"
             >
               <div class="icon social" [ngClass]="claseRedSocial(red.url)">
-                <span>{{ etiquetaRedSocial(red.url) }}</span>
+                <i [class]="iconoRedSocial(red.url)"></i>
               </div>
 
               <div class="info">
@@ -293,9 +293,8 @@
             <div class="info">
               <a
                 *ngIf="!doc.esCarpeta; else folderName"
-                [href]="doc.url"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="javascript:void(0)"
+                (click)="abrirVisor(doc); $event.stopPropagation()"
                 class="doc-link"
               >
                 {{ doc.nombre }}
@@ -314,11 +313,9 @@
           <div class="acciones">
             <a
               *ngIf="!doc.esCarpeta"
-              [href]="doc.url"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="javascript:void(0)"
               class="btn-download"
-              (click)="$event.stopPropagation()"
+              (click)="abrirVisor(doc); $event.stopPropagation()"
               title="Ver"
               aria-label="Ver documento"
             >
@@ -345,4 +342,33 @@
 
   </div>
 
+</div>
+
+<!-- Visor de Documentos Tipo Drive -->
+<div class="viewer-modal" *ngIf="documentoAVisualizar">
+  <div class="viewer-header">
+    <div class="viewer-title">
+      <i class="pi" [ngClass]="tipoVisor === 'imagen' ? 'pi-image' : 'pi-file'"></i>
+      <span>{{ documentoAVisualizar.nombre }}</span>
+    </div>
+    
+    <div class="viewer-actions">
+      <a [href]="documentoAVisualizar.url" target="_blank" rel="noopener noreferrer" class="btn-action btn-download" download>
+        <i class="pi pi-download"></i>
+      </a>
+      <button class="btn-action btn-close" (click)="cerrarVisor()" title="Cerrar visor">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="viewer-body">
+    <ng-container *ngIf="tipoVisor === 'imagen'">
+      <img [src]="documentoAVisualizar.url" alt="Vista previa de imagen" class="viewer-image" />
+    </ng-container>
+
+    <ng-container *ngIf="tipoVisor === 'iframe' || tipoVisor === 'nativo'">
+      <iframe [src]="urlVisorSegura" class="viewer-iframe" frameborder="0" allowfullscreen></iframe>
+    </ng-container>
+  </div>
 </div>
