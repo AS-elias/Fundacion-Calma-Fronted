@@ -67,4 +67,7 @@ src/app/
     └── [nombre-feature]/ # Cada módulo aplica Arquitectura Hexagonal internamente:
         ├── domain/       # 🧠 Modelos (Interfaces TypeScript) y Puertos (Interfaces de Repositorios). Nada de Angular aquí.
         ├── infra/        # 🔌 Adaptadores: Servicios HTTP que conectan con NestJS. Implementan los Puertos del domain.
-        └── presentation/ # 🎨 Vistas y Componentes: Pages completas y componentes visuales específicos de este módulo.z
+        └── presentation/ # 🎨 Vistas y Componentes: Pages completas y componentes visuales específicos de este módulo.
+
+---
+*Nota: Configuración de despliegue dual (Render + GitHub) habilitada correctamente.*
