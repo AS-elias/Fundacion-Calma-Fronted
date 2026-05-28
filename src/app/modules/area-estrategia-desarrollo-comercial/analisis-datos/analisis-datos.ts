@@ -201,7 +201,7 @@ export class AnalisisDatos implements OnInit {
       clave: 'venues',
       categoria: 'espacios',
       etiqueta: 'Espacios',
-      titulo: 'Venues',
+      titulo: 'Ventas',
       descripcion: 'Identificación de espacios para eventos y actividades',
       icono: 'pi pi-calendar',
     },

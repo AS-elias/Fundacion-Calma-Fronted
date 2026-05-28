@@ -63,11 +63,11 @@ export class PermisosAreaService {
   /**
    * Verifica si el usuario puede editar en base a un fragmento del nombre del área.
    */
-  puedeEditarPorNombre(fragmento: string): boolean {
-    const fragmentoLower = fragmento.toLowerCase();
+  puedeEditarPorNombre(nombreArea: string): boolean {
+    const nombreLower = nombreArea.toLowerCase().trim();
     for (const [id, permiso] of this.permisosMap.entries()) {
-      if (permiso.nombre.toLowerCase().includes(fragmentoLower)) {
-        if (permiso.puede_editar) return true;
+      if (permiso.nombre.toLowerCase().trim() === nombreLower) {
+        return permiso.puede_editar;
       }
     }
     return false;

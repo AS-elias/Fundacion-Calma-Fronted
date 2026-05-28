@@ -762,11 +762,11 @@
 <div class="registro-overlay" *ngIf="mostrandoRegistroVenues">
   <section class="registro-modal registro-modal--venues">
     <header class="registro-modal__header">
-      <h2>Registro de Venues</h2>
+      <h2>Registro de Ventas</h2>
       <button
         class="registro-modal__close"
         type="button"
-        aria-label="Cerrar registro de venues"
+        aria-label="Cerrar registro de ventas"
         (click)="cerrarRegistroVenues()"
       >
         <i class="pi pi-times"></i>
@@ -779,7 +779,7 @@
         <input
           type="text"
           [(ngModel)]="busquedaVenue"
-          placeholder="Buscar venues ......"
+          placeholder="Buscar venta ......"
         />
       </label>
 
@@ -789,7 +789,7 @@
         <option value="contactado">Contactado</option>
       </select>
 
-      <button class="registro-save" type="button" aria-label="Descargar venues en Excel" (click)="exportarVenuesExcel()">
+      <button class="registro-save" type="button" aria-label="Descargar ventas en Excel" (click)="exportarVenuesExcel()">
         <i class="pi pi-save"></i>
       </button>
     </div>
@@ -843,7 +843,7 @@
                   <button
                     type="button"
                     class="registro-actions__save"
-                    aria-label="Guardar venue"
+                    aria-label="Guardar ventas"
                     [disabled]="guardandoVenue"
                     (click)="guardarVenue()"
                   >
@@ -852,7 +852,7 @@
                   <button
                     type="button"
                     class="registro-actions__cancel"
-                    aria-label="Cancelar venue"
+                    aria-label="Cancelar venta"
                     (click)="cancelarEdicionVenue()"
                   >
                     <i class="pi pi-times"></i>
@@ -879,7 +879,7 @@
                     <button
                       type="button"
                       class="registro-actions__edit"
-                      aria-label="Editar venue"
+                      aria-label="Editar venta"
                       (click)="editarVenue(venue)"
                     >
                       <i class="pi pi-pencil"></i>
@@ -887,7 +887,7 @@
                     <button
                       type="button"
                       class="registro-actions__delete"
-                      aria-label="Eliminar venue"
+                      aria-label="Eliminar venta"
                       (click)="solicitarEliminarVenue(venue)"
                     >
                       <i class="pi pi-trash"></i>
@@ -923,11 +923,11 @@
             <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.sitioWeb" /></td>
             <td><input class="registro-table__cell-input" type="text" [(ngModel)]="venueBorrador!.detalles" /></td>
             <td>
-              <div class="registro-actions">
+              <div class="registro-actions">  
                 <button
                   type="button"
                   class="registro-actions__save"
-                  aria-label="Guardar venue"
+                  aria-label="Guardar venta"
                   [disabled]="guardandoVenue"
                   (click)="guardarVenue()"
                 >
@@ -936,7 +936,7 @@
                 <button
                   type="button"
                   class="registro-actions__cancel"
-                  aria-label="Cancelar venue"
+                  aria-label="Cancelar venta"
                   (click)="cancelarEdicionVenue()"
                 >
                   <i class="pi pi-times"></i>
@@ -946,7 +946,7 @@
           </tr>
 
           <tr *ngIf="!venuesFiltrados.length && !(venueBorradorEsNuevo && venueBorrador)">
-            <td colspan="12" class="registro-table__empty">No se encontraron venues.</td>
+            <td colspan="12" class="registro-table__empty">No se encontraron ventas.</td>
           </tr>
         </tbody>
       </table>
@@ -961,7 +961,7 @@
       <div>
         <span style="margin-right: 15px; color: var(--text-color-secondary);">{{ venuesFiltrados.length }} venues registrados</span>
         <button class="registro-add" type="button" [disabled]="!!venueBorrador" (click)="agregarVenue()">
-          <i class="pi pi-plus"></i> Agregar Venue
+          <i class="pi pi-plus"></i> Agregar Venta
         </button>
       </div>
     </footer>
@@ -970,8 +970,8 @@
 
 <div class="confirm-overlay" *ngIf="venuePorEliminar">
   <div class="confirm-card">
-    <h4>Eliminar venue</h4>
-    <p>¿Estás seguro de que deseas eliminar este venue?</p>
+    <h4>Eliminar venta</h4>
+    <p>¿Estás seguro de que deseas eliminar esta venta?</p>
     <p class="muted">{{ venuePorEliminar.nombre || venuePorEliminar.correo }}</p>
 
     <div class="confirm-actions">
