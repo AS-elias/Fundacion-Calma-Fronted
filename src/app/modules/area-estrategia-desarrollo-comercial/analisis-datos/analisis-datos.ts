@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin, of, switchMap } from 'rxjs';
 import { AuthService } from '../../auth/services/auth.service';
 import { AnalisisDatosService } from './analisis-datos.service';
+import { PermisosAreaService } from '../../../core/services/permisos-area.service';
 
 type CategoriaPanel = 'estrategico' | 'comercial' | 'espacios' | 'comunicacion';
 type PanelClave =
@@ -222,9 +223,14 @@ export class AnalisisDatos implements OnInit {
   venues: VenueDato[] = [];
   difusiones: DifusionDato[] = [];
 
+  get puedeEditar(): boolean {
+    return this.permisosAreaService.puedeEditarPorNombre('Análisis de Datos');
+  }
+
   constructor(
     private analisisService: AnalisisDatosService,
     private authService: AuthService,
+    private permisosAreaService: PermisosAreaService,
   ) {}
 
   ngOnInit(): void {

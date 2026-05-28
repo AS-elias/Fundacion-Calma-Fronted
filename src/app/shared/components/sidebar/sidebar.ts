@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../../modules/auth/services/auth.service';
 import { CommunicationService } from '../../../core/services/communication.service';
+import { PermisosAreaService } from '../../../core/services/permisos-area.service';
 
 // Interfaces del backend
 export interface PermisoArea {
@@ -34,6 +35,7 @@ export class SidebarComponent implements OnInit {
   private authService = inject(AuthService);
   private http = inject(HttpClient);
   private commService = inject(CommunicationService);
+  private permisosAreaService = inject(PermisosAreaService);
 
   // Total global de mensajes sin leer (para mostrar badge en el sidebar)
   totalMensajesSinLeer = computed(() => {
@@ -84,6 +86,9 @@ export class SidebarComponent implements OnInit {
           }
           return area;
         });
+
+        // Guardar permisos en el servicio global
+        this.permisosAreaService.cargarPermisos(data);
 
         this.areas.set(procesadas);
         this.cargandoAreas.set(false);

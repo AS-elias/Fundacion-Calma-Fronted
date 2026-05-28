@@ -119,6 +119,7 @@
         </div>
 
         <button
+          *ngIf="puedeSubirRepositorio"
           class="btn-add"
           type="button"
           (click)="agregarRedSocial()"
@@ -145,7 +146,7 @@
           </div>
           
           <div class="toolbar-actions">
-            <button class="btn-new-folder" type="button" (click)="toggleCrearCarpeta()" [title]="creandoCarpeta ? 'Cancelar' : 'Nueva Carpeta'">
+            <button *ngIf="puedeSubirRepositorio" class="btn-new-folder" type="button" (click)="toggleCrearCarpeta()" [title]="creandoCarpeta ? 'Cancelar' : 'Nueva Carpeta'">
               <i class="pi" [ngClass]="creandoCarpeta ? 'pi-times' : 'pi-folder-plus'"></i>
             </button>
           </div>
@@ -156,7 +157,7 @@
           <button type="button" (click)="crearCarpeta()" [disabled]="!nombreNuevaCarpeta.trim()">Crear</button>
         </div>
 
-        <div class="upload-box" *ngIf="!creandoCarpeta"
+        <div class="upload-box" *ngIf="puedeSubirRepositorio && !creandoCarpeta"
              [ngClass]="{'drag-over': isDragOverZone}"
              (dragover)="onFileDragOver($event)"
              (dragleave)="onFileDragLeave($event)"
@@ -185,7 +186,7 @@
         </div>
 
         <button
-          *ngIf="!creandoCarpeta"
+          *ngIf="puedeSubirRepositorio && !creandoCarpeta"
           class="btn-add"
           type="button"
           (click)="agregarDocumento()"

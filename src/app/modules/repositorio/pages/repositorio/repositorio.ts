@@ -61,6 +61,10 @@ export class Repositorio implements OnInit, OnDestroy {
     return !this.authService.isPracticante();
   }
 
+  get puedeSubirRepositorio(): boolean {
+    return !this.authService.isPracticante();
+  }
+
   ngOnInit() {
     this.cargarBloques();
 

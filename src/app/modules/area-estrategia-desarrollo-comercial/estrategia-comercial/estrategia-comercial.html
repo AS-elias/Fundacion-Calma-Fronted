@@ -97,7 +97,7 @@
           Mostrar más...
         </button>
 
-        <button type="button" class="kanban-add" (click)="abrirModalNuevaActividad(columna.estado)">
+        <button *ngIf="puedeEditar" type="button" class="kanban-add" (click)="abrirModalNuevaActividad(columna.estado)">
           + A&ntilde;adir Actividad
         </button>
       </div>
@@ -121,7 +121,7 @@
         </select>
       </label>
 
-      <button type="button" class="new-company" (click)="abrirModalNuevaEmpresa()">
+      <button *ngIf="puedeEditar" type="button" class="new-company" (click)="abrirModalNuevaEmpresa()">
         <i class="pi pi-plus"></i>
         Nueva Empresa
       </button>
@@ -148,6 +148,7 @@
             <span>{{ proyectosLabel(item.empresa) }}</span>
             <div class="company-card__icons">
               <button
+                *ngIf="puedeEditar"
                 type="button"
                 aria-label="Editar empresa"
                 (click)="$event.stopPropagation(); editarEmpresa(item.empresa)"
@@ -155,6 +156,7 @@
                 <i class="pi pi-pencil"></i>
               </button>
               <button
+                *ngIf="puedeEditar"
                 type="button"
                 aria-label="Eliminar empresa"
                 [disabled]="item.empresa.proyectos.length > 0"
@@ -219,7 +221,7 @@
 
           <p class="company-card__empty" *ngIf="!item.proyectos.length">No hay proyectos registrados con ese filtro.</p>
 
-          <button type="button" class="new-project" (click)="abrirModalNuevoProyecto(item.empresa)">
+          <button *ngIf="puedeEditar" type="button" class="new-project" (click)="abrirModalNuevoProyecto(item.empresa)">
             <i class="pi pi-plus"></i>
             Nuevo Proyecto
           </button>
@@ -304,7 +306,7 @@
 
       <div class="activity-detail__actions">
         <button type="button" class="activity-form__cancel" (click)="cerrarDetalleActividad()">Volver</button>
-        <button type="button" class="activity-form__submit" (click)="editarActividadSeleccionada()">
+        <button *ngIf="puedeEditar" type="button" class="activity-form__submit" (click)="editarActividadSeleccionada()">
           <i class="pi pi-pencil"></i>
           Editar
         </button>
@@ -383,7 +385,7 @@
 
       <div class="activity-detail__actions">
         <button type="button" class="activity-form__cancel" (click)="cerrarDetalleProyecto()">Volver</button>
-        <button type="button" class="activity-form__submit" (click)="editarProyectoSeleccionado()">
+        <button *ngIf="puedeEditar" type="button" class="activity-form__submit" (click)="editarProyectoSeleccionado()">
           <i class="pi pi-pencil"></i>
           Editar
         </button>

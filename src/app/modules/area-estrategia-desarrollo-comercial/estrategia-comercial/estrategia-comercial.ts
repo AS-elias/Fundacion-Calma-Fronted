@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin, of, switchMap } from 'rxjs';
 import { AuthService } from '../../auth/services/auth.service';
 import { EstrategiaComercialService } from './estrategia-comercial.service';
+import { PermisosAreaService } from '../../../core/services/permisos-area.service';
 
 type VistaEstrategia = 'actividades' | 'proyectos';
 type EstadoActividad =
@@ -119,8 +120,13 @@ type ConfirmacionEliminacion =
 export class EstrategiaComercial implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private estrategiaService = inject(EstrategiaComercialService);
+  private permisosAreaService = inject(PermisosAreaService);
   private notificationTimeoutId?: number;
   readonly nombreUsuarioActual = this.authService.getCurrentUser()?.nombre?.trim() || 'Usuario';
+
+  get puedeEditar(): boolean {
+    return this.permisosAreaService.puedeEditarPorNombre('Estrategia Comercial');
+  }
 
   vistaActiva: VistaEstrategia = 'actividades';
   busquedaProyecto = '';

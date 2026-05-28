@@ -1,4 +1,4 @@
-﻿<div class="page-container">
+<div class="page-container">
   <div
     *ngIf="notificacion"
     class="toast-notificacion"
@@ -74,7 +74,7 @@
           </option>
         </select>
       </div>
-      <button class="btn-nuevo" (click)="ejecutarAccionPrincipal()">
+      <button *ngIf="puedeEditar" class="btn-nuevo" (click)="ejecutarAccionPrincipal()">
         <i class="pi pi-plus"></i>
         {{ vistaActual === 'convenios' ? 'Nuevo Convenio' : 'Nueva Actividad' }}
       </button>
@@ -435,6 +435,7 @@
           Volver
         </button>
         <button
+          *ngIf="puedeEditar"
           type="button"
           class="activity-submit"
           (click)="editarActividad(actividadSeleccionada)"
@@ -660,7 +661,7 @@
             <button
               class="icon-btn ghost danger"
               type="button"
-              *ngIf="editMode"
+              *ngIf="editMode && puedeEditar"
               (click)="eliminarArchivo()"
               title="Eliminar archivo"
             >
@@ -686,7 +687,7 @@
             placeholder="Escribir comentario...."
             (keydown.enter)="agregarComentarioConEnter($event)"
           ></textarea>
-          <button class="add-comment" (click)="agregarComentario()" [disabled]="!nuevoComentario.trim()">
+          <button *ngIf="puedeEditar" class="add-comment" (click)="agregarComentario()" [disabled]="!nuevoComentario.trim()">
             <i class="pi pi-plus"></i>
             Agregar Comentario
           </button>

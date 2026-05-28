@@ -80,7 +80,7 @@
         </article>
       </div>
 
-      <button class="board__add" type="button" (click)="abrirFormularioTarea()">
+      <button *ngIf="puedeEditar" class="board__add" type="button" (click)="abrirFormularioTarea()">
         + Añadir nueva tarea
       </button>
     </article>
@@ -175,7 +175,7 @@
 
     <footer class="task-detail__actions">
       <button type="button" class="task-detail__back" (click)="cerrarDetalleTarea()">Volver</button>
-      <button type="button" class="task-detail__edit" (click)="editarTareaSeleccionada()">
+      <button *ngIf="puedeEditar" type="button" class="task-detail__edit" (click)="editarTareaSeleccionada()">
         <i class="pi pi-pencil"></i>
         Editar
       </button>
@@ -426,6 +426,7 @@
                 <td>
                   <div class="registro-actions">
                     <button
+                      *ngIf="puedeEditar"
                       type="button"
                       class="registro-actions__edit"
                       aria-label="Editar colegio"
@@ -434,6 +435,7 @@
                       <i class="pi pi-pencil"></i>
                     </button>
                     <button
+                      *ngIf="puedeEditar"
                       type="button"
                       class="registro-actions__delete"
                       aria-label="Eliminar colegio"
@@ -512,7 +514,7 @@
       </div>
       <div>
         <span style="margin-right: 15px; color: var(--text-color-secondary);">{{ colegiosFiltrados.length }} colegios registrados</span>
-        <button class="registro-add" type="button" [disabled]="!!colegioBorrador" (click)="agregarColegio()">
+        <button *ngIf="puedeEditar" class="registro-add" type="button" [disabled]="!!colegioBorrador" (click)="agregarColegio()">
           <i class="pi pi-plus"></i> Agregar Colegio
         </button>
       </div>
@@ -651,6 +653,7 @@
                 <td>
                   <div class="registro-actions">
                     <button
+                      *ngIf="puedeEditar"
                       type="button"
                       class="registro-actions__edit"
                       aria-label="Editar empresa"
@@ -659,6 +662,7 @@
                       <i class="pi pi-pencil"></i>
                     </button>
                     <button
+                      *ngIf="puedeEditar"
                       type="button"
                       class="registro-actions__delete"
                       aria-label="Eliminar empresa"
@@ -730,7 +734,7 @@
       </div>
       <div>
         <span style="margin-right: 15px; color: var(--text-color-secondary);">{{ empresasFiltradas.length }} empresas registradas</span>
-        <button class="registro-add" type="button" [disabled]="!!empresaBorrador" (click)="agregarEmpresa()">
+        <button *ngIf="puedeEditar" class="registro-add" type="button" [disabled]="!!empresaBorrador" (click)="agregarEmpresa()">
           <i class="pi pi-plus"></i> Agregar Empresa
         </button>
       </div>
