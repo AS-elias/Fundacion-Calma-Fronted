@@ -259,7 +259,10 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
     if (this.guardandoActividad) return;
 
     const titulo = this.actividadForm.titulo.trim();
-    if (!titulo) return;
+    if (!titulo) {
+      this.mostrarNotificacion('error', 'El ttulo de la actividad es obligatorio.');
+      return;
+    }
 
     const descripcion = this.actividadForm.descripcion.trim();
     const fechaLimite = this.actividadForm.fechaLimite.trim();
@@ -354,7 +357,10 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
 
   guardarEmpresa(): void {
     const nombre = this.empresaForm.nombre.trim();
-    if (!nombre) return;
+    if (!nombre) {
+      this.mostrarNotificacion('error', 'El nombre de la empresa es obligatorio.');
+      return;
+    }
 
     const descripcion = this.empresaForm.descripcion.trim();
 
@@ -475,7 +481,14 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
       ? this.buscarEmpresaPorId(this.empresaProyectoActivaId)
       : null;
     const titulo = this.proyectoForm.titulo.trim();
-    if (!empresa || !titulo) return;
+    if (!empresa) {
+      this.mostrarNotificacion('error', 'Debe seleccionar una empresa.');
+      return;
+    }
+    if (!titulo) {
+      this.mostrarNotificacion('error', 'El ttulo del proyecto es obligatorio.');
+      return;
+    }
 
     const descripcion = this.proyectoForm.descripcion.trim();
     const enlaces = this.proyectoForm.enlaces

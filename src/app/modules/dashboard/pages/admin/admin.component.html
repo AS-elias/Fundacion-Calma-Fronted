@@ -1,12 +1,12 @@
-<div class="dashboard-container">
+﻿<div class="dashboard-container">
     <header class="dashboard-header">
         <h1>Bienvenido al Panel Calma</h1>
-        <p>Visualización estratégica de Fundación Calma y sus dependencias</p>
+        <p>VisualizaciÃ³n estratÃ©gica de FundaciÃ³n Calma y sus dependencias</p>
     </header>
 
     <div *ngIf="cargando" class="loading-overlay" style="text-align: center; padding: 3rem;">
         <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: var(--calma-primary, #048abf);"></i>
-        <p style="margin-top: 1rem; color: #718096;">Cargando estadísticas...</p>
+        <p style="margin-top: 1rem; color: #718096;">Cargando estadÃ­sticas...</p>
     </div>
 
     <!-- Vista Admin completa -->
@@ -26,7 +26,7 @@
                     <span class="number text-yellow">{{ stats.conveniosVigentes }}</span>
                 </div>
             </div>
-            <!-- El desempeño del equipo no se muestra en la vista Admin según nueva especificación -->
+            <!-- El desempeÃ±o del equipo no se muestra en la vista Admin segÃºn nueva especificaciÃ³n -->
         </div>
 
         <div class="charts-grid">
@@ -46,7 +46,7 @@
                         </div>
                         <div style="flex: 1;">
                             <p style="margin: 0; font-size: 0.9rem; color: #374151; line-height: 1.4;">
-                                <strong>{{ act.usuario || 'Sistema' }}</strong> {{ limpiarTexto(act.detalle || act.mensaje || act.accion || 'realizó una actividad') }} <br>
+                                <strong>{{ act.usuario || 'Sistema' }}</strong> {{ limpiarTexto(act.detalle || act.mensaje || act.accion || 'realizÃ³ una actividad') }} <br>
                                 <span style="color: #1a56db;" *ngIf="act.entidad">"{{ limpiarTexto(act.entidad) }}"</span>
                             </p>
                             <span style="font-size: 0.75rem; color: #9ca3af; display: block; margin-top: 4px;">
@@ -70,7 +70,7 @@
 
             <!-- BLOQUE 3: Comunicaciones -->
             <div class="detail-box">
-                <h3>Comunicación y Convenios</h3>
+                <h3>ComunicaciÃ³n y Convenios</h3>
                 <div class="chart-container" style="position: relative; height: 230px; width: 100%; display: flex; justify-content: center;">
                     <p-chart type="doughnut" [data]="comunicacionesChartData" [options]="pieOptions" height="230px"></p-chart>
                 </div>
@@ -84,8 +84,8 @@
     <!-- Vista Director -->
     <ng-container *ngIf="!cargando && !esAdmin && userStats">
         <div style="margin-bottom: 1.5rem;">
-            <h2 style="font-size: 1.1rem; color: #111827; margin: 0 0 0.25rem;">Panel de tu Área</h2>
-            <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Estadísticas de tu gestión asignada.</p>
+            <h2 style="font-size: 1.1rem; color: #111827; margin: 0 0 0.25rem;">Panel de tu Ãrea</h2>
+            <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">EstadÃ­sticas de tu gestiÃ³n asignada.</p>
         </div>
 
         <ng-container *ngIf="usuariosParaEvaluar.length; else noPendingEvaluations">
@@ -93,7 +93,7 @@
                 <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap: wrap; gap: 1rem;">
                     <div>
                         <h3 style="margin:0">Evaluaciones semanales pendientes</h3>
-                        <p style="margin:0; color:#6b7280; font-size:0.9rem;">Revisa y califica cada usuario que tiene una evaluación pendiente.</p>
+                        <p style="margin:0; color:#6b7280; font-size:0.9rem;">Revisa y califica cada usuario que tiene una evaluaciÃ³n pendiente.</p>
                     </div>
                 </div>
                 <div class="pending-list" style="margin-top:1rem;">
@@ -102,8 +102,8 @@
                             <div class="pending-card-title">{{ usuario.nombre }}</div>
                             <div class="pending-card-role">{{ usuario.puesto || 'Sin puesto asignado' }}</div>
                             <div class="pending-card-info">
-                                <span>Última calificación: <strong>{{ usuario.rating ? usuario.rating + '★' : 'Pendiente' }}</strong></span>
-                                <span *ngIf="usuario.comentario">• {{ usuario.comentario }}</span>
+                                <span>Ãšltima calificaciÃ³n: <strong>{{ usuario.rating ? usuario.rating + 'â˜…' : 'Pendiente' }}</strong></span>
+                                <span *ngIf="usuario.comentario">â€¢ {{ usuario.comentario }}</span>
                             </div>
                         </div>
                         <button class="p-button p-button-secondary evaluate-button" type="button" (click)="abrirEncuesta(usuario)">Evaluar</button>
@@ -114,8 +114,8 @@
 
         <ng-template #noPendingEvaluations>
             <div style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #eef2ff; border-radius: 8px; background: #fff9eb;">
-                <h3 style="margin:0; color:#92400e;">No hay usuarios pendientes de evaluación</h3>
-                <p style="margin:0.6rem 0 0; color:#7c4d0a; font-size:0.9rem;">Si tienes usuarios a evaluar, revisa que el backend arroje el listado de pendientes para este director.</p>
+                <h3 style="margin:0; color:#92400e;">No hay usuarios pendientes de evaluaciÃ³n</h3>
+                <p style="margin:0.6rem 0 0; color:#7c4d0a; font-size:0.9rem;">Los usuarios de tu equipo aparecern aqu cuando estn pendientes de evaluacin.</p>
             </div>
         </ng-template>
 
@@ -123,7 +123,7 @@
         <p-dialog 
             [(visible)]="mostrarEncuestaDirector" 
             [modal]="true" 
-            [header]="'Enviar evaluación semanal'" 
+            [header]="'Enviar evaluaciÃ³n semanal'" 
             [style]="{width: '500px'}" 
             [closable]="true" 
             (onHide)="mostrarEncuestaDirector=false; usuarioSeleccionadoParaEvaluar = null;"
@@ -131,17 +131,17 @@
             [resizable]="false">
             
             <p style="color: #6b7280; font-size: 0.95rem; margin-top: 0; margin-bottom: 1.5rem;">
-                Evaluar a <strong>{{ usuarioSeleccionadoParaEvaluar?.nombre || 'un usuario' }}</strong> directamente al backend.
+                Por favor califica el desempeo de <strong>{{ usuarioSeleccionadoParaEvaluar?.nombre || 'este usuario' }}</strong>.
             </p>
 
             <div class="rating-row" style="margin-bottom: 1.5rem;">
-                <span class="rating-label" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Selecciona tu calificación</span>
+                <span class="rating-label" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Selecciona tu calificaciÃ³n</span>
                 <div class="rating-buttons" style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <button *ngFor="let s of [1,2,3,4,5]" type="button" 
                         class="rating-chip p-button" 
                         [ngClass]="{'selected': evaluacionDirector.rating >= s}" 
                         (click)="setRating(s)">
-                        {{ s }} ★
+                        {{ s }} â˜…
                     </button>
                 </div>
             </div>
@@ -165,7 +165,7 @@
                 <button class="p-button p-button-primary" [disabled]="enviandoEvaluacion" (click)="enviarEvaluacion()">
                     <i class="pi pi-check" *ngIf="!enviandoEvaluacion" style="margin-right: 5px;"></i>
                     <i class="pi pi-spin pi-spinner" *ngIf="enviandoEvaluacion" style="margin-right: 5px;"></i>
-                    Enviar evaluación
+                    Enviar evaluaciÃ³n
                 </button>
             </ng-template>
         </p-dialog>
@@ -174,14 +174,14 @@
             <div class="stat-card">
                 <div class="stat-icon users"><i class="pi pi-briefcase"></i></div>
                 <div class="stat-data">
-                    <span class="label">Proyectos Área</span>
+                    <span class="label">Proyectos Ãrea</span>
                     <span class="number text-blue">{{ userStats.misProyectos }}</span>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon areas"><i class="pi pi-map"></i></div>
                 <div class="stat-data">
-                    <span class="label">Convenios Área</span>
+                    <span class="label">Convenios Ãrea</span>
                     <span class="number text-yellow">{{ userStats.misConvenios }}</span>
                 </div>
             </div>
@@ -189,28 +189,31 @@
               <div class="stat-card">
                   <div class="stat-icon docs"><i class="pi pi-chart-line"></i></div>
                   <div class="stat-data">
-                      <span class="label">Desempeño Equipo</span>
+                      <span class="label">DesempeÃ±o Equipo</span>
                       <span class="number text-green">{{ userStats.desempenoEquipo | number:'1.0-0' }}%</span>
                   </div>
               </div>
             </ng-container>
             <ng-container *ngIf="userStats.desempenoPersonal !== undefined && userStats.desempenoPersonal !== null">
-              <div class="stat-card">
-                  <div class="stat-icon docs"><i class="pi pi-star"></i></div>
-                  <div class="stat-data">
-                      <span class="label">Tu Desempeño</span>
-                      <span class="number text-green">{{ userStats.desempenoPersonal | number:'1.0-0' }}%</span>
-                  </div>
-              </div>
-            </ng-container>
+    <div class="stat-card" 
+         [ngStyle]="userStats.ultimaEvaluacion ? {'cursor': 'pointer'} : {}" 
+         (click)="abrirDetalleEvaluacion()"
+         title="Haz clic para ver detalles de la evaluacion">
+        <div class="stat-icon docs"><i class="pi pi-star"></i></div>
+        <div class="stat-data">
+            <span class="label">Tu Desempeno <i *ngIf="userStats.ultimaEvaluacion" class="pi pi-info-circle" style="font-size: 0.8rem; color: #6b7280; margin-left: 4px;"></i></span>
+            <span class="number text-green">{{ userStats.desempenoPersonal | number:'1.0-0' }}%</span>
+        </div>
+    </div>
+</ng-container>
         </div>
 
         <div class="charts-grid">
-            <!-- BLOQUE 1: Actividad Reciente del Área -->
+            <!-- BLOQUE 1: Actividad Reciente del Ãrea -->
             <div class="detail-box">
-                <h3>Actividad Reciente del Área</h3>
+                <h3>Actividad Reciente del Ãrea</h3>
                 <div class="placeholder-chart" *ngIf="!userStats.actividadReciente?.length">
-                    <span>No hay actividad reciente en tu área.</span>
+                    <span>No hay actividad reciente en tu Ã¡rea.</span>
                 </div>
                 <div class="recent-activity-list" *ngIf="userStats.actividadReciente?.length">
                     <div class="activity-item" *ngFor="let act of userStats.actividadReciente"
@@ -220,7 +223,7 @@
                         </div>
                         <div style="flex: 1;">
                             <p style="margin: 0; font-size: 0.9rem; color: #374151; line-height: 1.4;">
-                                <strong>{{ act.usuario || 'Sistema' }}</strong> {{ limpiarTexto(act.detalle || act.mensaje || act.accion || 'realizó una actividad') }} <br>
+                                <strong>{{ act.usuario || 'Sistema' }}</strong> {{ limpiarTexto(act.detalle || act.mensaje || act.accion || 'realizÃ³ una actividad') }} <br>
                                 <span style="color: #1a56db;" *ngIf="act.entidad">"{{ limpiarTexto(act.entidad) }}"</span>
                             </p>
                             <span style="font-size: 0.75rem; color: #9ca3af;">{{ act.fecha | date:'dd MMM yyyy, HH:mm' }}</span>
@@ -245,9 +248,9 @@
                 </div>
             </div>
 
-            <!-- BLOQUE 4: Desempeño del Área (Solo Director) -->
+            <!-- BLOQUE 4: DesempeÃ±o del Ãrea (Solo Director) -->
             <div class="detail-box">
-                <h3>Desempeño del Área</h3>
+                <h3>DesempeÃ±o del Ãrea</h3>
                 <ng-container *ngIf="userStats.desempenoEquipo !== undefined && userStats.desempenoEquipo !== null; else noDesempenoEquipo">
                   <div class="chart-container" style="position: relative; height: 230px; width: 100%;">
                       <p-chart type="bar" [data]="desempenoChartData" [options]="barOptions" height="230px"></p-chart>
@@ -255,7 +258,7 @@
                 </ng-container>
                 <ng-template #noDesempenoEquipo>
                   <div style="padding: 1rem; color: #718096; text-align: center;">
-                    El backend no envió desempeño de equipo, por eso no hay métrica disponible.
+                    Aun no hay metricas de desempeo del equipo disponibles.
                   </div>
                 </ng-template>
             </div>
@@ -264,3 +267,28 @@
     </ng-container>
 
 </div>
+<p-dialog 
+    [(visible)]="mostrarDetalleEvaluacionUsuario" 
+    [modal]="true" 
+    header="Detalle de tu Ultima Evaluacion" 
+    [style]="{width: '400px'}" 
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false">
+    
+    <div *ngIf="userStats?.ultimaEvaluacion as eval" style="text-align: center; padding: 1rem 0;">
+        <h3 style="margin-top: 0; color: #374151;">Calificacion del Director</h3>
+        
+        <div style="font-size: 2rem; color: #f59e0b; margin: 1rem 0;">
+            <i *ngFor="let s of [1,2,3,4,5]" class="pi" [ngClass]="s <= eval.rating ? 'pi-star-fill' : 'pi-star'" style="margin: 0 4px;"></i>
+        </div>
+        
+        <div *ngIf="eval.comentario" style="background: #f9fafb; border-left: 4px solid #3b82f6; padding: 1rem; border-radius: 4px; text-align: left; margin-top: 1rem;">
+            <p style="margin: 0; color: #4b5563; font-style: italic;">"{{ eval.comentario }}"</p>
+        </div>
+        
+        <div style="margin-top: 1.5rem; font-size: 0.85rem; color: #9ca3af;">
+            Evaluado el {{ eval.created_at | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+    </div>
+</p-dialog>

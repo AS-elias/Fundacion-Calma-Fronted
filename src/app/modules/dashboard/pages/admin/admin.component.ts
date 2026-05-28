@@ -36,6 +36,7 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   // Variables para la Evaluación del Director
   mostrarEncuestaDirector = false;
+  mostrarDetalleEvaluacionUsuario = false;
   enviandoEvaluacion = false;
   evaluacionDirector = { rating: 0, comentario: '' };
   mensajeEvaluacion: { tipo: 'exito' | 'error', texto: string } | null = null;
@@ -374,6 +375,12 @@ export class AdminComponent implements OnInit, OnDestroy {
           console.error(err);
         }
       });
+  }
+
+  abrirDetalleEvaluacion() {
+    if (this.userStats?.ultimaEvaluacion) {
+      this.mostrarDetalleEvaluacionUsuario = true;
+    }
   }
 
   cargarHistorialEvaluaciones() {

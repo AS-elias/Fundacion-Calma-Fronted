@@ -467,6 +467,11 @@ export class AnalisisDatos implements OnInit {
       return;
     }
 
+    if (!this.colegioBorrador.nombre.trim()) {
+      this.mostrarNotificacion('error', 'El campo Nombre es obligatorio.');
+      return;
+    }
+
     const esNuevo = this.colegioBorradorEsNuevo;
     const colegioGuardado = {
       ...this.colegioBorrador,
@@ -559,6 +564,11 @@ export class AnalisisDatos implements OnInit {
 
   guardarEmpresa(): void {
     if (!this.empresaBorrador) {
+      return;
+    }
+
+    if (!this.empresaBorrador.nombre.trim()) {
+      this.mostrarNotificacion('error', 'El campo Nombre de empresa es obligatorio.');
       return;
     }
 
@@ -656,6 +666,11 @@ export class AnalisisDatos implements OnInit {
       return;
     }
 
+    if (!this.venueBorrador.nombre.trim()) {
+      this.mostrarNotificacion('error', 'El campo Nombre del espacio es obligatorio.');
+      return;
+    }
+
     const esNuevo = this.venueBorradorEsNuevo;
     const venueGuardado = {
       ...this.venueBorrador,
@@ -750,6 +765,11 @@ export class AnalisisDatos implements OnInit {
 
   guardarDifusion(): void {
     if (!this.difusionBorrador) {
+      return;
+    }
+
+    if (!this.difusionBorrador.nombre.trim()) {
+      this.mostrarNotificacion('error', 'El campo Nombre de difusin es obligatorio.');
       return;
     }
 
@@ -855,7 +875,12 @@ export class AnalisisDatos implements OnInit {
     const descripcion = this.nuevaTarea.descripcion.trim();
     const esEdicion = !!this.tareaEditando;
 
-    if (!titulo || !descripcion) {
+    if (!titulo) {
+      this.mostrarNotificacion('error', 'El ttulo de la tarea es obligatorio.');
+      return;
+    }
+    if (!descripcion) {
+      this.mostrarNotificacion('error', 'La descripcin de la tarea es obligatoria.');
       return;
     }
 

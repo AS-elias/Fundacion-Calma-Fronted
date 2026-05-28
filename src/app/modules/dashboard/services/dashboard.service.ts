@@ -48,6 +48,7 @@ export interface UserDashboardStats {
   desempenoEquipo?: number;
   desempenoEquipoArea: number;
   desempenoPersonal?: number;
+  ultimaEvaluacion?: { rating: number; comentario: string | null; created_at: Date };
   misTareasRecientes: any[];
   misAlertas: any[];
   actividadReciente?: any[];
