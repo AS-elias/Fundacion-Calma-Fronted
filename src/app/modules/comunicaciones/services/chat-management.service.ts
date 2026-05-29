@@ -307,9 +307,10 @@ export class ChatManagementService {
                           msg.data?.archivoUrl || msg.data?.archivo_url || msg.data?.fileUrl || msg.data?.file_url ||
                           msg.data?.url || msg.data?.path;
     
-    // Corregir el tipo si el backend lo guardó erróneamente como 'file' pero la URL indica que es imagen
-    if (tipoFinal === 'file' && archivoFinalUrl) {
-      if (/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(archivoFinalUrl)) {
+    const textoMensaje = msg.content || msg.texto || msg.contenido || '';
+    // Corregir el tipo si el backend lo guardó erróneamente como 'file' pero la URL o nombre indica que es imagen
+    if (tipoFinal === 'file' && (archivoFinalUrl || textoMensaje)) {
+      if (/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(archivoFinalUrl || '') || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(textoMensaje)) {
         tipoFinal = 'image';
       }
     }

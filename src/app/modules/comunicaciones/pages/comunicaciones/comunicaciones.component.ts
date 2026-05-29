@@ -1622,11 +1622,33 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  async descargarArchivo(event: Event, msj: Mensaje) {
+    event.preventDefault();
+    if (!msj.archivoUrl) return;
+    this.descargarPorUrl(msj.archivoUrl, msj.texto || 'Archivo_Descargado');
+  }
+
   descargarImagenVisor() {
     if (this.imagenVisor?.archivoUrl) {
-      // Intenta abrirlo para descargar (si el backend manda encabezados de descarga)
-      // O simplemente abre en nueva pestaña
-      window.open(this.imagenVisor.archivoUrl, '_blank');
+      this.descargarPorUrl(this.imagenVisor.archivoUrl, this.imagenVisor.texto || 'Imagen_Descargada');
+    }
+  }
+
+  private async descargarPorUrl(urlArchivo: string, nombreArchivo: string) {
+    try {
+      const response = await fetch(urlArchivo);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nombreArchivo;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.warn('CORS prevented fetch download, falling back to window.open', error);
+      window.open(urlArchivo, '_blank');
     }
   }
 
