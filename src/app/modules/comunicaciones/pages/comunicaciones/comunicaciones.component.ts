@@ -1161,7 +1161,7 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
 
       // Consumir el endpoint de subida (REST) para soportar archivos grandes sin tumbar el Socket
       const response = await this.communicationService.uploadFile(canal.id, file);
-      const urlFina = response?.url || response?.archivoUrl || response?.fileUrl || response?.path || response?.data?.url || response?.data?.path || response?.data?.archivoUrl;
+      const urlFina = response?.url || response?.archivoUrl || response?.fileUrl || response?.path || response?.data?.url || response?.data?.path || response?.data?.archivoUrl || response?.data?.archivo_url;
       
       if (!urlFina) throw new Error('El servidor no devolvió una URL válida');
 
