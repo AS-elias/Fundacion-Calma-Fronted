@@ -301,7 +301,11 @@ export class ChatManagementService {
     }
 
     let tipoFinal = msg.tipo || 'text';
-    const archivoFinalUrl = msg.archivoUrl || msg.fileUrl;
+    // 🔥 BÚSQUEDA EXHAUSTIVA: Intentar todas las variantes posibles que el backend pueda enviar
+    let archivoFinalUrl = msg.archivoUrl || msg.fileUrl || msg.archivo_url || msg.archivo || msg.url || 
+                          msg.file_url || msg.rutaArchivo || msg.ruta_archivo || msg.path ||
+                          msg.data?.archivoUrl || msg.data?.archivo_url || msg.data?.fileUrl || msg.data?.file_url ||
+                          msg.data?.url || msg.data?.path;
     
     // Corregir el tipo si el backend lo guardó erróneamente como 'file' pero la URL indica que es imagen
     if (tipoFinal === 'file' && archivoFinalUrl) {

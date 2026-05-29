@@ -1,4 +1,4 @@
-<div
+﻿<div
   *ngIf="notificacion"
   class="toast-notificacion"
   [class.toast-notificacion--error]="notificacion.tipo === 'error'"
@@ -957,7 +957,7 @@
         <button class="page-btn" (click)="paginaVenues = paginaVenues - 1" [disabled]="paginaVenues === 1" style="background: var(--surface-card); color: var(--text-color); border: 1px solid var(--surface-border); padding: 4px 8px; border-radius: 4px; cursor: pointer;">Anterior</button>
         <span style="color: var(--text-color-secondary);">Página {{ paginaVenues }} de {{ totalPaginasVenues.length }}</span>
         <button class="page-btn" (click)="paginaVenues = paginaVenues + 1" [disabled]="paginaVenues === totalPaginasVenues.length" style="background: var(--surface-card); color: var(--text-color); border: 1px solid var(--surface-border); padding: 4px 8px; border-radius: 4px; cursor: pointer;">Siguiente</button>
-      </div>
+      </div> 
       <div>
         <span style="margin-right: 15px; color: var(--text-color-secondary);">{{ venuesFiltrados.length }} venues registrados</span>
         <button class="registro-add" type="button" [disabled]="!!venueBorrador" (click)="agregarVenue()">

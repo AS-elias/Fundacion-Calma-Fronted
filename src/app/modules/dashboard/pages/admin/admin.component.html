@@ -89,15 +89,15 @@
         </div>
 
         <ng-container *ngIf="usuariosParaEvaluar.length; else noPendingEvaluations">
-            <div style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #eef2ff; border-radius: 8px; background: #ffffff;">
-                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap: wrap; gap: 1rem;">
-                    <div>
-                        <h3 style="margin:0">Evaluaciones semanales pendientes</h3>
-                        <p style="margin:0; color:#6b7280; font-size:0.9rem;">Tienes {{ usuariosParaEvaluar.length }} usuario(s) pendiente(s) por evaluar.</p>
+            <div class="evaluations-container">
+                <div class="evaluations-header">
+                    <div class="evaluations-info">
+                        <h3>Evaluaciones semanales pendientes</h3>
+                        <p>Tienes {{ usuariosParaEvaluar.length }} usuario(s) pendiente(s) por evaluar.</p>
                     </div>
-                    <button class="p-button p-button-outlined p-button-sm" type="button" (click)="mostrarEvaluaciones = !mostrarEvaluaciones" style="padding: 0.5rem 1rem;">
+                    <button class="btn-ver-calificar" type="button" (click)="mostrarEvaluaciones = !mostrarEvaluaciones">
                         {{ mostrarEvaluaciones ? 'Ocultar lista' : 'Ver y Calificar' }}
-                        <i class="pi" [ngClass]="mostrarEvaluaciones ? 'pi-chevron-up' : 'pi-chevron-down'" style="margin-left: 0.5rem"></i>
+                        <i class="pi" [ngClass]="mostrarEvaluaciones ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
                     </button>
                 </div>
                 <div class="pending-list" style="margin-top:1rem;" *ngIf="mostrarEvaluaciones">

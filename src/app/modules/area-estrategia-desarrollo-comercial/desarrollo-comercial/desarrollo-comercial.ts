@@ -1385,33 +1385,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
   }
 
   private obtenerAreaId(): number | undefined {
-    if (this.areaActivaId) return this.areaActivaId;
-
-    const usuario = this.authService.getCurrentUser() as {
-      area_id?: number | string | null;
-      areaId?: number | string | null;
-      area?: { id?: number | string | null; area_id?: number | string | null } | null;
-      areas?: Array<
-        number | string | { id?: number | string | null; area_id?: number | string | null }
-      > | null;
-    } | null;
-
-    const candidatos: unknown[] = [
-      usuario?.area_id,
-      usuario?.areaId,
-      usuario?.area?.id,
-      usuario?.area?.area_id,
-      usuario?.areas?.[0],
-      typeof usuario?.areas?.[0] === 'object' ? usuario?.areas?.[0]?.id : undefined,
-      typeof usuario?.areas?.[0] === 'object' ? usuario?.areas?.[0]?.area_id : undefined,
-    ];
-
-    for (const candidato of candidatos) {
-      const areaId = this.normalizarEnteroPositivo(candidato);
-      if (areaId) return areaId;
-    }
-
-    return undefined;
+    return this.areaActivaId;
   }
 
   private normalizarEnteroPositivo(valor: unknown): number | undefined {

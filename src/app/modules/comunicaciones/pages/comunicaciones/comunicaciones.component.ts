@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, inject, signal, computed, ViewChild, ElementRef, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of, Subscription } from 'rxjs';
@@ -26,7 +26,7 @@ import {
 @Component({
   selector: 'app-comunicaciones',
   standalone: true,
-  imports: [CommonModule, FormsModule, ChannelInfoComponent, EmptyChatComponent],
+  imports: [CommonModule, NgOptimizedImage, FormsModule, ChannelInfoComponent, EmptyChatComponent],
   templateUrl: './comunicaciones.component.html',
   styleUrls: ['./comunicaciones.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

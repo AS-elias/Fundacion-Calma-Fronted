@@ -187,7 +187,10 @@
                                             <i class="pi" [ngClass]="getFileIcon(msj.texto)"></i><span>{{ msj.texto || 'Archivo' }}</span><i class="pi pi-download"></i>
                                         </a>
                                         <div *ngIf="msj.tipo === 'image'" class="image-clickable" (click)="abrirVisorImagen(msj)">
-                                            <img [src]="msj.archivoUrl" alt="Imagen" class="img-msg">
+                                            <img ngSrc="{{msj.archivoUrl || ''}}" alt="Imagen" width="300" height="300" style="object-fit: cover; max-height: 300px; width: auto;" class="img-msg" *ngIf="msj.archivoUrl">
+                                            <div *ngIf="!msj.archivoUrl" style="width: 200px; height: 100px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 12px; color: #999;">
+                                                Imagen no disponible
+                                            </div>
                                         </div>
                                     </div>
 
@@ -459,7 +462,7 @@
         </div>
         
         <div class="viewer-content">
-            <img [src]="imagenVisor.archivoUrl" alt="Vista completa" class="viewer-img" (click)="$event.stopPropagation()">
+            <img ngSrc="{{imagenVisor?.archivoUrl || ''}}" alt="Vista completa" [width]="1200" [height]="900" style="max-width: 100%; height: auto; object-fit: contain;" class="viewer-img" (click)="$event.stopPropagation()" *ngIf="imagenVisor?.archivoUrl">
         </div>
     </div>
 </div>
