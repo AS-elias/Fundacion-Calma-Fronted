@@ -1653,8 +1653,8 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('document:keydown.escape', ['$event'])
-  onKeydownHandler(event: KeyboardEvent) {
+  @HostListener('document:keydown.escape')
+  onKeydownHandler() {
     if (this.imagenVisor) {
       this.cerrarVisorImagen();
     }

@@ -191,7 +191,7 @@
                                         </div>
                                     </div>
 
-                                    <p class="message-text" *ngIf="msj.tipo !== 'image'" [class.deleted-msg]="$any(msj).eliminado">{{ msj.texto }}</p>
+                                    <p class="message-text" *ngIf="msj.tipo !== 'image' && msj.tipo !== 'file'" [class.deleted-msg]="$any(msj).eliminado">{{ msj.texto }}</p>
 
                                     <!-- Footer: hora + checks en fila propia para no solaparse -->
                                     <div class="bubble-footer">
