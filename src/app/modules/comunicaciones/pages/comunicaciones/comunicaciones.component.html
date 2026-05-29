@@ -102,6 +102,9 @@
                 <button class="icon-btn" *ngIf="chatManagement.contactoActivo()?.esGrupo" (click)="abrirModalEditarGrupo()" title="Editar perfil del grupo">
                     <i class="pi pi-pencil"></i>
                 </button>
+                <button class="icon-btn" (click)="toggleSearchChat()" title="Buscar mensajes" [class.active]="mostrarBuscadorMensaje()">
+                    <i class="pi pi-search"></i>
+                </button>
                 <button class="icon-btn" (click)="verInfoContacto()" title="Ver información">
                     <i class="pi pi-info-circle"></i>
                 </button>
@@ -110,6 +113,25 @@
                 </button>
             </div>
         </header>
+
+        <!-- Buscador de mensajes integrado -->
+        <div class="chat-search-bar" *ngIf="mostrarBuscadorMensaje()">
+            <div class="search-input-container">
+                <i class="pi pi-search search-icon"></i>
+                <input 
+                    type="text" 
+                    placeholder="Buscar en esta conversación..." 
+                    [ngModel]="terminoBusquedaMensaje()" 
+                    (ngModelChange)="terminoBusquedaMensaje.set($event)"
+                    class="search-input">
+                <button class="clear-btn" *ngIf="terminoBusquedaMensaje()" (click)="terminoBusquedaMensaje.set('')" type="button">
+                    <i class="pi pi-times"></i>
+                </button>
+            </div>
+            <div class="search-results-info" *ngIf="terminoBusquedaMensaje()">
+                <span>{{ mensajesFiltrados.length }} coincidencias</span>
+            </div>
+        </div>
 
         <div class="chat-messages" #messagesContainer>
             <div class="messages-wrapper">
@@ -120,11 +142,18 @@
                 </div>
                 <!-- EMPTY CHAT - Extracted Component -->
                 <app-empty-chat *ngIf="!cargandoMensajes() && chatManagement.contactoActivo()!.mensajes.length === 0"></app-empty-chat>
-                <ng-container *ngFor="let msj of chatManagement.contactoActivo()!.mensajes; let i = index">
+                
+                <!-- EMPTY SEARCH RESULTS -->
+                <div class="search-empty-state" *ngIf="!cargandoMensajes() && chatManagement.contactoActivo()!.mensajes.length > 0 && mensajesFiltrados.length === 0">
+                    <i class="pi pi-search search-empty-icon"></i>
+                    <p>No se encontraron resultados para "{{ terminoBusquedaMensaje() }}"</p>
+                </div>
+
+                <ng-container *ngFor="let msj of mensajesFiltrados; let i = index">
 
                     <!-- Separador de fecha estilo WhatsApp -->
                     <div class="date-separator"
-                         *ngIf="i === 0 || chatManagement.formatearEtiquetaDia($any(chatManagement.contactoActivo()!.mensajes[i-1]).fechaISO) !== chatManagement.formatearEtiquetaDia($any(msj).fechaISO)">
+                         *ngIf="i === 0 || chatManagement.formatearEtiquetaDia($any(mensajesFiltrados[i-1]).fechaISO) !== chatManagement.formatearEtiquetaDia($any(msj).fechaISO)">
                         <span>{{ chatManagement.formatearEtiquetaDia($any(msj).fechaISO) }}</span>
                     </div>
 
@@ -165,6 +194,9 @@
                                         <div class="action-dropdown sent-dropdown" *ngIf="menuMensajeActivo() === $any(msj).id" (mouseleave)="cerrarMenuMensaje()">
                                             <button (click)="iniciarEdicion(msj)">
                                                 <i class="pi pi-pencil"></i> Editar mensaje
+                                            </button>
+                                            <button (click)="abrirModalReenviar(msj)">
+                                                <i class="pi pi-share-alt"></i> Reenviar mensaje
                                             </button>
                                             <button (click)="eliminarParaMi(msj)">
                                                 <i class="pi pi-trash"></i> Eliminar para mí
@@ -227,6 +259,9 @@
                                             <i class="pi pi-ellipsis-v"></i>
                                         </button>
                                         <div class="action-dropdown" *ngIf="menuMensajeActivo() === $any(msj).id" (mouseleave)="cerrarMenuMensaje()">
+                                            <button (click)="abrirModalReenviar(msj)">
+                                                <i class="pi pi-share-alt"></i> Reenviar mensaje
+                                            </button>
                                             <button (click)="eliminarParaMi(msj)">
                                                 <i class="pi pi-trash"></i> Eliminar para mí
                                             </button>
@@ -267,8 +302,15 @@
                     <span>Emojis</span>
                     <button (click)="mostrarEmojis.set(false)"><i class="pi pi-times"></i></button>
                 </div>
+                <div class="emoji-search-container">
+                    <input type="text" 
+                           placeholder="Buscar emoji..." 
+                           [value]="filtroEmoji()"
+                           (input)="filtroEmoji.set($any($event.target).value)" 
+                           class="emoji-search-input" />
+                </div>
                 <div class="emoji-grid">
-                    <span class="emoji-item" *ngFor="let emoji of listaEmojis" (click)="agregarEmojiSeleccionado(emoji)" title="{{ emoji }}">
+                    <span class="emoji-item" *ngFor="let emoji of emojisFiltrados()" (click)="agregarEmojiSeleccionado(emoji)" title="{{ emoji }}">
                         <img [src]="getTwemojiUrl(emoji)" class="twemoji-grid" alt="{{ emoji }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
                         <span style="display:none;">{{ emoji }}</span>
                     </span>
@@ -445,8 +487,7 @@
                         <i class="pi pi-ellipsis-v"></i>
                     </button>
                     <div class="viewer-dropdown" *ngIf="menuVisorActivo" (mouseleave)="cerrarMenuVisor()">
-                        <!-- TODO: Implementar lógica de Reenviar si es posible, por ahora visual -->
-                        <button (click)="reenviarImagenVisor()">
+                        <button (click)="abrirModalReenviar(imagenVisor)">
                             <i class="pi pi-share-alt"></i> Reenviar
                         </button>
                         <button (click)="eliminarImagenVisor()">
@@ -463,6 +504,51 @@
         
         <div class="viewer-content">
             <img [src]="imagenVisor?.archivoUrl" alt="Vista completa" style="max-width: 100%; max-height: 90vh; height: auto; object-fit: contain;" class="viewer-img" (click)="$event.stopPropagation()" *ngIf="imagenVisor?.archivoUrl">
+        </div>
+    </div>
+
+    <!-- Modal Reenviar Mensaje -->
+    <div class="modal-overlay" *ngIf="mostrarModalReenviar()" (click)="cerrarModalReenviar()">
+        <div class="modal-content forward-modal" (click)="$event.stopPropagation()">
+            <h3>Reenviar Mensaje</h3>
+            <p class="forward-description">Selecciona el contacto o grupo al que deseas reenviar este mensaje:</p>
+            
+            <input type="text" 
+                   [value]="filtroReenviar()"
+                   (input)="filtroReenviar.set($any($event.target).value)"
+                   placeholder="Buscar chats..." 
+                   autofocus 
+                   class="search-input-forward" />
+            
+            <div class="forward-list">
+                <div class="forward-item" *ngFor="let contacto of contactosReenviarFiltrados()">
+                    <div class="forward-item-info">
+                        <div class="avatar" [ngClass]="contacto.colorBg">
+                            <img *ngIf="$any(contacto).avatarUrl" [src]="$any(contacto).avatarUrl" class="avatar-img">
+                            <span *ngIf="!$any(contacto).avatarUrl">{{ contacto.iniciales }}</span>
+                        </div>
+                        <div class="forward-details">
+                            <span class="name">{{ contacto.nombre }}</span>
+                            <span class="type">
+                                {{ contacto.esGrupo ? 'Grupo (' + (contacto.participantes?.length || 0) + ' miembros)' : 'Chat Directo' }}
+                            </span>
+                        </div>
+                    </div>
+                    <button class="btn-forward-send" 
+                            (click)="reenviarMensajeA(contacto)" 
+                            [class.sent]="$any(contacto).enviadoTemp">
+                        <i class="pi" [ngClass]="$any(contacto).enviadoTemp ? 'pi-check' : 'pi-send'"></i>
+                        {{ $any(contacto).enviadoTemp ? 'Enviado' : 'Enviar' }}
+                    </button>
+                </div>
+                <div *ngIf="contactosReenviarFiltrados().length === 0" class="forward-empty">
+                    No se encontraron chats activos.
+                </div>
+            </div>
+            
+            <div class="modal-actions mt-15">
+                <button class="btn-cancel" (click)="cerrarModalReenviar()">Cerrar</button>
+            </div>
         </div>
     </div>
 </div>

@@ -709,6 +709,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
   }
 
   pedirConfirmarEliminacion(convenio: Convenio, event?: Event) {
+    if (!this.puedeEditar) return;
     if (event) event.stopPropagation();
     this.convenioPorEliminar = convenio;
   }
@@ -718,6 +719,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
   }
 
   confirmarEliminacion() {
+    if (!this.puedeEditar) return;
     if (!this.convenioPorEliminar) return;
     const convenio = this.convenioPorEliminar;
     const id = this.idConvenio(convenio);
@@ -741,6 +743,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
   }
 
   eliminarLogo() {
+    if (!this.puedeEditar) return;
     if (!this.convenioSeleccionado) return;
     const teniaLogo = !!this.convenioSeleccionado.logo;
     if (!teniaLogo) return;
@@ -793,6 +796,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
   }
 
   habilitarEdicion() {
+    if (!this.puedeEditar) return;
     this.editMode = true;
     this.intentoGuardar = false;
     this.snapshotEdicion = this.clonarConvenio(this.convenioSeleccionado);

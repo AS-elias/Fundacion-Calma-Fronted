@@ -83,6 +83,86 @@
       </ul>
     </div>
 
+    <!-- Archivos compartidos (Multimedia, Docs, Enlaces) -->
+    <hr class="divider">
+    
+    <div class="shared-media-section">
+      <h4 class="media-title"><i class="pi pi-folder-open"></i> Archivos compartidos</h4>
+      
+      <!-- Selector de pestañas -->
+      <div class="media-tabs">
+        <button class="tab-btn" [class.active]="activeTab === 'images'" (click)="activeTab = 'images'" type="button">
+          Fotos ({{ sharedImages.length }})
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'docs'" (click)="activeTab = 'docs'" type="button">
+          Docs ({{ sharedDocs.length }})
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'links'" (click)="activeTab = 'links'" type="button">
+          Links ({{ sharedLinks.length }})
+        </button>
+      </div>
+
+      <!-- Contenido de las pestañas -->
+      <div class="media-tab-content">
+        <!-- Pestaña Imágenes -->
+        <div *ngIf="activeTab === 'images'" class="tab-pane images-pane">
+          <div *ngIf="sharedImages.length === 0" class="no-media-msg">
+            No hay imágenes compartidas
+          </div>
+          <div class="images-grid" *ngIf="sharedImages.length > 0">
+            <div class="grid-item" *ngFor="let img of sharedImages">
+              <a [href]="img.url" target="_blank" title="Ver imagen completa">
+                <img [src]="img.url" alt="Imagen compartida">
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestaña Documentos -->
+        <div *ngIf="activeTab === 'docs'" class="tab-pane docs-pane">
+          <div *ngIf="sharedDocs.length === 0" class="no-media-msg">
+            No hay documentos compartidos
+          </div>
+          <ul class="media-list" *ngIf="sharedDocs.length > 0">
+            <li class="media-item doc-item" *ngFor="let doc of sharedDocs">
+              <div class="item-icon-wrapper doc-icon-bg">
+                <i class="pi pi-file doc-icon"></i>
+              </div>
+              <div class="media-item-info">
+                <a [href]="doc.url" target="_blank" class="media-item-name" title="{{ doc.nombre }}">{{ doc.nombre }}</a>
+                <span class="media-item-meta">{{ doc.remitente }} • {{ doc.fecha | date:'dd/MM HH:mm' }}</span>
+              </div>
+              <a [href]="doc.url" download [target]="'_blank'" class="media-download-btn" title="Descargar">
+                <i class="pi pi-download"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Pestaña Enlaces -->
+        <div *ngIf="activeTab === 'links'" class="tab-pane links-pane">
+          <div *ngIf="sharedLinks.length === 0" class="no-media-msg">
+            No hay enlaces compartidos
+          </div>
+          <ul class="media-list" *ngIf="sharedLinks.length > 0">
+            <li class="media-item link-item" *ngFor="let link of sharedLinks">
+              <div class="item-icon-wrapper link-icon-bg">
+                <i class="pi pi-link link-icon"></i>
+              </div>
+              <div class="media-item-info">
+                <a [href]="link.url" target="_blank" class="media-item-link-text" title="{{ link.url }}">{{ link.url }}</a>
+                <span class="media-item-context">{{ link.textoMsg }}</span>
+                <span class="media-item-meta">{{ link.remitente }} • {{ link.fecha | date:'dd/MM HH:mm' }}</span>
+              </div>
+              <a [href]="link.url" target="_blank" class="media-external-btn" title="Abrir enlace">
+                <i class="pi pi-external-link"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Estado Cargando -->

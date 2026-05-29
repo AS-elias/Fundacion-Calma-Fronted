@@ -13,6 +13,10 @@ export class ChannelInfoComponent implements OnChanges {
   @Input() currentUserId: number = 0;
 
   displayProfile: any = null;
+  activeTab: 'images' | 'docs' | 'links' = 'images';
+  sharedImages: any[] = [];
+  sharedDocs: any[] = [];
+  sharedLinks: any[] = [];
   
   @Output() addParticipant = new EventEmitter<any>();
   @Output() removeParticipant = new EventEmitter<any>();
@@ -23,6 +27,61 @@ export class ChannelInfoComponent implements OnChanges {
 
   ngOnChanges() {
     this.calculateDisplayProfile();
+    this.extractSharedMedia();
+  }
+
+  extractSharedMedia() {
+    this.sharedImages = [];
+    this.sharedDocs = [];
+    this.sharedLinks = [];
+
+    const mensajes = this.channelInfo?.mensajes || [];
+    const linkRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+
+    mensajes.forEach((msg: any) => {
+      if (msg.eliminado) return;
+
+      // 1. Imágenes
+      if (msg.tipo === 'image' && msg.archivoUrl) {
+        this.sharedImages.push({
+          id: msg.id,
+          url: msg.archivoUrl,
+          fecha: msg.fechaISO || msg.timestampReal,
+          remitente: msg.remitenteNombre || 'Usuario'
+        });
+      }
+      // 2. Documentos
+      else if (msg.tipo === 'file' && msg.archivoUrl) {
+        this.sharedDocs.push({
+          id: msg.id,
+          url: msg.archivoUrl,
+          nombre: msg.texto || 'Archivo sin nombre',
+          fecha: msg.fechaISO || msg.timestampReal,
+          remitente: msg.remitenteNombre || 'Usuario'
+        });
+      }
+      // 3. Links
+      if (msg.texto && linkRegex.test(msg.texto)) {
+        // Restaurar regex index
+        linkRegex.lastIndex = 0;
+        const urls = msg.texto.match(linkRegex);
+        if (urls) {
+          urls.forEach((url: string) => {
+            this.sharedLinks.push({
+              id: msg.id,
+              url: url.startsWith('http') ? url : `https://${url}`,
+              textoMsg: msg.texto,
+              fecha: msg.fechaISO || msg.timestampReal,
+              remitente: msg.remitenteNombre || 'Usuario'
+            });
+          });
+        }
+      }
+    });
+
+    this.sharedImages.reverse();
+    this.sharedDocs.reverse();
+    this.sharedLinks.reverse();
   }
 
   get isCurrentUserAdmin(): boolean {

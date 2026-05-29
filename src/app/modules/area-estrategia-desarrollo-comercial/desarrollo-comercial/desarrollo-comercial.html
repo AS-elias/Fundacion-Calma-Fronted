@@ -1,4 +1,4 @@
-﻿<div class="page-container">
+<div class="page-container">
   <div
     *ngIf="notificacion"
     class="toast-notificacion"
@@ -145,6 +145,7 @@
             {{ convenio.estadoLabel }}
           </span>
           <button
+            *ngIf="puedeEditar"
             class="icon-btn ghost danger small"
             title="Eliminar convenio"
             (click)="pedirConfirmarEliminacion(convenio, $event)"
@@ -496,6 +497,7 @@
           <div class="panel-head" *ngIf="!esNuevo">
             <h4>Información General</h4>
             <button
+              *ngIf="puedeEditar"
               class="icon-btn"
               (click)="habilitarEdicion()"
               [class.active]="editMode"

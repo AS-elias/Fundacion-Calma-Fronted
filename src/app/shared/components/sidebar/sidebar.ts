@@ -188,6 +188,6 @@ export class SidebarComponent implements OnInit {
 
   cerrarSesion(): void {
     this.authService.logout();
-    this.router.navigate(['/login']);
+    window.location.href = '/login';
   }
 }

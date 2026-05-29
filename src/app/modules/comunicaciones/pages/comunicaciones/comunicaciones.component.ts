@@ -96,6 +96,8 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
   esModoAgregarMiembro = signal(false);
   esModoEditarGrupo = signal(false);
   cargandoMensajes = signal(false);
+  terminoBusquedaMensaje = signal('');
+  mostrarBuscadorMensaje = signal(false);
 
   // Modal de Alertas y Confirmaciones
   dialogVisible = signal(false);
@@ -105,7 +107,133 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
 
   // Panel de Emojis
   mostrarEmojis = signal(false);
+  filtroEmoji = signal('');
+  listaEmojisCompleta = signal<any[]>([]);
   listaEmojis: string[] = ['😀','😂','😅','🤣','😊','😍','👍','🙏','🔥','🎉','🙌','❤️']; // Fallback inicial
+
+  // Reenvío de mensajes
+  mostrarModalReenviar = signal(false);
+  mensajeAReenviar = signal<any | null>(null);
+  filtroReenviar = signal('');
+
+  // Diccionario español → inglés para búsqueda de emojis
+  private readonly emojiKeywordsES: Record<string, string[]> = {
+    'feliz': ['smiling', 'happy', 'grinning', 'joy', 'smile', 'beaming'],
+    'alegre': ['smiling', 'happy', 'grinning', 'joy', 'smile', 'beaming'],
+    'contento': ['smiling', 'happy', 'grinning', 'joy'],
+    'triste': ['sad', 'crying', 'cry', 'tear', 'disappointed', 'pensive'],
+    'llorar': ['crying', 'cry', 'tear', 'sob', 'sad'],
+    'risa': ['laughing', 'joy', 'rofl', 'rolling', 'grinning', 'haha'],
+    'reir': ['laughing', 'joy', 'rofl', 'rolling', 'grinning'],
+    'amor': ['heart', 'love', 'kiss', 'couple', 'smiling face with hearts'],
+    'corazon': ['heart', 'love', 'red heart', 'hearts'],
+    'enojado': ['angry', 'rage', 'mad', 'pouting', 'steam'],
+    'enojo': ['angry', 'rage', 'mad', 'pouting'],
+    'fuego': ['fire', 'flame', 'hot'],
+    'sol': ['sun', 'sunny', 'sunrise'],
+    'luna': ['moon', 'crescent'],
+    'estrella': ['star', 'stars', 'glowing', 'sparkle'],
+    'mano': ['hand', 'wave', 'palm', 'thumbs', 'clap', 'fist', 'finger', 'point'],
+    'pulgar': ['thumbs up', 'thumbs down', 'thumb'],
+    'ok': ['ok', 'thumbs up', 'check'],
+    'bien': ['thumbs up', 'ok', 'check', 'good'],
+    'mal': ['thumbs down', 'bad', 'sad'],
+    'fiesta': ['party', 'confetti', 'celebration', 'tada', 'balloon'],
+    'celebrar': ['party', 'confetti', 'celebration', 'tada', 'clap'],
+    'comida': ['food', 'eat', 'pizza', 'burger', 'rice', 'fruit', 'cook'],
+    'animal': ['animal', 'dog', 'cat', 'bear', 'monkey', 'bird', 'fish'],
+    'perro': ['dog', 'puppy'],
+    'gato': ['cat', 'kitten'],
+    'flor': ['flower', 'blossom', 'rose', 'tulip', 'hibiscus', 'sunflower'],
+    'rosa': ['rose', 'pink', 'flower'],
+    'musica': ['music', 'note', 'guitar', 'musical', 'sing'],
+    'deporte': ['sport', 'ball', 'soccer', 'basketball', 'tennis', 'football'],
+    'clima': ['weather', 'rain', 'cloud', 'sun', 'snow', 'thunder'],
+    'lluvia': ['rain', 'umbrella', 'cloud'],
+    'nieve': ['snow', 'snowflake', 'cold'],
+    'dinero': ['money', 'dollar', 'cash', 'coin', 'bank'],
+    'trabajo': ['work', 'office', 'briefcase', 'computer', 'laptop'],
+    'casa': ['house', 'home', 'building'],
+    'carro': ['car', 'automobile', 'vehicle'],
+    'avion': ['airplane', 'plane', 'flight'],
+    'reloj': ['clock', 'watch', 'time', 'alarm'],
+    'telefono': ['phone', 'call', 'telephone', 'mobile'],
+    'pensar': ['thinking', 'thought', 'think'],
+    'dormir': ['sleeping', 'sleep', 'zzz', 'snoring'],
+    'sorpresa': ['surprised', 'astonished', 'wow', 'open mouth'],
+    'sorprendido': ['surprised', 'astonished', 'wow', 'open mouth'],
+    'miedo': ['fearful', 'scared', 'scream', 'fear'],
+    'asustado': ['fearful', 'scared', 'scream'],
+    'guiño': ['wink', 'winking'],
+    'beso': ['kiss', 'kissing', 'lips'],
+    'lengua': ['tongue', 'stuck out tongue', 'yummy'],
+    'diablo': ['devil', 'imp', 'smiling face with horns'],
+    'fantasma': ['ghost'],
+    'calavera': ['skull', 'skeleton'],
+    'palma': ['palm', 'clap', 'raised hand'],
+    'aplauso': ['clap', 'clapping'],
+    'rezar': ['pray', 'folded hands', 'please'],
+    'orar': ['pray', 'folded hands'],
+    'cafe': ['coffee', 'hot beverage'],
+    'cerveza': ['beer', 'clinking'],
+    'vino': ['wine', 'glass'],
+    'pastel': ['cake', 'birthday'],
+    'regalo': ['gift', 'present', 'wrapped'],
+    'navidad': ['christmas', 'santa', 'tree'],
+    'corona': ['crown', 'king', 'queen'],
+    'medalla': ['medal', 'trophy', 'award'],
+    'cohete': ['rocket', 'launch'],
+    'arcoiris': ['rainbow'],
+    'bandera': ['flag'],
+    'palomita': ['check', 'ballot'],
+    'prohibido': ['prohibited', 'forbidden', 'no entry'],
+    'peligro': ['warning', 'danger', 'caution'],
+    'pregunta': ['question', 'mark'],
+    'bombilla': ['bulb', 'light', 'idea'],
+    'idea': ['bulb', 'light'],
+    'cien': ['hundred', '100'],
+    'nuevo': ['new', 'sparkle'],
+    'ojo': ['eye', 'eyes', 'see'],
+    'ojos': ['eyes', 'eye'],
+    'labios': ['lips', 'mouth'],
+    'cerebro': ['brain'],
+  };
+
+  // Computed para emojis filtrados
+  emojisFiltrados = computed(() => {
+    const query = this.filtroEmoji().toLowerCase().trim();
+    if (!query) {
+      return this.listaEmojis;
+    }
+
+    // Buscar traducciones en español → inglés
+    const englishTerms: string[] = [];
+    for (const [esKey, enValues] of Object.entries(this.emojiKeywordsES)) {
+      if (esKey.includes(query) || query.includes(esKey)) {
+        englishTerms.push(...enValues);
+      }
+    }
+
+    return this.listaEmojisCompleta()
+      .filter((e: any) => {
+        if (!e.name) return false;
+        const name = e.name.toLowerCase();
+        // Buscar por nombre en inglés directamente
+        if (name.includes(query)) return true;
+        // Buscar por traducciones español → inglés
+        return englishTerms.some(term => name.includes(term));
+      })
+      .map((e: any) => e.char)
+      .slice(0, 200);
+  });
+
+  // Computed para contactos filtrados en el modal de reenvío
+  contactosReenviarFiltrados = computed(() => {
+    const query = this.filtroReenviar().toLowerCase().trim();
+    const lista = this.chatManagement.contactos();
+    if (!query) return lista;
+    return lista.filter((c: ContactoChat) => c.nombre.toLowerCase().includes(query));
+  });
 
   // Computed para contactos filtrados - AQUÍ está la lógica
   contactosFiltrados = computed(() => {
@@ -734,7 +862,8 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          this.listaEmojis = data.slice(0, 350).map((e: any) => e.char); // Tomamos los primeros 350 para no saturar la RAM
+          this.listaEmojisCompleta.set(data); // Guardamos TODOS los emojis para búsquedas completas
+          this.listaEmojis = data.slice(0, 500).map((e: any) => e.char); // 500 iniciales por defecto (similar a WhatsApp)
           this.cdr.detectChanges();
         }
       })
@@ -770,6 +899,30 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     // Scroll después de que Angular renderice los mensajes cacheados
     requestAnimationFrame(() => {
       setTimeout(() => this.scrollToBottom(), 30);
+    });
+  }
+
+  toggleSearchChat() {
+    this.mostrarBuscadorMensaje.update(v => !v);
+    if (!this.mostrarBuscadorMensaje()) {
+      this.terminoBusquedaMensaje.set('');
+    }
+  }
+
+  get mensajesFiltrados(): any[] {
+    const contacto = this.chatManagement.contactoActivo();
+    if (!contacto) return [];
+    const mensajes = contacto.mensajes || [];
+    const termino = this.terminoBusquedaMensaje().trim().toLowerCase();
+    if (!termino) return mensajes;
+
+    return mensajes.filter(m => {
+      const msgAny = m as any;
+      if (msgAny.eliminado) return false;
+      const textoCoincide = msgAny.texto?.toLowerCase().includes(termino);
+      const remitenteCoincide = msgAny.remitenteNombre?.toLowerCase().includes(termino);
+      const archivoCoincide = msgAny.archivoUrl?.toLowerCase().includes(termino);
+      return textoCoincide || remitenteCoincide || archivoCoincide;
     });
   }
 
@@ -965,6 +1118,12 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
   async procesarArchivoArrastrado(file: File): Promise<void> {
     const canal = this.chatManagement.contactoActivo();
     if (!file || !canal) return;
+
+    const MAX_FILE_SIZE_MB = 10;
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      this.mostrarAlerta(`El archivo es demasiado grande. El límite permitido es de ${MAX_FILE_SIZE_MB}MB.`);
+      return;
+    }
     
     console.log('Subiendo archivo arrastrado:', file.name);
     this.subiendoArchivo.set(true);
@@ -1006,6 +1165,45 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     } finally {
       this.subiendoArchivo.set(false);
     }
+  }
+
+  abrirModalReenviar(msj: any): void {
+    if (!msj) return;
+    this.mensajeAReenviar.set(msj);
+    this.filtroReenviar.set('');
+    this.mostrarModalReenviar.set(true);
+    this.cerrarMenuMensaje();
+    this.cerrarVisorImagen();
+  }
+
+  cerrarModalReenviar(): void {
+    this.mostrarModalReenviar.set(false);
+    this.mensajeAReenviar.set(null);
+    this.filtroReenviar.set('');
+  }
+
+  reenviarMensajeA(contacto: ContactoChat): void {
+    const msj = this.mensajeAReenviar();
+    if (!msj || !contacto) return;
+
+    console.log(`Reenviando mensaje a canal ${contacto.nombre} (ID: ${contacto.id})`);
+    
+    // Si es una imagen o archivo, enviamos con tipo e info de archivo
+    this.communicationService.sendMessage({
+      canalId: contacto.id,
+      remitenteId: this.currentUserId,
+      contenido: msj.texto || '',
+      tipo: msj.tipo || 'text',
+      archivoUrl: msj.archivoUrl || undefined
+    });
+
+    // Indicador temporal
+    (contacto as any).enviadoTemp = true;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      (contacto as any).enviadoTemp = false;
+      this.cdr.detectChanges();
+    }, 2000);
   }
 
   // ===== Helper Methods =====
@@ -1146,6 +1344,13 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     const canal = this.chatManagement.contactoActivo();
     
     if (!file || !canal) {
+      if (fileInput) fileInput.value = '';
+      return;
+    }
+
+    const MAX_FILE_SIZE_MB = 10;
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      this.mostrarAlerta(`El archivo es demasiado grande. El límite permitido es de ${MAX_FILE_SIZE_MB}MB.`);
       if (fileInput) fileInput.value = '';
       return;
     }

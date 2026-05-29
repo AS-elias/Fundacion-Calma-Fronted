@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap, of } from 'rxjs';
 import { User, LoginResponse } from '../../../shared/models/user.model';
 import { SecureStorageService } from '../../../core/services/secure-storage.service';
+import { CommunicationService } from '../../../core/services/communication.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,7 @@ export class AuthService {
 
   private http = inject(HttpClient);
   private secureStorage = inject(SecureStorageService);
+  private commService = inject(CommunicationService);
 
   login(email: string, password: string): Observable<LoginResponse> {
     const body = { email, password };
@@ -55,6 +57,7 @@ export class AuthService {
 
   logout(): void {
     console.log('👋 Cerrando sesión...');
+    this.commService.disconnect();
     this.secureStorage.removeItem(this.tokenKey);
     this.secureStorage.removeItem(this.userKey);
     console.log('✅ Sesión cerrada');

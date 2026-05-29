@@ -34,7 +34,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           summary: 'Sesión Expirada',
           detail: 'Por motivos de seguridad, tu sesión ha sido cerrada.'
         });
-        router.navigate(['/login']);
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
       }
       return throwError(() => error);
     })

@@ -1456,4 +1456,252 @@ $text-light: #9ca3af;
 @keyframes scaleInImage {
     from { transform: scale(0.9); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
+}
+
+/* --- EMOJI SEARCH BOX --- */
+.emoji-search-container {
+    padding: 8px;
+    border-bottom: 1px solid $border-darker;
+    
+    .emoji-search-input {
+        width: 100%;
+        padding: 6px 10px;
+        border: 1px solid var(--surface-border);
+        border-radius: 6px;
+        font-size: 13px;
+        background: var(--surface-section);
+        color: var(--text-color);
+        outline: none;
+        box-sizing: border-box;
+        
+        &:focus {
+            border-color: $primary-celeste;
+        }
+    }
+}
+
+/* --- FORWARDING MODAL --- */
+.modal-content.forward-modal {
+    max-width: 480px;
+    
+    .forward-description {
+        color: var(--text-color-secondary);
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+    
+    .search-input-forward {
+        margin-bottom: 15px;
+    }
+    
+    .forward-list {
+        max-height: 280px;
+        overflow-y: auto;
+        border: 1px solid var(--surface-border);
+        border-radius: 6px;
+        margin-bottom: 10px;
+        
+        .forward-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--surface-border);
+            transition: background 0.15s;
+            
+            &:hover {
+                background: var(--surface-ground);
+            }
+            
+            &:last-child {
+                border-bottom: none;
+            }
+            
+            .forward-item-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                
+                .avatar {
+                    width: 38px;
+                    height: 38px;
+                    font-size: 14px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .forward-details {
+                    display: flex;
+                    flex-direction: column;
+                    
+                    .name {
+                        font-weight: 600;
+                        font-size: 14px;
+                        color: var(--text-color-title);
+                    }
+                    
+                    .type {
+                        font-size: 11px;
+                        color: var(--text-color-secondary);
+                    }
+                }
+            }
+            
+            .btn-forward-send {
+                padding: 6px 12px;
+                font-size: 12px;
+                height: auto;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                background-color: $primary-celeste;
+                border: 1px solid $primary-celeste;
+                color: white;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                
+                &:hover {
+                    background-color: $primary-celeste-hover;
+                    border-color: $primary-celeste-hover;
+                }
+                
+                &.sent {
+                    background-color: #10b981 !important;
+                    border-color: #10b981 !important;
+                }
+            }
+        }
+        
+        .forward-empty {
+            padding: 30px 20px;
+            text-align: center;
+            color: var(--text-color-secondary);
+            font-size: 13px;
+        }
+    }
+}
+
+/* --- CHAT MESSAGE SEARCH BAR --- */
+.chat-search-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: var(--surface-section);
+    border-bottom: 1px solid var(--surface-border);
+    animation: slideDownBar 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    gap: 15px;
+
+    .search-input-container {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            color: var(--text-color-secondary);
+            font-size: 13px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 36px 8px 34px;
+            border: 1px solid var(--surface-border);
+            border-radius: 8px;
+            font-size: 13.5px;
+            background: var(--surface-ground);
+            color: var(--text-color);
+            outline: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+
+            &:focus {
+                border-color: $primary-celeste;
+                box-shadow: 0 0 0 2px rgba(78, 179, 228, 0.15);
+                background: var(--surface-section);
+            }
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 10px;
+            background: transparent;
+            border: none;
+            color: var(--text-color-secondary);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            
+            &:hover {
+                background: var(--surface-border);
+                color: var(--text-color);
+            }
+
+            i {
+                font-size: 10px;
+            }
+        }
+    }
+
+    .search-results-info {
+        font-size: 12px;
+        color: var(--text-color-secondary);
+        font-weight: 500;
+        background: var(--surface-ground);
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        white-space: nowrap;
+    }
+}
+
+.search-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    animation: fadeInOverlay 0.3s ease-out;
+
+    .search-empty-icon {
+        font-size: 2.5rem;
+        color: #9ca3af;
+        margin-bottom: 14px;
+    }
+
+    p {
+        font-size: 14px;
+        color: var(--text-color-secondary);
+        margin: 0;
+        max-width: 280px;
+        line-height: 1.5;
+    }
+}
+
+.chat-header {
+    .actions {
+        .icon-btn.active {
+            background: rgba(78, 179, 228, 0.15);
+            color: $primary-celeste;
+        }
+    }
+}
+
+@keyframes slideDownBar {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
