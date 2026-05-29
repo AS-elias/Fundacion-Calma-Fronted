@@ -186,12 +186,12 @@
                                         <a *ngIf="msj.tipo === 'file'" [href]="msj.archivoUrl" download target="_blank" class="file-link">
                                             <i class="pi" [ngClass]="getFileIcon(msj.texto)"></i><span>{{ msj.texto || 'Archivo' }}</span><i class="pi pi-download"></i>
                                         </a>
-                                        <a *ngIf="msj.tipo === 'image'" [href]="msj.archivoUrl" target="_blank">
+                                        <div *ngIf="msj.tipo === 'image'" class="image-clickable" (click)="abrirVisorImagen(msj)">
                                             <img [src]="msj.archivoUrl" alt="Imagen" class="img-msg">
-                                        </a>
+                                        </div>
                                     </div>
 
-                                    <p class="message-text" [class.deleted-msg]="$any(msj).eliminado">{{ msj.texto }}</p>
+                                    <p class="message-text" *ngIf="msj.tipo !== 'image'" [class.deleted-msg]="$any(msj).eliminado">{{ msj.texto }}</p>
 
                                     <!-- Footer: hora + checks en fila propia para no solaparse -->
                                     <div class="bubble-footer">
@@ -422,6 +422,43 @@
                 <button *ngIf="dialogType() === 'confirm'" class="btn-primary" (click)="ejecutarDialogo()">Aceptar</button>
                 <button *ngIf="dialogType() === 'alert'" class="btn-primary" (click)="cerrarDialogo()">Entendido</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Visor de Imágenes a Pantalla Completa (Lightbox) -->
+    <div class="image-viewer-overlay" *ngIf="imagenVisor" (click)="cerrarVisorImagen()">
+        <div class="viewer-toolbar" (click)="$event.stopPropagation()">
+            <div class="viewer-actions-left">
+                <!-- Por si queremos agregar algo a la izquierda luego -->
+            </div>
+            <div class="viewer-actions-right">
+                <button class="btn-viewer" (click)="descargarImagenVisor()" title="Descargar">
+                    <i class="pi pi-download"></i>
+                </button>
+
+                <div class="viewer-menu-wrap" style="position: relative; display: inline-block;">
+                    <button class="btn-viewer" (click)="toggleMenuVisor($event)" title="Opciones">
+                        <i class="pi pi-ellipsis-v"></i>
+                    </button>
+                    <div class="viewer-dropdown" *ngIf="menuVisorActivo" (mouseleave)="cerrarMenuVisor()">
+                        <!-- TODO: Implementar lógica de Reenviar si es posible, por ahora visual -->
+                        <button (click)="reenviarImagenVisor()">
+                            <i class="pi pi-share-alt"></i> Reenviar
+                        </button>
+                        <button (click)="eliminarImagenVisor()">
+                            <i class="pi pi-trash"></i> Eliminar mensaje
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn-viewer btn-close-viewer" (click)="cerrarVisorImagen()" title="Cerrar (Esc)">
+                    <i class="pi pi-times"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="viewer-content">
+            <img [src]="imagenVisor.archivoUrl" alt="Vista completa" class="viewer-img" (click)="$event.stopPropagation()">
         </div>
     </div>
 </div>

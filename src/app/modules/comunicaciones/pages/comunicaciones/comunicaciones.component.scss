@@ -1326,5 +1326,133 @@ $text-light: #9ca3af;
     to {
         opacity: 1;
         transform: scale(1);
+}
+
+/* --- LIGHTBOX (Visor de Imágenes) --- */
+.image-clickable {
+    cursor: pointer;
+    transition: filter 0.2s;
+    display: inline-block;
+    
+    &:hover {
+        filter: brightness(0.85);
     }
+}
+
+.image-viewer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    animation: fadeInOverlay 0.2s ease-out;
+
+    .viewer-toolbar {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px 25px;
+        background: transparent;
+
+        .viewer-actions-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+
+            .btn-viewer {
+                background: rgba(255, 255, 255, 0.1);
+                border: none;
+                color: #fff;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: background 0.2s;
+                font-size: 16px;
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.25);
+                }
+
+                &.btn-close-viewer {
+                    background: rgba(239, 68, 68, 0.8);
+                    &:hover {
+                        background: rgba(239, 68, 68, 1);
+                    }
+                }
+            }
+
+            .viewer-dropdown {
+                position: absolute;
+                top: calc(100% + 5px);
+                right: 0;
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                overflow: hidden;
+                min-width: 180px;
+
+                button {
+                    width: 100%;
+                    padding: 12px 15px;
+                    border: none;
+                    background: none;
+                    text-align: left;
+                    font-size: 14px;
+                    color: #333;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+
+                    &:hover {
+                        background: #f3f4f6;
+                    }
+
+                    i {
+                        font-size: 14px;
+                    }
+                    
+                    &:last-child {
+                        color: #ef4444;
+                    }
+                }
+            }
+        }
+    }
+
+    .viewer-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        overflow: hidden;
+
+        .viewer-img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: scaleInImage 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: default;
+        }
+    }
+}
+
+@keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleInImage {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }

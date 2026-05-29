@@ -1605,4 +1605,58 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     this.communicationService.getUserChannels({ usuarioId: this.currentUserId });
     this.cdr.detectChanges();
   }
+
+  // --- Visor de Imágenes (Lightbox) ---
+  imagenVisor: any = null;
+  menuVisorActivo: boolean = false;
+
+  abrirVisorImagen(msj: any) {
+    this.imagenVisor = msj;
+    this.menuVisorActivo = false;
+    this.cdr.detectChanges();
+  }
+
+  cerrarVisorImagen() {
+    this.imagenVisor = null;
+    this.menuVisorActivo = false;
+    this.cdr.detectChanges();
+  }
+
+  descargarImagenVisor() {
+    if (this.imagenVisor?.archivoUrl) {
+      // Intenta abrirlo para descargar (si el backend manda encabezados de descarga)
+      // O simplemente abre en nueva pestaña
+      window.open(this.imagenVisor.archivoUrl, '_blank');
+    }
+  }
+
+  toggleMenuVisor(event: Event) {
+    event.stopPropagation();
+    this.menuVisorActivo = !this.menuVisorActivo;
+    this.cdr.detectChanges();
+  }
+
+  cerrarMenuVisor() {
+    this.menuVisorActivo = false;
+    this.cdr.detectChanges();
+  }
+
+  reenviarImagenVisor() {
+    this.mostrarAlerta('La funcionalidad de reenviar estará disponible próximamente.');
+    this.cerrarMenuVisor();
+  }
+
+  eliminarImagenVisor() {
+    if (this.imagenVisor) {
+      this.eliminarParaMi(this.imagenVisor);
+      this.cerrarVisorImagen();
+    }
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onKeydownHandler(event: KeyboardEvent) {
+    if (this.imagenVisor) {
+      this.cerrarVisorImagen();
+    }
+  }
 }
