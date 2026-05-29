@@ -76,61 +76,6 @@ export class UserComponent implements OnInit, OnDestroy {
           'actividadReciente', 'actividadesRecientes', 'actividades'
         ]);
 
-        // ⚠️ IMPORTANTE: estadisticasTareas del backend cuenta tareas de TODA la sub-área, no solo del usuario actual
-        // Necesitamos obtener las tareas reales del usuario para contar correctamente
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-        
-        // Obtener tareas del usuario actual de los 3 endpoints
-        const endpoints = [
-          'https://fundacion-calma-backend.onrender.com/api/desarrollo-actividades',
-          'https://fundacion-calma-backend.onrender.com/api/estrategia-actividades',
-          'https://fundacion-calma-backend.onrender.com/api/analisis-tareas'
-        ];
-        
-        let tareasDelUsuario: any[] = [];
-        let completadasDelUsuario = 0;
-        let endpointsCompletados = 0;
-        
-        endpoints.forEach((endpoint, index) => {
-          this.http.get<any[]>(endpoint, { headers }).subscribe({
-            next: (tareas) => {
-              endpointsCompletados++;
-              if (Array.isArray(tareas)) {
-                tareasDelUsuario = tareasDelUsuario.concat(tareas);
-              }
-              
-              // Cuando todos los endpoints hayan respondido, actualizar stats
-              if (endpointsCompletados === endpoints.length) {
-                const totalTareas = tareasDelUsuario.length;
-                completadasDelUsuario = tareasDelUsuario.filter(t => {
-                  const estado = t.estado ? t.estado.toUpperCase() : '';
-                  return estado === 'COMPLETADO' || estado === 'COMPLETADAS' || estado === 'TERMINADO' || estado === 'FINALIZADO';
-                }).length;
-                
-                console.log(`✏️ Tareas del usuario actual: ${totalTareas}, Completadas: ${completadasDelUsuario}`);
-                
-                if (totalTareas > 0) {
-                  misProyectos = totalTareas;
-                  desempenoEquipo = Math.round((completadasDelUsuario / totalTareas) * 100);
-                  
-                  console.log(`📊 Stats actualizados: Proyectos=${misProyectos}, Desempeño=${desempenoEquipo}%`);
-                  
-                  this.stats!.misProyectos = misProyectos;
-                  this.stats!.desempenoEquipo = desempenoEquipo;
-                  this.cdr.detectChanges();
-                }
-              }
-            },
-            error: (err) => {
-              endpointsCompletados++;
-              console.warn(`⚠️ Error fetching ${endpoint}:`, err.message);
-              if (endpointsCompletados === endpoints.length && tareasDelUsuario.length === 0) {
-                console.warn('No se pudieron obtener tareas del usuario');
-              }
-            }
-          });
-        });
 
         // Extraer vencimientos de proyectos
         if (proyectosArray) {
