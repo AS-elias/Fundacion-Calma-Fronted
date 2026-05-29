@@ -5,6 +5,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../../modules/auth/services/auth.service';
 import { CommunicationService } from '../../../core/services/communication.service';
 import { PermisosAreaService } from '../../../core/services/permisos-area.service';
+import { NotificacionesService } from '../../../modules/notificaciones/services/notificaciones.service';
 
 // Interfaces del backend
 export interface PermisoArea {
@@ -36,6 +37,7 @@ export class SidebarComponent implements OnInit {
   private http = inject(HttpClient);
   private commService = inject(CommunicationService);
   private permisosAreaService = inject(PermisosAreaService);
+  private notificacionesService = inject(NotificacionesService);
 
   // Total global de mensajes sin leer (para mostrar badge en el sidebar)
   totalMensajesSinLeer = computed(() => {
@@ -43,6 +45,8 @@ export class SidebarComponent implements OnInit {
     this.commService.mensajesSinLeerGlobal().forEach(count => total += count);
     return total;
   });
+
+  totalNotificacionesSinLeer = signal<number>(0);
 
   private apiUrl = 'https://fundacion-calma-backend.onrender.com/api/comunidad';
 
@@ -64,6 +68,26 @@ export class SidebarComponent implements OnInit {
     this.isAdminUser = this.authService.isAdmin();
     this.cargarAreas();
     this.commService.ensureUnreadBadgeSync();
+
+    this.cargarNotificaciones();
+    this.notificacionesService.cambios$.subscribe(() => {
+      this.cargarNotificaciones();
+    });
+    this.commService.sistemaActualizado$.subscribe((event) => {
+      if (event.modulo === 'notificaciones' || event.modulo === 'sistema' || event.modulo === 'comunicados') {
+        this.cargarNotificaciones();
+      }
+    });
+  }
+
+  cargarNotificaciones(): void {
+    this.notificacionesService.listar().subscribe({
+      next: (data) => {
+        const unreadCount = data.filter(n => !n.leido).length;
+        this.totalNotificacionesSinLeer.set(unreadCount);
+      },
+      error: (err) => console.error('Error cargando notificaciones en sidebar', err)
+    });
   }
 
   /** Carga las áreas permitidas para este usuario desde el backend */

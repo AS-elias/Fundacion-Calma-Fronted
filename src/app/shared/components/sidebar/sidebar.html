@@ -49,9 +49,13 @@
   </li>
 
   <li class="menu-item">
-    <a routerLink="/notificaciones" routerLinkActive="active">
+    <a routerLink="/notificaciones" routerLinkActive="active" style="position:relative; display:flex; align-items:center; gap:8px;">
       <i class="pi pi-bell"></i>
       Notificaciones
+      <span *ngIf="totalNotificacionesSinLeer() > 0"
+            style="position:absolute; top:4px; right:4px; background:#e53e3e; color:#fff; border-radius:50%; width:18px; height:18px; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; line-height:1;">
+        {{ totalNotificacionesSinLeer() > 99 ? '99+' : totalNotificacionesSinLeer() }}
+      </span>
     </a>
   </li>
 
