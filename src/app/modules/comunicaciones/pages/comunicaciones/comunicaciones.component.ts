@@ -1199,6 +1199,22 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
     }
   }
 
+  getFileIcon(filename: string): string {
+    if (!filename) return 'pi-file';
+    const ext = filename.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'pdf': return 'pi-file-pdf';
+      case 'doc':
+      case 'docx': return 'pi-file-word';
+      case 'xls':
+      case 'xlsx': return 'pi-file-excel';
+      case 'zip':
+      case 'rar': return 'pi-box';
+      case 'txt': return 'pi-align-left';
+      default: return 'pi-file';
+    }
+  }
+
   abrirModalNuevoChat(): void {
     this.esModoAgregarMiembro.set(false);
     this.esModoEditarGrupo.set(false);

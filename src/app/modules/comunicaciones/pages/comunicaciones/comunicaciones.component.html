@@ -184,7 +184,7 @@
 
                                     <div *ngIf="msj.tipo === 'file' || msj.tipo === 'image'" class="file-wrapper">
                                         <a *ngIf="msj.tipo === 'file'" [href]="msj.archivoUrl" download target="_blank" class="file-link">
-                                            <i class="pi pi-file"></i><span>Archivo</span><i class="pi pi-download"></i>
+                                            <i class="pi" [ngClass]="getFileIcon(msj.texto)"></i><span>{{ msj.texto || 'Archivo' }}</span><i class="pi pi-download"></i>
                                         </a>
                                         <a *ngIf="msj.tipo === 'image'" [href]="msj.archivoUrl" target="_blank">
                                             <img [src]="msj.archivoUrl" alt="Imagen" class="img-msg">
