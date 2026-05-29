@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of, switchMap } from 'rxjs';
@@ -154,7 +154,12 @@ export class AnalisisDatos implements OnInit {
   difusionPorEliminar: DifusionDato | null = null;
   difusionBorrador: DifusionBorrador | null = null;
   difusionBorradorEsNuevo = false;
-  notificacion: NotificacionToast | null = null;
+  notificacion: { tipo: TipoNotificacion; mensaje: string } | null = null;
+  confirmacion: { visible: boolean; mensaje: string; onAceptar: () => void } = {
+    visible: false,
+    mensaje: '',
+    onAceptar: () => {}
+  };
   private notificationTimeoutId?: number;
   busquedaColegio = '';
   busquedaEmpresa = '';
@@ -201,7 +206,7 @@ export class AnalisisDatos implements OnInit {
       clave: 'venues',
       categoria: 'espacios',
       etiqueta: 'Espacios',
-      titulo: 'Ventas',
+      titulo: 'Venues',
       descripcion: 'Identificación de espacios para eventos y actividades',
       icono: 'pi pi-calendar',
     },
@@ -215,7 +220,7 @@ export class AnalisisDatos implements OnInit {
     },
   ];
 
-  /** Solo datos del API; sin mocks (evita “fantasmas” al cargar). */
+  /** Solo datos del API; sin mocks (evita â€œfantasmasâ€ al cargar). */
   tareasEnProceso: TareaDato[] = [];
   tareasConcluidas: TareaDato[] = [];
   colegios: ColegioDato[] = [];
@@ -410,7 +415,10 @@ export class AnalisisDatos implements OnInit {
   }
 
   cerrarRegistroColegios(): void {
-    if (this.colegioBorrador && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+    if (this.colegioBorrador) {
+      this.pedirConfirmacion('Tienes cambios sin guardar. Seguro que deseas salir?', () => {
+        this.cancelarEdicionColegio();
+      });
       return;
     }
     this.cancelarEdicionColegio();
@@ -418,7 +426,10 @@ export class AnalisisDatos implements OnInit {
   }
 
   cerrarRegistroEmpresas(): void {
-    if (this.empresaBorrador && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+    if (this.empresaBorrador) {
+      this.pedirConfirmacion('Tienes cambios sin guardar. Seguro que deseas salir?', () => {
+        this.cancelarEdicionEmpresa();
+      });
       return;
     }
     this.cancelarEdicionEmpresa();
@@ -427,7 +438,10 @@ export class AnalisisDatos implements OnInit {
   }
 
   cerrarRegistroVenues(): void {
-    if (this.venueBorrador && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+    if (this.venueBorrador) {
+      this.pedirConfirmacion('Tienes cambios sin guardar. Seguro que deseas salir?', () => {
+        this.cancelarEdicionVenue();
+      });
       return;
     }
     this.cancelarEdicionVenue();
@@ -436,7 +450,10 @@ export class AnalisisDatos implements OnInit {
   }
 
   cerrarRegistroDifusion(): void {
-    if (this.difusionBorrador && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+    if (this.difusionBorrador) {
+      this.pedirConfirmacion('Tienes cambios sin guardar. Seguro que deseas salir?', () => {
+        this.cancelarEdicionDifusion();
+      });
       return;
     }
     this.cancelarEdicionDifusion();
@@ -649,7 +666,7 @@ export class AnalisisDatos implements OnInit {
     }
 
     this.venueBorradorEsNuevo = true;
-    this.venueBorrador = this.crearVenueVacio();
+    this.venueBorrador = this.crearVenueVacia();
   }
 
   editarVenue(venue: VenueDato): void {
@@ -708,7 +725,7 @@ export class AnalisisDatos implements OnInit {
       },
       error: () => {
         this.guardandoVenue = false;
-        this.mostrarNotificacion('error', 'No se pudo guardar el venue.');
+        this.mostrarNotificacion('error', 'No se pudo guardar la venta.');
       },
     });
   }
@@ -735,9 +752,9 @@ export class AnalisisDatos implements OnInit {
       next: () => {
         this.venuePorEliminar = null;
         this.cargarVenues();
-        this.mostrarNotificacion('success', 'Venue eliminado exitosamente.');
+        this.mostrarNotificacion('success', 'Venta eliminada exitosamente.');
       },
-      error: () => this.mostrarNotificacion('error', 'No se pudo eliminar el venue.'),
+      error: () => this.mostrarNotificacion('error', 'No se pudo eliminar la venta.'),
     });
   }
 
@@ -854,10 +871,18 @@ export class AnalisisDatos implements OnInit {
   }
 
   cerrarFormularioTarea(): void {
-    if ((this.nuevaTarea.titulo.trim() || this.nuevaTarea.descripcion.trim()) && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+    if (this.nuevaTarea.titulo.trim() || this.nuevaTarea.descripcion.trim()) {
+      this.pedirConfirmacion('Tienes cambios sin guardar. Seguro que deseas salir?', () => {
+        this.mostrandoFormularioTarea = false;
+        this.limpiarFormularioTarea();
+      });
       return;
     }
     this.mostrandoFormularioTarea = false;
+    this.limpiarFormularioTarea();
+  }
+
+  private limpiarFormularioTarea(): void {
     this.tareaEditando = null;
     this.nuevaTarea = this.crearTareaForm();
   }
@@ -1546,7 +1571,7 @@ export class AnalisisDatos implements OnInit {
     };
   }
 
-  private crearVenueVacio(): VenueDato {
+  private crearVenueVacia(): VenueDato {
     return {
       id: `venue-${Date.now()}`,
       nombre: '',
@@ -1611,6 +1636,31 @@ export class AnalisisDatos implements OnInit {
       window.clearTimeout(this.notificationTimeoutId);
       this.notificationTimeoutId = undefined;
     }
+  }
+
+  pedirConfirmacion(mensaje: string, onAceptar: () => void): void {
+    this.confirmacion = {
+      visible: true,
+      mensaje,
+      onAceptar
+    };
+  }
+
+  aceptarConfirmacion(): void {
+    this.confirmacion.visible = false;
+    this.confirmacion.onAceptar();
+  }
+
+  cancelarConfirmacion(): void {
+    this.confirmacion.visible = false;
+  }
+
+  formatearUrl(url: string | undefined): string {
+    if (!url) return '#';
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return 'https://' + url;
+    }
+    return url;
   }
 
   private obtenerEtiquetaEstado(estado: EstadoTarea): string {

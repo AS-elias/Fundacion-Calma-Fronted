@@ -629,3 +629,18 @@
     </div>
   </div>
 </div>
+<div class="overlay overlay--confirm" *ngIf="confirmacion.visible">
+  <div class="confirm-card">
+    <h4>Confirmacion</h4>
+    <p>{{ confirmacion.mensaje }}</p>
+
+    <div class="confirm-actions">
+      <button class="cancel-btn" type="button" (click)="cancelarConfirmacion()">
+        Cancelar
+      </button>
+      <button class="submit-btn" type="button" (click)="aceptarConfirmacion()" style="background-color: #3b82f6; color: white;">
+        Aceptar
+      </button>
+    </div>
+  </div>
+</div>

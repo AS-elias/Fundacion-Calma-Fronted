@@ -99,6 +99,14 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
     this.limpiarNotificacionProgramada();
   }
 
+  formatearUrl(url: string | undefined): string {
+    if (!url) return '#';
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return 'https://' + url;
+    }
+    return url;
+  }
+
   get conveniosFiltrados(): Convenio[] {
     const term = this.busqueda.trim().toLowerCase();
     return this.conveniosOriginal.filter(
@@ -592,7 +600,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
 
     const esPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     if (!esPdf) {
-      alert('Solo se permite subir archivos PDF.');
+      this.mostrarNotificacion('error', 'Solo se permite subir archivos PDF.');
       input.value = '';
       return;
     }
@@ -667,7 +675,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
           next: () => limpiarLocal(),
           error: (error: unknown) => {
             console.error('No se pudo eliminar el archivo', error);
-            alert(this.mensajeErrorBackend('No se pudo eliminar el archivo en la BD', error));
+            this.mostrarNotificacion('error', this.mensajeErrorBackend('No se pudo eliminar el archivo en la BD', error));
           },
         });
       });
@@ -678,7 +686,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
       next: () => limpiarLocal(),
       error: (error: unknown) => {
         console.error('No se pudo eliminar el archivo', error);
-        alert(this.mensajeErrorBackend('No se pudo eliminar el archivo en la BD', error));
+        this.mostrarNotificacion('error', this.mensajeErrorBackend('No se pudo eliminar el archivo en la BD', error));
       },
     });
   }
@@ -727,7 +735,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
       },
       error: (error: unknown) => {
         console.error('No se pudo eliminar el convenio', error);
-        alert(this.mensajeErrorBackend('No se pudo eliminar el convenio en la BD', error));
+        this.mostrarNotificacion('error', this.mensajeErrorBackend('No se pudo eliminar el convenio en la BD', error));
       },
     });
   }
@@ -772,7 +780,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
       },
       error: (error: unknown) => {
         console.error('No se pudo guardar el comentario', error);
-        alert(this.mensajeErrorBackend('No se pudo guardar el comentario en la BD', error));
+        this.mostrarNotificacion('error', this.mensajeErrorBackend('No se pudo guardar el comentario en la BD', error));
       },
     });
   }
@@ -798,7 +806,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
     if (!this.convenioSeleccionado) return;
     this.intentoGuardar = true;
     if (!this.formularioConvenioValido()) {
-      alert('?? Completa todos los campos obligatorios');
+      this.mostrarNotificacion('error', 'Completa todos los campos obligatorios');
       return;
     }
     const payload = this.toDto(this.convenioSeleccionado);
@@ -976,7 +984,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
       nombre.endsWith('.jpg') ||
       nombre.endsWith('.jpeg');
     if (!esImg) {
-      alert('Solo se permiten imágenes PNG o JPG para el logo.');
+      this.mostrarNotificacion('error', 'Solo se permiten imágenes PNG o JPG para el logo.');
       input.value = '';
       return;
     }
@@ -1431,7 +1439,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
     this.conveniosService.addArchivo(convenioId, adjunto.file).subscribe({
       next: (resp) => {
         if (!resp || !this.convenioSeleccionado) {
-          alert('No se pudo guardar el archivo en la BD');
+          this.mostrarNotificacion('error', 'No se pudo guardar el archivo en la BD');
           return;
         }
 
@@ -1455,7 +1463,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
       },
       error: (error: unknown) => {
         console.error('No se pudo guardar el archivo', error);
-        alert(this.mensajeErrorBackend('No se pudo guardar el archivo en la BD', error));
+        this.mostrarNotificacion('error', this.mensajeErrorBackend('No se pudo guardar el archivo en la BD', error));
       },
     });
   }

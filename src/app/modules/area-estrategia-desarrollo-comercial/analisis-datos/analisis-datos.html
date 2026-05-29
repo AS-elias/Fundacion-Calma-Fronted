@@ -1,4 +1,4 @@
-<div
+﻿<div
   *ngIf="notificacion"
   class="toast-notificacion"
   [class.toast-notificacion--error]="notificacion.tipo === 'error'"
@@ -158,7 +158,7 @@
           <a
             class="task-detail__link"
             *ngFor="let enlace of tareaSeleccionada.enlaces"
-            [href]="enlace.url || '#'"
+            [href]="formatearUrl(enlace.url)"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -872,7 +872,7 @@
                 <td>{{ venue.correo }}</td>
                 <td>{{ venue.capacidadPersonas }}</td>
                 <td>{{ venue.estado }}</td>
-                <td class="registro-table__link">{{ venue.sitioWeb }}</td>
+                <td class="registro-table__link"><a [href]="formatearUrl(venue.sitioWeb)" target="_blank" rel="noopener noreferrer">{{ venue.sitioWeb }}</a></td>
                 <td class="registro-table__descripcion">{{ venue.detalles }}</td>
                 <td>
                   <div class="registro-actions">
@@ -959,7 +959,7 @@
         <button class="page-btn" (click)="paginaVenues = paginaVenues + 1" [disabled]="paginaVenues === totalPaginasVenues.length" style="background: var(--surface-card); color: var(--text-color); border: 1px solid var(--surface-border); padding: 4px 8px; border-radius: 4px; cursor: pointer;">Siguiente</button>
       </div>
       <div>
-        <span style="margin-right: 15px; color: var(--text-color-secondary);">{{ venuesFiltrados.length }} venues registrados</span>
+        <span style="margin-right: 15px; color: var(--text-color-secondary);">{{ venuesFiltrados.length }} ventas registradas</span>
         <button class="registro-add" type="button" [disabled]="!!venueBorrador" (click)="agregarVenue()">
           <i class="pi pi-plus"></i> Agregar Venta
         </button>
@@ -1194,6 +1194,21 @@
       </button>
       <button class="delete-btn" type="button" (click)="confirmarEliminacionDifusion()">
         Eliminar
+      </button>
+    </div>
+  </div>
+</div>
+<div class="overlay overlay--confirm" *ngIf="confirmacion.visible">
+  <div class="confirm-card">
+    <h4>Confirmacion</h4>
+    <p>{{ confirmacion.mensaje }}</p>
+
+    <div class="confirm-actions">
+      <button class="cancel-btn" type="button" (click)="cancelarConfirmacion()">
+        Cancelar
+      </button>
+      <button class="submit-btn" type="button" (click)="aceptarConfirmacion()" style="background-color: #3b82f6; color: white;">
+        Aceptar
       </button>
     </div>
   </div>

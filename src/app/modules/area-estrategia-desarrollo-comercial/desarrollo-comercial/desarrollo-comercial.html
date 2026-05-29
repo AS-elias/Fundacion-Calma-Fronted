@@ -1,4 +1,4 @@
-<div class="page-container">
+﻿<div class="page-container">
   <div
     *ngIf="notificacion"
     class="toast-notificacion"
@@ -416,7 +416,7 @@
           <a
             class="actividad-detail__link"
             *ngFor="let enlace of actividadSeleccionada.enlaces"
-            [href]="enlace.url"
+            [href]="formatearUrl(enlace.url)"
             target="_blank"
             rel="noopener noreferrer"
           >

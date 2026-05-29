@@ -138,6 +138,12 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
   actividadSeleccionada: ActividadKanban | null = null;
   actividadForm: ActividadForm = this.crearActividadForm('Pendiente');
   modalEmpresaAbierto = false;
+
+  confirmacion: { visible: boolean; mensaje: string; onAceptar: () => void } = {
+    visible: false,
+    mensaje: '',
+    onAceptar: () => {}
+  };
   empresaEditandoId: string | null = null;
   empresaForm: EmpresaForm = this.crearEmpresaForm();
   modalProyectoAbierto = false;
@@ -215,7 +221,11 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
   cerrarModalNuevaActividad(forzar = false): void {
     if (this.guardandoActividad && !forzar) return;
 
-    if (!forzar && (this.actividadForm.titulo.trim() || this.actividadForm.descripcion.trim()) && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+    if (!forzar && (this.actividadForm.titulo.trim() || this.actividadForm.descripcion.trim())) {
+      this.pedirConfirmacion('Tienes cambios sin guardar. Seguro que deseas salir?', () => {
+        this.modalNuevaActividadAbierto = false;
+        this.actividadEditandoId = null;
+      });
       return;
     }
 
@@ -348,7 +358,11 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
   }
 
   cerrarModalEmpresa(): void {
-    if ((this.empresaForm.nombre.trim() || this.empresaForm.descripcion.trim()) && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+    if (this.empresaForm.nombre.trim() || this.empresaForm.descripcion.trim()) {
+      this.pedirConfirmacion('Tienes cambios sin guardar. Seguro que deseas salir?', () => {
+        this.modalEmpresaAbierto = false;
+        this.empresaEditandoId = null;
+      });
       return;
     }
     this.modalEmpresaAbierto = false;
@@ -464,7 +478,12 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
   }
 
   cerrarModalProyecto(): void {
-    if ((this.proyectoForm.titulo.trim() || this.proyectoForm.descripcion.trim()) && !confirm('Tienes cambios sin guardar. ¿Seguro que deseas salir?')) {
+    if (this.proyectoForm.titulo.trim() || this.proyectoForm.descripcion.trim()) {
+      this.pedirConfirmacion('Tienes cambios sin guardar. Seguro que deseas salir?', () => {
+        this.modalProyectoAbierto = false;
+        this.empresaProyectoActivaId = null;
+        this.proyectoEditandoId = null;
+      });
       return;
     }
     this.modalProyectoAbierto = false;
@@ -584,7 +603,11 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
 
   abrirEnlaceProyecto(enlace: ProyectoEnlace): void {
     if (!enlace.url) return;
-    window.open(enlace.url, '_blank', 'noopener,noreferrer');
+    let url = enlace.url;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   formatearFechaProyecto(fecha: string): string {
@@ -681,7 +704,11 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
 
   abrirEnlaceActividad(enlace: ActividadEnlace): void {
     if (!enlace.url) return;
-    window.open(enlace.url, '_blank', 'noopener,noreferrer');
+    let url = enlace.url;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   nombreEmpresaActiva(): string {
@@ -1005,6 +1032,23 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
       window.clearTimeout(this.notificationTimeoutId);
       this.notificationTimeoutId = undefined;
     }
+  }
+
+  pedirConfirmacion(mensaje: string, onAceptar: () => void): void {
+    this.confirmacion = {
+      visible: true,
+      mensaje,
+      onAceptar
+    };
+  }
+
+  aceptarConfirmacion(): void {
+    this.confirmacion.visible = false;
+    this.confirmacion.onAceptar();
+  }
+
+  cancelarConfirmacion(): void {
+    this.confirmacion.visible = false;
   }
 
   private normalizar(valor: string): string {
