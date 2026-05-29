@@ -300,6 +300,16 @@ export class ChatManagementService {
       fechaISO = new Date().toISOString();
     }
 
+    let tipoFinal = msg.tipo || 'text';
+    const archivoFinalUrl = msg.archivoUrl || msg.fileUrl;
+    
+    // Corregir el tipo si el backend lo guardó erróneamente como 'file' pero la URL indica que es imagen
+    if (tipoFinal === 'file' && archivoFinalUrl) {
+      if (/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(archivoFinalUrl)) {
+        tipoFinal = 'image';
+      }
+    }
+
     const mappedMsg: any = {
       id: msg.id || msg.mensajeId || 0,
       texto: msg.content || msg.texto || msg.contenido || '',
@@ -307,8 +317,8 @@ export class ChatManagementService {
       fechaISO: fechaISO,
       timestampReal: fechaISO,
       enviadoPorMi: esDeEste,
-      tipo: msg.tipo || 'text',
-      archivoUrl: msg.archivoUrl || msg.fileUrl,
+      tipo: tipoFinal,
+      archivoUrl: archivoFinalUrl,
       leido: msg.leido || msg.read || false,
       editado: msg.editado || msg.edited || msg.isEdited || false,
       remitenteNombre: remitenteNombre,
