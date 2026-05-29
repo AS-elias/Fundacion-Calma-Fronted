@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -33,6 +33,7 @@ export class UserComponent implements OnInit, OnDestroy {
   private dashboardSocket = inject(DashboardSocketService);
   private authService = inject(AuthService);
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
   private socketSub?: Subscription;
 
   get esAdmin(): boolean {
@@ -75,30 +76,61 @@ export class UserComponent implements OnInit, OnDestroy {
           'actividadReciente', 'actividadesRecientes', 'actividades'
         ]);
 
-        // Si el usuario tiene tareas, recalculamos dinámicamente misProyectos y desempenoEquipo basado en sus tareas asignadas
-        const estadisticasTareas = statsPayload.estadisticasTareas;
-        let sumTareas = 0;
-        if (estadisticasTareas) {
-            sumTareas = this.sumTaskCounts(estadisticasTareas);
-            if (sumTareas > 0) {
-                misProyectos = sumTareas;
-                const completadas = estadisticasTareas.completadas || estadisticasTareas.COMPLETADO || 0;
-                desempenoEquipo = Math.round((completadas / sumTareas) * 100);
-            }
-        }
-
-        // Parche para Analistas si el backend devuelve 0 porque el creador_id no hace match
-        if (sumTareas === 0) {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-            this.http.get<any[]>('https://fundacion-calma-backend.onrender.com/api/analisis-tareas', { headers }).subscribe(tareas => {
-                if (tareas && tareas.length > 0) {
-                    this.stats!.misProyectos = tareas.length;
-                    const completadas = tareas.filter(t => t.estado && t.estado.toUpperCase() === 'COMPLETADO').length;
-                    this.stats!.desempenoEquipo = Math.round((completadas / tareas.length) * 100);
+        // ⚠️ IMPORTANTE: estadisticasTareas del backend cuenta tareas de TODA la sub-área, no solo del usuario actual
+        // Necesitamos obtener las tareas reales del usuario para contar correctamente
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+        
+        // Obtener tareas del usuario actual de los 3 endpoints
+        const endpoints = [
+          'https://fundacion-calma-backend.onrender.com/api/desarrollo-actividades',
+          'https://fundacion-calma-backend.onrender.com/api/estrategia-actividades',
+          'https://fundacion-calma-backend.onrender.com/api/analisis-tareas'
+        ];
+        
+        let tareasDelUsuario: any[] = [];
+        let completadasDelUsuario = 0;
+        let endpointsCompletados = 0;
+        
+        endpoints.forEach((endpoint, index) => {
+          this.http.get<any[]>(endpoint, { headers }).subscribe({
+            next: (tareas) => {
+              endpointsCompletados++;
+              if (Array.isArray(tareas)) {
+                tareasDelUsuario = tareasDelUsuario.concat(tareas);
+              }
+              
+              // Cuando todos los endpoints hayan respondido, actualizar stats
+              if (endpointsCompletados === endpoints.length) {
+                const totalTareas = tareasDelUsuario.length;
+                completadasDelUsuario = tareasDelUsuario.filter(t => {
+                  const estado = t.estado ? t.estado.toUpperCase() : '';
+                  return estado === 'COMPLETADO' || estado === 'COMPLETADAS' || estado === 'TERMINADO' || estado === 'FINALIZADO';
+                }).length;
+                
+                console.log(`✏️ Tareas del usuario actual: ${totalTareas}, Completadas: ${completadasDelUsuario}`);
+                
+                if (totalTareas > 0) {
+                  misProyectos = totalTareas;
+                  desempenoEquipo = Math.round((completadasDelUsuario / totalTareas) * 100);
+                  
+                  console.log(`📊 Stats actualizados: Proyectos=${misProyectos}, Desempeño=${desempenoEquipo}%`);
+                  
+                  this.stats!.misProyectos = misProyectos;
+                  this.stats!.desempenoEquipo = desempenoEquipo;
+                  this.cdr.detectChanges();
                 }
-            });
-        }
+              }
+            },
+            error: (err) => {
+              endpointsCompletados++;
+              console.warn(`⚠️ Error fetching ${endpoint}:`, err.message);
+              if (endpointsCompletados === endpoints.length && tareasDelUsuario.length === 0) {
+                console.warn('No se pudieron obtener tareas del usuario');
+              }
+            }
+          });
+        });
 
         // Extraer vencimientos de proyectos
         if (proyectosArray) {
@@ -194,29 +226,28 @@ export class UserComponent implements OnInit, OnDestroy {
     if (!statsPayload || typeof statsPayload !== 'object') return 0;
     let total = 0;
     
-    // Contamos tanto de las propiedades directas como de namespaces internos
-    const countFrom = (obj: any) => {
+    // Contar SOLO las propiedades de estados de tareas del usuario actual (no de otros users)
+    const countStates = (obj: any) => {
       if (!obj || typeof obj !== 'object') return;
-      const mapKeys = [
+      const stateKeys = [
         'pendientes', 'pendiente', 
         'progreso', 'en_progreso', 'proceso', 'en_proceso', 'planificacion', 'planificación', 'revision', 'en_revision',
         'ejecucion', 'ejecución', 'en_ejecucion', 'en_ejecución',
         'completadas', 'completado', 'terminado', 'finalizado',
         'paralizado', 'otros', 'pausado', 'cancelado'
       ];
-      for (const k of mapKeys) {
+      for (const k of stateKeys) {
         if (obj[k] !== undefined && obj[k] !== null) {
           const val = Number(obj[k]);
-          if (!isNaN(val)) total += val;
+          if (!isNaN(val) && val > 0) total += val;
         }
       }
     };
 
-    countFrom(statsPayload);
-    for (const ns of ['desarrollo_actividades', 'estrategia_actividades', 'analisis_tareas']) {
-      countFrom(statsPayload[ns]);
-    }
-
+    // Primero contar de estadísticas de tareas directas (que ya están filtradas por usuario/sub-área)
+    countStates(statsPayload);
+    
+    // NO contar de namespaces porque podrían incluir tareas de otros usuarios
     return total;
   }
 
