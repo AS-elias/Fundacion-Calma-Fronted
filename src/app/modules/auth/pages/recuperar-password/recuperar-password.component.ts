@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -8,7 +8,7 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-recuperar-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, InputTextModule, RouterModule],
+  imports: [CommonModule, NgOptimizedImage, FormsModule, InputTextModule, RouterModule],
   templateUrl: './recuperar-password.component.html',
   styleUrls: ['./recuperar-password.component.scss'],
   changeDetection: ChangeDetectionStrategy.Default

@@ -146,10 +146,12 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
   };
   empresaEditandoId: string | null = null;
   empresaForm: EmpresaForm = this.crearEmpresaForm();
+  empresaFormOriginal: EmpresaForm | null = null;
   modalProyectoAbierto = false;
   empresaProyectoActivaId: string | null = null;
   proyectoEditandoId: string | null = null;
   proyectoForm: ProyectoForm = this.crearProyectoForm();
+  proyectoFormOriginal: ProyectoForm | null = null;
   modalDetalleProyectoAbierto = false;
   empresaSeleccionada: EmpresaProyecto | null = null;
   proyectoSeleccionado: ProyectoEmpresa | null = null;
@@ -345,6 +347,7 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
   abrirModalNuevaEmpresa(): void {
     this.empresaEditandoId = null;
     this.empresaForm = this.crearEmpresaForm();
+    this.empresaFormOriginal = null;
     this.modalEmpresaAbierto = true;
   }
 
@@ -354,19 +357,30 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
       nombre: empresa.nombre,
       descripcion: empresa.descripcion,
     };
+    this.empresaFormOriginal = { ...this.empresaForm };
     this.modalEmpresaAbierto = true;
   }
 
   cerrarModalEmpresa(forzar = false): void {
-    if (!forzar && (this.empresaForm.nombre.trim() || this.empresaForm.descripcion.trim())) {
+    let hayCambios = false;
+    if (this.empresaEditandoId && this.empresaFormOriginal) {
+      hayCambios = this.empresaForm.nombre !== this.empresaFormOriginal.nombre ||
+                   this.empresaForm.descripcion !== this.empresaFormOriginal.descripcion;
+    } else {
+      hayCambios = this.empresaForm.nombre.trim() !== '' || this.empresaForm.descripcion.trim() !== '';
+    }
+
+    if (!forzar && hayCambios) {
       this.pedirConfirmacion('Tienes cambios sin guardar. Seguro que deseas salir?', () => {
         this.modalEmpresaAbierto = false;
         this.empresaEditandoId = null;
+        this.empresaFormOriginal = null;
       });
       return;
     }
     this.modalEmpresaAbierto = false;
     this.empresaEditandoId = null;
+    this.empresaFormOriginal = null;
   }
 
   guardarEmpresa(): void {
@@ -461,6 +475,7 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
     this.empresaProyectoActivaId = empresa.id;
     this.proyectoEditandoId = null;
     this.proyectoForm = this.crearProyectoForm();
+    this.proyectoFormOriginal = null;
     this.modalProyectoAbierto = true;
   }
 
@@ -474,21 +489,38 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
       fechaLimite: proyecto.fechaLimite,
       enlaces: this.clonarEnlacesProyecto(proyecto.enlaces),
     };
+    this.proyectoFormOriginal = {
+      ...this.proyectoForm,
+      enlaces: this.clonarEnlacesProyecto(this.proyectoForm.enlaces)
+    };
     this.modalProyectoAbierto = true;
   }
 
   cerrarModalProyecto(forzar = false): void {
-    if (!forzar && (this.proyectoForm.titulo.trim() || this.proyectoForm.descripcion.trim())) {
+    let hayCambios = false;
+    if (this.proyectoEditandoId && this.proyectoFormOriginal) {
+      hayCambios = this.proyectoForm.titulo !== this.proyectoFormOriginal.titulo ||
+                   this.proyectoForm.descripcion !== this.proyectoFormOriginal.descripcion ||
+                   this.proyectoForm.estado !== this.proyectoFormOriginal.estado ||
+                   this.proyectoForm.fechaLimite !== this.proyectoFormOriginal.fechaLimite ||
+                   JSON.stringify(this.proyectoForm.enlaces) !== JSON.stringify(this.proyectoFormOriginal.enlaces);
+    } else {
+      hayCambios = this.proyectoForm.titulo.trim() !== '' || this.proyectoForm.descripcion.trim() !== '';
+    }
+
+    if (!forzar && hayCambios) {
       this.pedirConfirmacion('Tienes cambios sin guardar. Seguro que deseas salir?', () => {
         this.modalProyectoAbierto = false;
         this.empresaProyectoActivaId = null;
         this.proyectoEditandoId = null;
+        this.proyectoFormOriginal = null;
       });
       return;
     }
     this.modalProyectoAbierto = false;
     this.empresaProyectoActivaId = null;
     this.proyectoEditandoId = null;
+    this.proyectoFormOriginal = null;
   }
 
   agregarEnlaceProyecto(): void {
