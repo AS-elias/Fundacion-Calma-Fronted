@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of, switchMap } from 'rxjs';
@@ -870,8 +870,8 @@ export class AnalisisDatos implements OnInit {
     this.nuevaTarea = this.crearTareaForm();
   }
 
-  cerrarFormularioTarea(): void {
-    if (this.nuevaTarea.titulo.trim() || this.nuevaTarea.descripcion.trim()) {
+  cerrarFormularioTarea(forzar = false): void {
+    if (!forzar && (this.nuevaTarea.titulo.trim() || this.nuevaTarea.descripcion.trim())) {
       this.pedirConfirmacion('Tienes cambios sin guardar. Seguro que deseas salir?', () => {
         this.mostrandoFormularioTarea = false;
         this.limpiarFormularioTarea();
@@ -963,7 +963,7 @@ export class AnalisisDatos implements OnInit {
       .subscribe({
         next: () => {
           this.guardandoTarea = false;
-          this.cerrarFormularioTarea();
+          this.cerrarFormularioTarea(true);
           this.cargarTareas();
           this.mostrarNotificacion(
             'success',

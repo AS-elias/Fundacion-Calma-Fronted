@@ -41,11 +41,31 @@
         </ng-container>
 
         <ng-container *ngIf="stats.desempenoPersonal !== undefined && stats.desempenoPersonal !== null">
-            <div class="stat-card">
+            <div class="stat-card tooltip-container" style="position: relative; overflow: visible;">
                 <div class="stat-icon bg-green"><i class="pi pi-star-fill"></i></div>
-                <div class="stat-data">
-                    <span class="label">Desempeño Personal</span>
-                    <span class="number">{{ stats.desempenoPersonal | number:'1.0-0' }}%</span>
+                <div class="stat-data" style="position: relative; display: flex; align-items: center; gap: 8px;">
+                    <div>
+                        <span class="label">Desempeño Personal</span>
+                        <span class="number">{{ stats.desempenoPersonal | number:'1.0-0' }}%</span>
+                    </div>
+                    <i class="pi pi-info-circle info-icon" *ngIf="stats.ultimaEvaluacion" (mouseenter)="mostrarTooltip = true" (mouseleave)="mostrarTooltip = false" style="color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 4px; transition: color 0.2s;"></i>
+                    
+                    <!-- Tooltip Card -->
+                    <div class="evaluation-tooltip" *ngIf="mostrarTooltip && stats.ultimaEvaluacion" style="position: absolute; right: 0; top: 100%; margin-top: 10px; width: 280px; background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 100; padding: 12px;">
+                        <div class="tooltip-header" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--surface-border); padding-bottom: 8px;">
+                            <i class="pi pi-star-fill" style="color: #f59e0b;"></i>
+                            <span style="font-weight: 600; font-size: 0.9rem;">Última Evaluación</span>
+                        </div>
+                        <div class="tooltip-body">
+                            <p style="margin: 0 0 6px 0; font-size: 0.85rem; font-weight: 500;">Calificación: {{ stats.ultimaEvaluacion.rating }}/5</p>
+                            <p *ngIf="stats.ultimaEvaluacion.comentario" style="margin: 0; font-size: 0.85rem; color: var(--text-color); font-style: italic;">
+                                "{{ stats.ultimaEvaluacion.comentario }}"
+                            </p>
+                            <p *ngIf="!stats.ultimaEvaluacion.comentario" style="margin: 0; font-size: 0.85rem; color: var(--text-muted); font-style: italic;">
+                                Sin comentarios adicionales.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </ng-container>

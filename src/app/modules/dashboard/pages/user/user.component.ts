@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { DatePicker } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
@@ -23,6 +24,7 @@ export class UserComponent implements OnInit, OnDestroy {
   actividadesDelDiaSeleccionado: any[] = [];
   vencimientosDelDiaSeleccionado: any[] = [];
   mostrarDialogoDia: boolean = false;
+  mostrarTooltip: boolean = false;
   
   stats: UserDashboardStats | null = null;
   cargando = true;
@@ -30,6 +32,7 @@ export class UserComponent implements OnInit, OnDestroy {
   private dashboardService = inject(DashboardService);
   private dashboardSocket = inject(DashboardSocketService);
   private authService = inject(AuthService);
+  private http = inject(HttpClient);
   private socketSub?: Subscription;
 
   get esAdmin(): boolean {
@@ -53,7 +56,7 @@ export class UserComponent implements OnInit, OnDestroy {
       next: (data) => {
         const statsPayload: any = this.normalizeBackendPayload(data);
         
-        const misProyectos = this.getNumberFromPayload(statsPayload, [
+        let misProyectos = this.getNumberFromPayload(statsPayload, [
           'misProyectos', 'mis_proyectos', 'proyectos', 'proyectos_count', 'totalProyectos', 'total_proyectos'
         ]) || this.sumTaskCounts(statsPayload.estadisticasTareas || statsPayload);
 
@@ -61,14 +64,41 @@ export class UserComponent implements OnInit, OnDestroy {
           'misConvenios', 'mis_convenios', 'convenios', 'convenios_count', 'conveniosVigentes', 'convenios_vigentes'
         ]);
 
-        const desempenoEquipo = this.getNumberFromPayload(statsPayload, ['desempenoEquipo', 'desempeno_equipo', 'desempenoEquipoArea']);
+        let desempenoEquipo = this.getNumberFromPayload(statsPayload, ['desempenoEquipo', 'desempeno_equipo', 'desempenoEquipoArea']);
         const desempenoPersonal = this.getNumberFromPayload(statsPayload, ['desempenoPersonal', 'desempeno_personal']);
+        const ultimaEvaluacion = statsPayload.ultimaEvaluacion;
 
+        // Extraer vencimientos de proyectos
         const proyectosArray = this.getArrayFromPayload(statsPayload, ['misProyectos', 'mis_proyectos']);
         const conveniosArray = this.getArrayFromPayload(statsPayload, ['misConvenios', 'mis_convenios']);
         const actividadReciente = this.getArrayFromPayload(statsPayload, [
           'actividadReciente', 'actividadesRecientes', 'actividades'
         ]);
+
+        // Si el usuario tiene tareas, recalculamos dinámicamente misProyectos y desempenoEquipo basado en sus tareas asignadas
+        const estadisticasTareas = statsPayload.estadisticasTareas;
+        let sumTareas = 0;
+        if (estadisticasTareas) {
+            sumTareas = this.sumTaskCounts(estadisticasTareas);
+            if (sumTareas > 0) {
+                misProyectos = sumTareas;
+                const completadas = estadisticasTareas.completadas || estadisticasTareas.COMPLETADO || 0;
+                desempenoEquipo = Math.round((completadas / sumTareas) * 100);
+            }
+        }
+
+        // Parche para Analistas si el backend devuelve 0 porque el creador_id no hace match
+        if (sumTareas === 0) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+            this.http.get<any[]>('https://fundacion-calma-backend.onrender.com/api/analisis-tareas', { headers }).subscribe(tareas => {
+                if (tareas && tareas.length > 0) {
+                    this.stats!.misProyectos = tareas.length;
+                    const completadas = tareas.filter(t => t.estado && t.estado.toUpperCase() === 'COMPLETADO').length;
+                    this.stats!.desempenoEquipo = Math.round((completadas / tareas.length) * 100);
+                }
+            });
+        }
 
         // Extraer vencimientos de proyectos
         if (proyectosArray) {
@@ -121,6 +151,7 @@ export class UserComponent implements OnInit, OnDestroy {
           misConvenios,
           desempenoEquipo,
           desempenoPersonal,
+          ultimaEvaluacion,
           actividadReciente
         } as any;
 

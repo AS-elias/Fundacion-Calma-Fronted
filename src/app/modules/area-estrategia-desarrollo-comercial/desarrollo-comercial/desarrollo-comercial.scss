@@ -1978,3 +1978,6 @@
   }
 }
 
+
+.overlay--confirm, .confirm-overlay { z-index: 999999 !important; }
+

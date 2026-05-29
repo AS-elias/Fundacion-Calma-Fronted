@@ -649,3 +649,6 @@
   .new-project { background: rgba(78,179,228,0.2) !important; color: #4EB3E4 !important; }
 }
 
+
+.overlay--confirm, .confirm-overlay { z-index: 999999 !important; }
+

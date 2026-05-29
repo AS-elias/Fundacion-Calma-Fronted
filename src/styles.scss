@@ -2194,3 +2194,6 @@ input, textarea, select {
     }
   }
 }
+
+.overlay--confirm, .confirm-overlay { z-index: 9999 !important; }
+

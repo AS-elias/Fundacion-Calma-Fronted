@@ -357,8 +357,8 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
     this.modalEmpresaAbierto = true;
   }
 
-  cerrarModalEmpresa(): void {
-    if (this.empresaForm.nombre.trim() || this.empresaForm.descripcion.trim()) {
+  cerrarModalEmpresa(forzar = false): void {
+    if (!forzar && (this.empresaForm.nombre.trim() || this.empresaForm.descripcion.trim())) {
       this.pedirConfirmacion('Tienes cambios sin guardar. Seguro que deseas salir?', () => {
         this.modalEmpresaAbierto = false;
         this.empresaEditandoId = null;
@@ -383,7 +383,7 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
       this.estrategiaService.updateEmpresa(this.empresaEditandoId, { nombre, descripcion }).subscribe({
         next: () => {
           this.guardandoEmpresa = false;
-          this.cerrarModalEmpresa();
+          this.cerrarModalEmpresa(true);
           this.cargarEmpresasYProyectos();
           this.mostrarNotificacion('success', 'Los cambios de la empresa se guardaron correctamente.');
         },
@@ -398,7 +398,7 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
     this.estrategiaService.createEmpresa({ nombre, descripcion }).subscribe({
       next: () => {
         this.guardandoEmpresa = false;
-        this.cerrarModalEmpresa();
+        this.cerrarModalEmpresa(true);
         this.cargarEmpresasYProyectos();
         this.mostrarNotificacion('success', 'La empresa se creó correctamente.');
       },
@@ -477,8 +477,8 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
     this.modalProyectoAbierto = true;
   }
 
-  cerrarModalProyecto(): void {
-    if (this.proyectoForm.titulo.trim() || this.proyectoForm.descripcion.trim()) {
+  cerrarModalProyecto(forzar = false): void {
+    if (!forzar && (this.proyectoForm.titulo.trim() || this.proyectoForm.descripcion.trim())) {
       this.pedirConfirmacion('Tienes cambios sin guardar. Seguro que deseas salir?', () => {
         this.modalProyectoAbierto = false;
         this.empresaProyectoActivaId = null;
@@ -535,7 +535,7 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
         .subscribe({
           next: () => {
             this.guardandoProyecto = false;
-            this.cerrarModalProyecto();
+            this.cerrarModalProyecto(true);
             this.modalDetalleProyectoAbierto = true;
             this.cargarEmpresasYProyectos();
             this.mostrarNotificacion('success', 'Los cambios del proyecto se guardaron correctamente.');
@@ -560,7 +560,7 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.guardandoProyecto = false;
-          this.cerrarModalProyecto();
+          this.cerrarModalProyecto(true);
           this.cargarEmpresasYProyectos();
           this.mostrarNotificacion('success', 'El proyecto se creó correctamente.');
         },
