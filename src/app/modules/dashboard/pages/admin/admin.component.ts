@@ -42,6 +42,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   mensajeEvaluacion: { tipo: 'exito' | 'error', texto: string } | null = null;
   historialEvaluaciones: any[] = [];
   usuariosParaEvaluar: DirectorUserEvaluation[] = [];
+  mostrarEvaluaciones = false;
   usuarioSeleccionadoParaEvaluar: DirectorUserEvaluation | null = null;
 
   private dashboardService = inject(DashboardService);
