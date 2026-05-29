@@ -106,7 +106,7 @@
 
       <ng-container *ngIf="esRedesSociales(); else docsForm">
 
-        <div class="social-form">
+        <div class="social-form" *ngIf="puedeSubirRepositorio">
           <input
             [(ngModel)]="nuevoNombre"
             placeholder="Nombre de la red"
