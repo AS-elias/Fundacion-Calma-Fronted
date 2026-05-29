@@ -1160,7 +1160,7 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
       const placeholderMsg = isImage ? '📷 Imagen adjunta' : `📄 Archivo: ${file.name}`;
 
       // Consumir el endpoint de subida (REST) para soportar archivos grandes sin tumbar el Socket
-      const response = await this.communicationService.uploadFile(canal.id, file);
+      const response = await this.communicationService.uploadFile(canal.id, file, tipoStr);
       const urlFina = response?.url || response?.archivoUrl || response?.fileUrl || response?.path || response?.data?.url || response?.data?.path || response?.data?.archivoUrl || response?.data?.archivo_url;
       
       if (!urlFina) throw new Error('El servidor no devolvió una URL válida');
@@ -1657,6 +1657,33 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
   onKeydownHandler() {
     if (this.imagenVisor) {
       this.cerrarVisorImagen();
+    }
+  }
+
+  @HostListener('document:paste', ['$event'])
+  onPaste(event: ClipboardEvent) {
+    if (!this.chatManagement.contactoActivo()) return;
+    
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'INPUT' && target.id !== 'mensajeInput') return;
+
+    const items = event.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          let finalFile = file;
+          if (file.name === 'image.png' || !file.name.includes('.')) {
+            const extension = file.type.split('/')[1] || 'png';
+            finalFile = new File([file], `imagen_pegada_${Date.now()}.${extension}`, { type: file.type });
+          }
+          this.onFileSelected({ target: { files: [finalFile] } });
+          event.preventDefault();
+          break;
+        }
+      }
     }
   }
 }

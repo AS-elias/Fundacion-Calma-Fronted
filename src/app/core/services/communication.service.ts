@@ -361,9 +361,12 @@ export class CommunicationService {
   }
 
   // API REST (para archivos)
-  async uploadFile(canalId: number, file: File): Promise<any> {
+  async uploadFile(canalId: number, file: File, tipoRecibido?: string): Promise<any> {
     const formData = new FormData();
     formData.append('file', file);
+    if (tipoRecibido) {
+      formData.append('tipo', tipoRecibido);
+    }
 
     const response = await fetch(
       `https://fundacion-calma-backend.onrender.com/api/comunicaciones/channels/${canalId}/files`,
