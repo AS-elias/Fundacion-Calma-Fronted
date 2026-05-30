@@ -9,12 +9,6 @@ import { AdminComponent } from './modules/dashboard/pages/admin/admin.component'
 import { UserComponent } from './modules/dashboard/pages/user/user.component';
 import { MainLayoutComponent } from './shared/layouts/main-layout/main-layout';
 
-import { ComunicacionesComponent } from './modules/comunicaciones/pages/comunicaciones/comunicaciones.component';
-import { ComunidadComponent } from './modules/comunidad/pages/comunidad/comunidad.component';
-import { Notificaciones } from './modules/notificaciones/pages/notificaciones/notificaciones';
-import { SalasTrabajo } from './modules/salas-trabajo/pages/salas-trabajo/salas-trabajo';
-import { Repositorio } from './modules/repositorio/pages/repositorio/repositorio';
-
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
@@ -64,12 +58,14 @@ export const routes: Routes = [
           },
           {
             path: 'admin-dashboard',
-            component: AdminComponent,
+            title: 'Fundación Calma | Administrador',
+            loadComponent: () => import('./modules/dashboard/pages/admin/admin.component').then(m => m.AdminComponent),
             canActivate: [adminGuard],
           },
           {
             path: 'usuario-dashboard',
-            component: UserComponent,
+            title: 'Fundación Calma | Panel de Usuario',
+            loadComponent: () => import('./modules/dashboard/pages/user/user.component').then(m => m.UserComponent),
             canActivate: [authGuard],
           },
           {
@@ -95,23 +91,28 @@ export const routes: Routes = [
       },
       {
         path: 'comunicaciones',
-        component: ComunicacionesComponent
+        title: 'Fundación Calma | Comunicaciones',
+        loadComponent: () => import('./modules/comunicaciones/pages/comunicaciones/comunicaciones.component').then(m => m.ComunicacionesComponent)
       },
       {
         path: 'comunidad-calma',
-        component: ComunidadComponent
+        title: 'Fundación Calma | Comunidad',
+        loadComponent: () => import('./modules/comunidad/pages/comunidad/comunidad.component').then(m => m.ComunidadComponent)
       },
       {
         path: 'salas-trabajo',
-        component: SalasTrabajo
+        title: 'Fundación Calma | Salas de Trabajo',
+        loadComponent: () => import('./modules/salas-trabajo/pages/salas-trabajo/salas-trabajo').then(m => m.SalasTrabajo)
       },
       {
         path: 'notificaciones',
-        component: Notificaciones
+        title: 'Fundación Calma | Notificaciones',
+        loadComponent: () => import('./modules/notificaciones/pages/notificaciones/notificaciones').then(m => m.Notificaciones)
       },
       {
         path: 'repositorio',
-        component: Repositorio
+        title: 'Fundación Calma | Repositorio',
+        loadComponent: () => import('./modules/repositorio/pages/repositorio/repositorio').then(m => m.Repositorio)
       },
       {
         path: 'perfil',

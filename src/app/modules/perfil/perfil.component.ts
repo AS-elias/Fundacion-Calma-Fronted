@@ -48,7 +48,21 @@ export class PerfilComponent implements OnInit {
     confirmar: ['', Validators.required]
   });
 
+  // --- 2FA CONFIGURATION ---
+  is2faEnabled = false;
+  twoFactorMethod: 'APP' | 'EMAIL' | null = null;
+  twoFactorSetupStep = 0; // 0: initial, 1: show QR/instructions, 2: success
+  generando2fa = false;
+  guardando2fa = false;
+  qrCodeUrl: string | null = null;
+  mensaje2fa: { tipo: 'ok' | 'error'; texto: string } | null = null;
+
+  twoFactorForm = this.fb.group({
+    code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]]
+  });
+
   get fClave() { return this.cambiarClaveForm.controls; }
+  get f2fa() { return this.twoFactorForm.controls; }
 
   hasUppercase(str: string): boolean { return /[A-Z]/.test(str); }
   hasLowercase(str: string): boolean { return /[a-z]/.test(str); }
@@ -79,6 +93,8 @@ export class PerfilComponent implements OnInit {
     this.http.get<any>(this.apiUrl, { headers: this.authService.getAuthHeaders() }).subscribe({
       next: (usuario) => {
         this.usuario = usuario;
+        this.is2faEnabled = usuario.is_two_factor_enabled || false;
+        this.twoFactorMethod = usuario.two_factor_method || null;
         this.poblarFormulario(usuario);
         this.cargando = false;
       },
@@ -209,6 +225,83 @@ export class PerfilComponent implements OnInit {
         } else {
           this.mensajeClave = { tipo: 'error', texto: 'Hubo un error al intentar cambiar la contraseña.' };
         }
+      }
+    });
+  }
+
+  // --- MÉTODOS 2FA ---
+
+  iniciarConfiguracion2fa(method: 'APP' | 'EMAIL'): void {
+    this.generando2fa = true;
+    this.mensaje2fa = null;
+    this.twoFactorSetupStep = 1;
+    this.twoFactorMethod = method;
+    this.twoFactorForm.reset();
+
+    this.authService.generate2fa(method).subscribe({
+      next: (res) => {
+        this.generando2fa = false;
+        if (method === 'APP') {
+          this.qrCodeUrl = res.qrCodeUrl || null;
+        }
+      },
+      error: () => {
+        this.generando2fa = false;
+        this.mensaje2fa = { tipo: 'error', texto: 'No se pudo generar la configuración 2FA.' };
+        this.twoFactorSetupStep = 0;
+      }
+    });
+  }
+
+  cancelarConfiguracion2fa(): void {
+    this.twoFactorSetupStep = 0;
+    this.qrCodeUrl = null;
+    this.mensaje2fa = null;
+    this.twoFactorForm.reset();
+  }
+
+  confirmar2fa(): void {
+    if (this.twoFactorForm.invalid || !this.twoFactorMethod) {
+      this.twoFactorForm.markAllAsTouched();
+      return;
+    }
+
+    this.guardando2fa = true;
+    this.mensaje2fa = null;
+    const code = this.twoFactorForm.value.code!;
+
+    this.authService.enable2fa(code, this.twoFactorMethod).subscribe({
+      next: (res) => {
+        this.guardando2fa = false;
+        this.is2faEnabled = true;
+        this.twoFactorSetupStep = 0;
+        this.mensaje2fa = { tipo: 'ok', texto: 'Autenticación en 2 pasos activada correctamente.' };
+      },
+      error: (err) => {
+        this.guardando2fa = false;
+        this.mensaje2fa = { tipo: 'error', texto: err.error?.message || 'Código incorrecto. Intenta nuevamente.' };
+      }
+    });
+  }
+
+  deshabilitar2fa(): void {
+    if (!confirm('¿Estás seguro de que deseas desactivar la autenticación en dos pasos? Esto reducirá la seguridad de tu cuenta.')) {
+      return;
+    }
+
+    this.guardando2fa = true;
+    this.mensaje2fa = null;
+
+    this.authService.disable2fa().subscribe({
+      next: () => {
+        this.guardando2fa = false;
+        this.is2faEnabled = false;
+        this.twoFactorMethod = null;
+        this.mensaje2fa = { tipo: 'ok', texto: 'Autenticación en 2 pasos desactivada.' };
+      },
+      error: () => {
+        this.guardando2fa = false;
+        this.mensaje2fa = { tipo: 'error', texto: 'Error al desactivar 2FA.' };
       }
     });
   }

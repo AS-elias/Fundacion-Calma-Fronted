@@ -30,7 +30,7 @@
                 [class.active]="chatManagement.contactoActivo()?.id === contacto.id" (click)="seleccionarContacto(contacto)">
 
                 <div class="avatar" [ngClass]="contacto.colorBg">
-                    <img *ngIf="$any(contacto).avatarUrl" [src]="$any(contacto).avatarUrl" class="avatar-img">
+                    <img *ngIf="$any(contacto).avatarUrl" [ngSrc]="$any(contacto).avatarUrl" width="50" height="50" class="avatar-img">
                     <span *ngIf="!$any(contacto).avatarUrl">{{ contacto.iniciales }}</span>
                 </div>
 
@@ -73,7 +73,7 @@
                     <i class="pi pi-arrow-left"></i>
                 </button>
                 <div class="avatar" [ngClass]="chatManagement.contactoActivo()!.colorBg">
-                    <img *ngIf="$any(chatManagement.contactoActivo()).avatarUrl" [src]="$any(chatManagement.contactoActivo()).avatarUrl" class="avatar-img">
+                    <img *ngIf="$any(chatManagement.contactoActivo()).avatarUrl" [ngSrc]="$any(chatManagement.contactoActivo()).avatarUrl" width="50" height="50" class="avatar-img">
                     <span *ngIf="!$any(chatManagement.contactoActivo()).avatarUrl">{{ chatManagement.contactoActivo()!.iniciales }}</span>
                 </div>
                 <div class="details">
@@ -160,7 +160,7 @@
                     <div class="message" [ngClass]="msj.enviadoPorMi ? 'sent' : 'received'">
                         <!-- Avatar -->
                         <div class="avatar-small" *ngIf="!msj.enviadoPorMi" style="background-color: #4eb3e4; color: white;">
-                            <img *ngIf="$any(msj).remitenteAvatarUrl" [src]="$any(msj).remitenteAvatarUrl" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                            <img *ngIf="$any(msj).remitenteAvatarUrl" [ngSrc]="$any(msj).remitenteAvatarUrl" width="40" height="40" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
                             <span *ngIf="!$any(msj).remitenteAvatarUrl">{{ $any(msj).remitenteIniciales || chatManagement.contactoActivo()!.iniciales }}</span>
                         </div>
 
@@ -524,7 +524,7 @@
                 <div class="forward-item" *ngFor="let contacto of contactosReenviarFiltrados()">
                     <div class="forward-item-info">
                         <div class="avatar" [ngClass]="contacto.colorBg">
-                            <img *ngIf="$any(contacto).avatarUrl" [src]="$any(contacto).avatarUrl" class="avatar-img">
+                            <img *ngIf="$any(contacto).avatarUrl" [ngSrc]="$any(contacto).avatarUrl" width="50" height="50" class="avatar-img">
                             <span *ngIf="!$any(contacto).avatarUrl">{{ contacto.iniciales }}</span>
                         </div>
                         <div class="forward-details">

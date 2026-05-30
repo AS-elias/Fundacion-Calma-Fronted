@@ -13,5 +13,8 @@ export interface LoginResponse {
   access_token?: string;
   usuario?: User;
   requirePasswordChange?: boolean;
+  require2fa?: boolean;
+  method?: 'APP' | 'EMAIL';
+  usuarioId?: number;
   mensaje?: string;
 }

@@ -5,9 +5,11 @@
     <div class="login-card">
       <div class="logo-placeholder"></div>
 
-      <p>Plataforma Institucional</p>
+      <p *ngIf="!is2faMode()">Plataforma Institucional</p>
+      <p *ngIf="is2faMode()" style="color: #048abf; font-weight: bold;">Autenticación en Dos Pasos (2FA)</p>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="form-container">
+      <!-- Formulario Login Normal -->
+      <form *ngIf="!is2faMode()" [formGroup]="loginForm" (ngSubmit)="onLogin()" class="form-container">
         
         <div class="form-error" *ngIf="mensajeError()">
           <i class="pi pi-exclamation-triangle"></i>
@@ -40,7 +42,40 @@
         </button>
       </form>
 
-      <a routerLink="/recuperar-password" class="forgot-pass">¿Olvidaste tu contraseña?</a>
+      <!-- Formulario 2FA -->
+      <form *ngIf="is2faMode()" [formGroup]="twoFactorForm" (ngSubmit)="onVerify2fa()" class="form-container">
+        
+        <div class="form-info" *ngIf="mensajeInfo()" style="color: #2c3e50; font-size: 0.9rem; text-align: center; margin-bottom: 10px; background: #e0f2fe; padding: 10px; border-radius: 8px;">
+          <i class="pi pi-info-circle"></i> {{ mensajeInfo() }}
+        </div>
+
+        <div class="form-error" *ngIf="mensajeError()">
+          <i class="pi pi-exclamation-triangle"></i>
+          {{ mensajeError() }}
+        </div>
+
+        <div class="input-group">
+          <label>Código de Seguridad (6 dígitos)</label>
+          <input type="text" pInputText placeholder="123456" formControlName="code" maxlength="6"
+                 [ngClass]="{'input-error': f2fa['code'].invalid && (f2fa['code'].dirty || f2fa['code'].touched)}"
+                 style="text-align: center; font-size: 1.5rem; letter-spacing: 5px;">
+          <small class="error-text" *ngIf="f2fa['code'].invalid && (f2fa['code'].dirty || f2fa['code'].touched)">
+            <span *ngIf="f2fa['code'].errors?.['required']">El código es requerido.</span>
+            <span *ngIf="f2fa['code'].errors?.['minlength'] || f2fa['code'].errors?.['maxlength']">Debe tener exactamente 6 dígitos.</span>
+          </small>
+        </div>
+
+        <button type="submit" class="btn-login" [disabled]="cargando()">
+          <i *ngIf="cargando()" class="pi pi-spinner pi-spin"></i>
+          {{ cargando() ? 'VERIFICANDO...' : 'VERIFICAR CÓDIGO' }}
+        </button>
+
+        <a *ngIf="temporalMethod === 'EMAIL'" href="javascript:void(0)" (click)="reenviarCodigo()" class="forgot-pass" style="margin-top: 15px; display: block; text-align: center;">
+          ¿No recibiste el código? Reenviar
+        </a>
+      </form>
+
+      <a *ngIf="!is2faMode()" routerLink="/recuperar-password" class="forgot-pass">¿Olvidaste tu contraseña?</a>
 
       <p>© 2026 Fundación Calma</p>
     </div>

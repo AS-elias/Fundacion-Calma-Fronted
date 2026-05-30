@@ -26,10 +26,19 @@ export class LoginComponent {
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
+  twoFactorForm: FormGroup = this.fb.group({
+    code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]]
+  });
+
   cargando = signal(false);
+  is2faMode = signal(false);
+  temporalUserId: number | null = null;
+  temporalMethod: string | null = null;
   mensajeError = signal<string | null>(null);
+  mensajeInfo = signal<string | null>(null);
 
   get f() { return this.loginForm.controls; }
+  get f2fa() { return this.twoFactorForm.controls; }
 
   verificarBloqueo(email: string): boolean {
     const lockInfoStr = localStorage.getItem(`bloqueo_login_${email}`);
@@ -96,6 +105,19 @@ export class LoginComponent {
           return;
         }
 
+        if (respuesta.require2fa) {
+          console.log("🔒 Se requiere 2FA.");
+          this.temporalUserId = respuesta.usuarioId!;
+          this.temporalMethod = respuesta.method!;
+          this.is2faMode.set(true);
+          if (this.temporalMethod === 'EMAIL') {
+            this.mensajeInfo.set('Hemos enviado un código a tu correo electrónico.');
+          } else {
+            this.mensajeInfo.set('Abre tu App de Autenticador (ej. Google Authenticator) e ingresa el código.');
+          }
+          return;
+        }
+
         const rol = respuesta.usuario?.rol;
         console.log("🎯 Rol detectado:", rol);
         
@@ -118,6 +140,48 @@ export class LoginComponent {
         } else {
           this.mensajeError.set('Ocurrió un error inesperado. Inténtalo de nuevo.');
         }
+      }
+    });
+  }
+
+  onVerify2fa() {
+    this.mensajeError.set(null);
+    if (this.twoFactorForm.invalid || !this.temporalUserId) {
+      this.twoFactorForm.markAllAsTouched();
+      return;
+    }
+
+    this.cargando.set(true);
+    const code = this.twoFactorForm.value.code;
+
+    this.authService.authenticate2fa(this.temporalUserId, code).subscribe({
+      next: (respuesta) => {
+        this.cargando.set(false);
+        if (this.authService.isAdmin() || this.authService.isDirector()) {
+          this.router.navigate(['/dashboard/admin-dashboard']);
+        } else {
+          this.router.navigate(['/dashboard/usuario-dashboard']);
+        }
+      },
+      error: (error) => {
+        this.cargando.set(false);
+        this.mensajeError.set(error.error?.message || 'Código incorrecto o expirado.');
+      }
+    });
+  }
+
+  reenviarCodigo() {
+    if (!this.temporalUserId) return;
+    this.cargando.set(true);
+    this.authService.resend2faEmail(this.temporalUserId).subscribe({
+      next: (res) => {
+        this.cargando.set(false);
+        this.mensajeInfo.set('Código reenviado a tu correo.');
+        this.mensajeError.set(null);
+      },
+      error: (err) => {
+        this.cargando.set(false);
+        this.mensajeError.set('Error al reenviar el código.');
       }
     });
   }

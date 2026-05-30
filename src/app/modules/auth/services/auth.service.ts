@@ -63,6 +63,36 @@ export class AuthService {
     console.log('✅ Sesión cerrada');
   }
 
+  // --- 2FA ENDPOINTS ---
+
+  generate2fa(method: 'APP' | 'EMAIL'): Observable<{ method: string, qrCodeUrl?: string, secret?: string, message?: string }> {
+    return this.http.post<any>(`${this.apiUrl}/2fa/generate`, { method }, { headers: this.getAuthHeaders() });
+  }
+
+  enable2fa(code: string, method: 'APP' | 'EMAIL'): Observable<{ message: string }> {
+    return this.http.post<any>(`${this.apiUrl}/2fa/enable`, { code, method }, { headers: this.getAuthHeaders() });
+  }
+
+  disable2fa(): Observable<{ message: string }> {
+    return this.http.post<any>(`${this.apiUrl}/2fa/disable`, {}, { headers: this.getAuthHeaders() });
+  }
+
+  authenticate2fa(usuarioId: number, code: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/2fa/authenticate`, { usuarioId, code }).pipe(
+      tap(respuesta => {
+        if (respuesta.access_token && respuesta.usuario) {
+          this.secureStorage.setItem(this.tokenKey, respuesta.access_token);
+          this.secureStorage.setItem(this.userKey, JSON.stringify(respuesta.usuario));
+          console.log(`✅ Sesión iniciada (2FA) para: ${respuesta.usuario.nombre}`);
+        }
+      })
+    );
+  }
+
+  resend2faEmail(usuarioId: number): Observable<{ message: string }> {
+    return this.http.post<any>(`${this.apiUrl}/2fa/resend`, { usuarioId });
+  }
+
   getToken(): string | null {
     return this.secureStorage.getItem(this.tokenKey);
   }
