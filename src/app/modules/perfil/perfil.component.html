@@ -109,7 +109,7 @@
             <span style="color: #10b981; font-weight: bold; display: flex; align-items: center; gap: 5px;">
               <i class="pi pi-check-circle"></i> Activado ({{ twoFactorMethod === 'APP' ? 'App Autenticador' : 'Correo Electrónico' }})
             </span>
-            <button type="button" class="secondary-button" style="margin-top: 10px; width: fit-content; border-color: #ef4444; color: #ef4444;" (click)="deshabilitar2fa()" [disabled]="guardando2fa">
+            <button type="button" class="secondary-button" style="margin-top: 10px; width: fit-content; border-color: #ef4444; color: #ef4444;" (click)="pedirConfirmacionDesactivar()" [disabled]="guardando2fa">
               Desactivar 2FA
             </button>
           </div>
@@ -297,4 +297,19 @@
   <ng-template #cargandoTpl>
     <div class="perfil-card perfil-loading">Cargando perfil...</div>
   </ng-template>
+
+  <!-- Modal de confirmación para desactivar 2FA -->
+  <div class="perfil-modal-overlay" *ngIf="mostrarConfirmacionDesactivar">
+    <div class="perfil-modal-content">
+      <div class="modal-icon warning">
+        <i class="pi pi-exclamation-triangle"></i>
+      </div>
+      <h3>¿Desactivar autenticación en dos pasos?</h3>
+      <p>¿Estás seguro de que deseas desactivar la autenticación en dos pasos? Esto reducirá la seguridad de tu cuenta y la hará más vulnerable.</p>
+      <div class="modal-actions">
+        <button type="button" class="secondary-button" (click)="cancelarDesactivar()">Cancelar</button>
+        <button type="button" class="danger-button" (click)="deshabilitar2fa()">Sí, desactivar</button>
+      </div>
+    </div>
+  </div>
 </section>

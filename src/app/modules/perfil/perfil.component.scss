@@ -403,3 +403,81 @@
     }
   }
 }
+
+.perfil-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.perfil-modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  text-align: center;
+
+  .modal-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 1.5rem;
+
+    &.warning {
+      background: #fef2f2;
+      color: #ef4444;
+    }
+  }
+
+  h3 {
+    margin: 0 0 1rem;
+    color: #1f2937;
+    font-size: 1.25rem;
+  }
+
+  p {
+    color: #6b7280;
+    margin: 0 0 1.5rem;
+    line-height: 1.5;
+    font-size: 0.95rem;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+
+    button {
+      flex: 1;
+    }
+  }
+}
+
+.danger-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #ef4444;
+  color: white;
+  border: none;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #dc2626;
+  }
+}

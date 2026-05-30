@@ -61,6 +61,8 @@ export class PerfilComponent implements OnInit {
     code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]]
   });
 
+  mostrarConfirmacionDesactivar = false;
+
   get fClave() { return this.cambiarClaveForm.controls; }
   get f2fa() { return this.twoFactorForm.controls; }
 
@@ -284,11 +286,16 @@ export class PerfilComponent implements OnInit {
     });
   }
 
-  deshabilitar2fa(): void {
-    if (!confirm('¿Estás seguro de que deseas desactivar la autenticación en dos pasos? Esto reducirá la seguridad de tu cuenta.')) {
-      return;
-    }
+  pedirConfirmacionDesactivar(): void {
+    this.mostrarConfirmacionDesactivar = true;
+  }
 
+  cancelarDesactivar(): void {
+    this.mostrarConfirmacionDesactivar = false;
+  }
+
+  deshabilitar2fa(): void {
+    this.mostrarConfirmacionDesactivar = false;
     this.guardando2fa = true;
     this.mensaje2fa = null;
 
