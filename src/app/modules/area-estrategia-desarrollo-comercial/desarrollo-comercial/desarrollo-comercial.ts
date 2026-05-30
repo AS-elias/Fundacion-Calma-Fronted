@@ -35,6 +35,8 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
   readonly actividadesPageSize = 5;
   convenioSeleccionado: Convenio | null = null;
   convenioPorEliminar: Convenio | null = null;
+  isEliminando = false;
+  isGuardando = false;
   nuevoComentario = '';
   usuarioActual = 'Deivi Flores';
   editMode = false;
@@ -277,8 +279,10 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
     console.log('Payload actividad', payload);
 
     if (this.actividadEditandoId) {
+      this.isGuardando = true;
       this.actividadesService.updateActividad(this.actividadEditandoId, payload).subscribe({
         next: (response) => {
+          this.isGuardando = false;
           this.mostrandoFormularioActividad = false;
           this.actividadEditandoId = null;
           this.actividadEnEdicion = this.crearActividadForm();
@@ -289,6 +293,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
           );
         },
         error: (error: unknown) => {
+          this.isGuardando = false;
           console.error('No se pudo actualizar la actividad', error);
           this.mostrarNotificacion(
             'error',
@@ -299,8 +304,10 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
       return;
     }
 
+    this.isGuardando = true;
     this.actividadesService.createActividad(payload).subscribe({
       next: (response) => {
+        this.isGuardando = false;
         this.mostrandoFormularioActividad = false;
         this.actividadEnEdicion = this.crearActividadForm();
         this.setPage(1);
@@ -311,6 +318,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
         );
       },
       error: (error: unknown) => {
+        this.isGuardando = false;
         console.error('No se pudo crear la actividad', error);
         this.mostrarNotificacion(
           'error',
@@ -730,14 +738,18 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
       return;
     }
 
+    this.isEliminando = true;
+
     this.conveniosService.deleteConvenio(id).subscribe({
       next: () => {
         this.eliminarConvenioLocal(convenio);
         this.convenioPorEliminar = null;
+        this.isEliminando = false;
       },
       error: (error: unknown) => {
         console.error('No se pudo eliminar el convenio', error);
         this.mostrarNotificacion('error', this.mensajeErrorBackend('No se pudo eliminar el convenio en la BD', error));
+        this.isEliminando = false;
       },
     });
   }
@@ -816,9 +828,11 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
     const payload = this.toDto(this.convenioSeleccionado);
 
     if (this.esNuevo) {
+      this.isGuardando = true;
       const provisionalId = this.idConvenio(this.convenioSeleccionado);
       this.conveniosService.createConvenio(payload).subscribe({
         next: (resp) => {
+          this.isGuardando = false;
           const nuevo = resp?.convenio
             ? this.normalizarConvenio(this.mapFromDto(resp.convenio))
             : this.normalizarConvenio(payload as Convenio);
@@ -854,6 +868,7 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
           );
         },
         error: (error) => {
+          this.isGuardando = false;
           console.error('? No se pudo conectar con el servidor', error);
           this.mostrarNotificacion('error', 'Registro fallido. Inténtalo nuevamente.');
         },
@@ -862,8 +877,10 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
       return;
     }
 
+    this.isGuardando = true;
     this.conveniosService.updateConvenio(payload).subscribe({
       next: (resp) => {
+        this.isGuardando = false;
         const comentariosPrevios = this.convenioSeleccionado?.comentarios
           ? this.convenioSeleccionado.comentarios.map((comentario) => ({ ...comentario }))
           : [];
@@ -907,8 +924,9 @@ export class DesarrolloComercial implements OnInit, OnDestroy {
         );
       },
       error: (error) => {
+        this.isGuardando = false;
         console.error('No se pudo actualizar el convenio', error);
-        this.mostrarNotificacion('error', 'No se pudo guardar los cambios. Inténtalo nuevamente.');
+        this.mostrarNotificacion('error', 'No se pudo actualizar el convenio.');
       },
     });
   }

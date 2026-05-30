@@ -1,4 +1,4 @@
-﻿<div
+<div
   *ngIf="notificacion"
   class="toast-notificacion"
   [class.toast-notificacion--error]="notificacion.tipo === 'error'"
@@ -529,11 +529,11 @@
     <p class="muted">{{ colegioPorEliminar.nombre || colegioPorEliminar.codigoModular }}</p>
 
     <div class="confirm-actions">
-      <button class="cancel-btn" type="button" (click)="cancelarEliminacionColegio()">
+      <button class="cancel-btn" type="button" [disabled]="isEliminando" (click)="cancelarEliminacionColegio()">
         Cancelar
       </button>
-      <button class="delete-btn" type="button" (click)="confirmarEliminacionColegio()">
-        Eliminar
+      <button class="delete-btn" type="button" [disabled]="isEliminando" (click)="confirmarEliminacionColegio()">
+        {{ isEliminando ? 'Procesando...' : 'Eliminar' }}
       </button>
     </div>
   </div>
@@ -749,11 +749,11 @@
     <p class="muted">{{ empresaPorEliminar.nombre || empresaPorEliminar.ruc }}</p>
 
     <div class="confirm-actions">
-      <button class="cancel-btn" type="button" (click)="cancelarEliminacionEmpresa()">
+      <button class="cancel-btn" type="button" [disabled]="isEliminando" (click)="cancelarEliminacionEmpresa()">
         Cancelar
       </button>
-      <button class="delete-btn" type="button" (click)="confirmarEliminacionEmpresa()">
-        Eliminar
+      <button class="delete-btn" type="button" [disabled]="isEliminando" (click)="confirmarEliminacionEmpresa()">
+        {{ isEliminando ? 'Procesando...' : 'Eliminar' }}
       </button>
     </div>
   </div>
@@ -975,11 +975,11 @@
     <p class="muted">{{ venuePorEliminar.nombre || venuePorEliminar.correo }}</p>
 
     <div class="confirm-actions">
-      <button class="cancel-btn" type="button" (click)="cancelarEliminacionVenue()">
+      <button class="cancel-btn" type="button" [disabled]="isEliminando" (click)="cancelarEliminacionVenue()">
         Cancelar
       </button>
-      <button class="delete-btn" type="button" (click)="confirmarEliminacionVenue()">
-        Eliminar
+      <button class="delete-btn" type="button" [disabled]="isEliminando" (click)="confirmarEliminacionVenue()">
+        {{ isEliminando ? 'Procesando...' : 'Eliminar' }}
       </button>
     </div>
   </div>
@@ -1189,11 +1189,11 @@
     <p class="muted">{{ difusionPorEliminar.nombre || difusionPorEliminar.correo }}</p>
 
     <div class="confirm-actions">
-      <button class="cancel-btn" type="button" (click)="cancelarEliminacionDifusion()">
+      <button class="cancel-btn" type="button" [disabled]="isEliminando" (click)="cancelarEliminacionDifusion()">
         Cancelar
       </button>
-      <button class="delete-btn" type="button" (click)="confirmarEliminacionDifusion()">
-        Eliminar
+      <button class="delete-btn" type="button" [disabled]="isEliminando" (click)="confirmarEliminacionDifusion()">
+        {{ isEliminando ? 'Procesando...' : 'Eliminar' }}
       </button>
     </div>
   </div>

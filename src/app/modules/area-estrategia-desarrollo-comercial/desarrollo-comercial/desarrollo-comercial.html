@@ -340,12 +340,12 @@
       </div>
 
       <div class="actividad-form__actions">
-        <button type="button" class="activity-cancel" (click)="cancelarFormularioActividad()">
+        <button type="button" class="activity-cancel" [disabled]="isGuardando" (click)="cancelarFormularioActividad()">
           Cancelar
         </button>
-        <button type="button" class="activity-submit" (click)="guardarActividad()">
-          <i class="pi pi-save"></i>
-          {{ actividadEditandoId ? 'Guardar Cambios' : 'Crear Actividad' }}
+        <button type="button" class="activity-submit" [disabled]="isGuardando" (click)="guardarActividad()">
+          <i [class]="isGuardando ? 'pi pi-spinner pi-spin' : 'pi pi-save'"></i>
+          {{ isGuardando ? 'Guardando...' : (actividadEditandoId ? 'Guardar Cambios' : 'Crear Actividad') }}
         </button>
       </div>
     </section>
@@ -712,10 +712,11 @@
       </div>
 
       <div class="modal-actions" *ngIf="editMode">
-        <button class="save-btn" (click)="guardarEdicion()">
-          {{ esNuevo ? 'Agregar Convenio' : 'Guardar cambios' }}
+        <button class="save-btn" [disabled]="isGuardando" (click)="guardarEdicion()">
+          <i [class]="isGuardando ? 'pi pi-spinner pi-spin' : ''" *ngIf="isGuardando" style="margin-right: 5px;"></i>
+          {{ isGuardando ? 'Guardando...' : (esNuevo ? 'Agregar Convenio' : 'Guardar cambios') }}
         </button>
-        <button class="cancel-btn" (click)="esNuevo ? cerrarDetalle() : (editMode = false)">Cancelar</button>
+        <button class="cancel-btn" [disabled]="isGuardando" (click)="esNuevo ? cerrarDetalle() : (editMode = false)">Cancelar</button>
       </div>
     </div>
   </div>
@@ -728,8 +729,10 @@
     <p>¿Estás seguro de que deseas eliminar el convenio "{{ convenioPorEliminar.nombre || 'Nombre del convenio' }}"?</p>
     <p class="muted">Esta acción no se puede deshacer.</p>
     <div class="confirm-actions">
-      <button class="cancel-btn" (click)="cancelarEliminacion()">Cancelar</button>
-      <button class="delete-btn" (click)="confirmarEliminacion()">Eliminar</button>
+      <button class="cancel-btn" [disabled]="isEliminando" (click)="cancelarEliminacion()">Cancelar</button>
+      <button class="delete-btn" [disabled]="isEliminando" (click)="confirmarEliminacion()">
+        {{ isEliminando ? 'Procesando...' : 'Eliminar' }}
+      </button>
     </div>
   </div>
 </div>

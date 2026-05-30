@@ -621,10 +621,12 @@
       <p>{{ confirmacionEliminacion.mensaje }}</p>
       <p class="muted">{{ confirmacionEliminacion.detalle }}</p>
       <div class="confirm-actions">
-        <button class="cancel-btn" type="button" (click)="cancelarConfirmacionEliminacion()">
+        <button class="cancel-btn" type="button" [disabled]="isEliminando" (click)="cancelarConfirmacionEliminacion()">
           Cancelar
         </button>
-        <button class="delete-btn" type="button" (click)="confirmarEliminacion()">Eliminar</button>
+        <button class="delete-btn" type="button" [disabled]="isEliminando" (click)="confirmarEliminacion()">
+          {{ isEliminando ? 'Procesando...' : 'Eliminar' }}
+        </button>
       </div>
     </div>
   </div>

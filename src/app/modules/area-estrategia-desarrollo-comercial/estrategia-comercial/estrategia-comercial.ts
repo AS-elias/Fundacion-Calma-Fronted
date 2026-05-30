@@ -145,6 +145,7 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
     onAceptar: () => {}
   };
   empresaEditandoId: string | null = null;
+  isEliminando = false;
   empresaForm: EmpresaForm = this.crearEmpresaForm();
   empresaFormOriginal: EmpresaForm | null = null;
   modalProyectoAbierto = false;
@@ -450,17 +451,22 @@ export class EstrategiaComercial implements OnInit, OnDestroy {
       return;
     }
 
+    this.isEliminando = true;
     this.estrategiaService.deleteEmpresa(empresaId).subscribe({
       next: () => {
         this.confirmacionEliminacion = null;
         this.cargarEmpresasYProyectos();
         this.mostrarNotificacion('success', 'La empresa se eliminó correctamente.');
+        this.isEliminando = false;
 
         if (this.empresaSeleccionada?.id === empresaId) {
           this.cerrarDetalleProyecto();
         }
       },
-      error: () => this.mostrarNotificacion('error', 'No se pudo eliminar la empresa.'),
+      error: () => {
+        this.mostrarNotificacion('error', 'No se pudo eliminar la empresa.');
+        this.isEliminando = false;
+      }
     });
   }
 

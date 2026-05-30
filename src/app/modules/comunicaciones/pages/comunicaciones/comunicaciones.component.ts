@@ -1139,7 +1139,9 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
       if (!urlFina) throw new Error('El servidor no devolvió una URL válida');
 
       const horaFormateada = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const tempId = Date.now();
       const nuevoMsg: any = {
+        id: tempId,
         texto: placeholderMsg,
         hora: horaFormateada,
         timestampReal: new Date().toISOString(),
@@ -1372,7 +1374,9 @@ export class ComunicacionesComponent implements OnInit, OnDestroy {
 
       // Mostrar de inmediato en el chat
       const horaFormateada = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const tempId = Date.now();
       const nuevoMsg: any = { // <-- Se usa 'any' para satisfacer TypeScript
+        id: tempId,
         texto: placeholderMsg,
         hora: horaFormateada,
         timestampReal: new Date().toISOString(),

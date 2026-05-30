@@ -532,15 +532,31 @@ export class ChatManagementService {
    */
   esMensajeDuplicado(mensajes: Mensaje[], nuevoMsg: Mensaje): boolean {
     return mensajes.some(m => {
+      // 1. Filtrado para archivos: Si ambos tienen la misma URL de archivo y se enviaron con < 15s de diferencia, es un duplicado por doble emisión.
+      const msjA = m as any;
+      const msjB = nuevoMsg as any;
+      
+      const tieneArchivo = !!msjA.archivoUrl && !!msjB.archivoUrl;
+      const mismoArchivo = tieneArchivo && msjA.archivoUrl === msjB.archivoUrl;
+      const mismaVentana = msjA.timestampReal && msjB.timestampReal && 
+                           Math.abs(new Date(msjA.timestampReal).getTime() - new Date(msjB.timestampReal).getTime()) < 15000;
+
+      if (mismoArchivo && mismaVentana && msjA.enviadoPorMi === msjB.enviadoPorMi) {
+        return true;
+      }
+
+      // 2. Validación estándar para textos
       if (m.texto !== nuevoMsg.texto || m.enviadoPorMi !== nuevoMsg.enviadoPorMi) {
         return false;
       }
-      if ((m as any).timestampReal && (nuevoMsg as any).timestampReal) {
+      
+      if (msjA.timestampReal && msjB.timestampReal) {
         // Usar el timestamp oculto para la validación matemática exacta
-        const tiempoExistente = new Date((m as any).timestampReal).getTime();
-        const tiempoNuevo = new Date((nuevoMsg as any).timestampReal).getTime();
+        const tiempoExistente = new Date(msjA.timestampReal).getTime();
+        const tiempoNuevo = new Date(msjB.timestampReal).getTime();
         return Math.abs(tiempoExistente - tiempoNuevo) < 10000;
       }
+      
       return m.hora === nuevoMsg.hora;
     });
   }

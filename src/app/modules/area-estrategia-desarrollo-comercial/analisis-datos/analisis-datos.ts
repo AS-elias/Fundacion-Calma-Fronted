@@ -143,6 +143,7 @@ export class AnalisisDatos implements OnInit {
   tareaSeleccionada: TareaDato | null = null;
   tareaEditando: TareaDato | null = null;
   colegioPorEliminar: ColegioDato | null = null;
+  isEliminando = false;
   colegioBorrador: ColegioBorrador | null = null;
   colegioBorradorEsNuevo = false;
   empresaPorEliminar: EmpresaDato | null = null;
@@ -546,14 +547,19 @@ export class AnalisisDatos implements OnInit {
       return;
     }
 
+    this.isEliminando = true;
     const colegio = this.colegioPorEliminar;
     this.analisisService.deleteColegio(colegio.id).subscribe({
       next: () => {
         this.colegioPorEliminar = null;
         this.cargarColegios();
         this.mostrarNotificacion('success', 'Colegio eliminado exitosamente.');
+        this.isEliminando = false;
       },
-      error: () => this.mostrarNotificacion('error', 'No se pudo eliminar el colegio.'),
+      error: () => {
+        this.mostrarNotificacion('error', 'No se pudo eliminar el colegio.');
+        this.isEliminando = false;
+      }
     });
   }
 
@@ -646,13 +652,19 @@ export class AnalisisDatos implements OnInit {
       return;
     }
 
-    this.analisisService.deleteEmpresa(this.empresaPorEliminar.id).subscribe({
+    this.isEliminando = true;
+    const empresa = this.empresaPorEliminar;
+    this.analisisService.deleteEmpresa(empresa.id).subscribe({
       next: () => {
         this.empresaPorEliminar = null;
         this.cargarEmpresas();
         this.mostrarNotificacion('success', 'Empresa eliminada exitosamente.');
+        this.isEliminando = false;
       },
-      error: () => this.mostrarNotificacion('error', 'No se pudo eliminar la empresa.'),
+      error: () => {
+        this.mostrarNotificacion('error', 'No se pudo eliminar la empresa.');
+        this.isEliminando = false;
+      }
     });
   }
 
@@ -748,13 +760,19 @@ export class AnalisisDatos implements OnInit {
       return;
     }
 
-    this.analisisService.deleteVenue(this.venuePorEliminar.id).subscribe({
+    this.isEliminando = true;
+    const venue = this.venuePorEliminar;
+    this.analisisService.deleteVenue(venue.id).subscribe({
       next: () => {
         this.venuePorEliminar = null;
         this.cargarVenues();
-        this.mostrarNotificacion('success', 'Venta eliminada exitosamente.');
+        this.mostrarNotificacion('success', 'Venue eliminado exitosamente.');
+        this.isEliminando = false;
       },
-      error: () => this.mostrarNotificacion('error', 'No se pudo eliminar la venta.'),
+      error: () => {
+        this.mostrarNotificacion('error', 'No se pudo eliminar el venue.');
+        this.isEliminando = false;
+      }
     });
   }
 
@@ -850,13 +868,19 @@ export class AnalisisDatos implements OnInit {
       return;
     }
 
-    this.analisisService.deleteDifusion(this.difusionPorEliminar.id).subscribe({
+    this.isEliminando = true;
+    const dif = this.difusionPorEliminar;
+    this.analisisService.deleteDifusion(dif.id).subscribe({
       next: () => {
         this.difusionPorEliminar = null;
         this.cargarDifusiones();
         this.mostrarNotificacion('success', 'Difusión eliminada exitosamente.');
+        this.isEliminando = false;
       },
-      error: () => this.mostrarNotificacion('error', 'No se pudo eliminar la difusión.'),
+      error: () => {
+        this.mostrarNotificacion('error', 'No se pudo eliminar la difusión.');
+        this.isEliminando = false;
+      }
     });
   }
 
