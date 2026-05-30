@@ -97,7 +97,7 @@
           <i class="pi pi-key"></i>
           <span>Contraseña</span>
           <strong>********</strong>
-          <button class="secondary-button" style="margin-top: 10px; width: fit-content;" (click)="iniciarCambioClave()">Cambiar Contraseña</button>
+          <button type="button" class="secondary-button" style="margin-top: 10px; width: fit-content;" (click)="iniciarCambioClave()">Cambiar Contraseña</button>
         </div>
 
         <!-- 2FA Section -->
@@ -109,7 +109,7 @@
             <span style="color: #10b981; font-weight: bold; display: flex; align-items: center; gap: 5px;">
               <i class="pi pi-check-circle"></i> Activado ({{ twoFactorMethod === 'APP' ? 'App Autenticador' : 'Correo Electrónico' }})
             </span>
-            <button class="secondary-button" style="margin-top: 10px; width: fit-content; border-color: #ef4444; color: #ef4444;" (click)="deshabilitar2fa()" [disabled]="guardando2fa">
+            <button type="button" class="secondary-button" style="margin-top: 10px; width: fit-content; border-color: #ef4444; color: #ef4444;" (click)="deshabilitar2fa()" [disabled]="guardando2fa">
               Desactivar 2FA
             </button>
           </div>
@@ -120,13 +120,21 @@
             </span>
             <p style="font-size: 0.9rem; color: #6b7280; margin: 5px 0 10px;">Añade una capa extra de seguridad a tu cuenta.</p>
             <div style="display: flex; gap: 10px;">
-              <button class="primary-button" style="width: fit-content;" (click)="iniciarConfiguracion2fa('EMAIL')" [disabled]="generando2fa">
+              <button type="button" class="primary-button" style="width: fit-content;" (click)="iniciarConfiguracion2fa('EMAIL')" [disabled]="generando2fa">
                 Configurar con Correo
               </button>
-              <button class="primary-button" style="width: fit-content; background-color: #4f46e5;" (click)="iniciarConfiguracion2fa('APP')" [disabled]="generando2fa">
+              <button type="button" class="primary-button" style="width: fit-content; background-color: #4f46e5;" (click)="iniciarConfiguracion2fa('APP')" [disabled]="generando2fa">
                 Configurar con App (QR)
               </button>
             </div>
+          </div>
+
+          <div class="perfil-alert error" *ngIf="mensaje2fa?.tipo === 'error'">
+            {{ mensaje2fa?.texto }}
+          </div>
+
+          <div class="perfil-alert success" *ngIf="mensaje2fa?.tipo === 'ok'">
+            {{ mensaje2fa?.texto }}
           </div>
 
           <!-- 2FA Setup Form -->
@@ -139,14 +147,6 @@
 
             <div *ngIf="twoFactorMethod === 'EMAIL'" style="text-align: center; margin-bottom: 15px;">
               <p style="font-size: 0.95rem; margin-bottom: 10px;">1. Revisa tu bandeja de entrada. Te hemos enviado un código de 6 dígitos.</p>
-            </div>
-
-            <div class="perfil-alert error" *ngIf="mensaje2fa?.tipo === 'error'">
-              {{ mensaje2fa?.texto }}
-            </div>
-
-            <div class="perfil-alert success" *ngIf="mensaje2fa?.tipo === 'ok'">
-              {{ mensaje2fa?.texto }}
             </div>
 
             <form [formGroup]="twoFactorForm" (ngSubmit)="confirmar2fa()" class="perfil-form" style="margin-top: 0;">
